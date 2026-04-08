@@ -196,6 +196,39 @@
     .plan-banner-btns { display:flex; gap:6px; flex-shrink:0; }
     .plan-banner-change { background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.1); color:var(--text2); border-radius:10px; padding:6px 10px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; font-family:inherit; border:none; }
 
+    /* ── Pause Timer ── */
+    .pause-timer {
+      position:fixed;
+      bottom: calc(env(safe-area-inset-bottom) + 70px);
+      left:50%; transform:translateX(-50%) translateY(160px);
+      width:calc(100% - 32px); max-width:440px;
+      background:var(--card); border:1.5px solid var(--border2);
+      border-radius:20px; padding:14px 18px;
+      display:flex; align-items:center; gap:14px;
+      z-index:200;
+      transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+      box-shadow:0 8px 32px rgba(0,0,0,0.5);
+    }
+    .pause-timer.visible { transform:translateX(-50%) translateY(0); }
+    .timer-countdown {
+      font-size:30px; font-weight:900; color:var(--accent);
+      min-width:58px; font-variant-numeric:tabular-nums; letter-spacing:-1px;
+    }
+    .timer-countdown.urgent { color:#ef4444; }
+    .timer-info { flex:1; }
+    .timer-label { font-size:13px; font-weight:700; color:var(--text); margin-bottom:2px; }
+    .timer-hint { font-size:11px; color:var(--text2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .timer-btns { display:flex; gap:6px; flex-shrink:0; }
+    .timer-btn {
+      background:var(--card2); border:1px solid var(--border);
+      border-radius:10px; padding:7px 10px; color:var(--text2);
+      font-size:12px; font-weight:700; cursor:pointer; font-family:inherit;
+    }
+    .timer-skip {
+      background:var(--accent-dim); border-color:var(--accent-border);
+      color:var(--accent);
+    }
+
     /* Multiple options */
     .plan-options-grid { display:flex; flex-direction:column; gap:10px; margin-bottom:20px; }
     .plan-opt {
@@ -448,6 +481,20 @@
 
       <div style="height:88px"></div>
     </div>
+  </div>
+</div>
+
+<!-- Pause Timer -->
+<div class="pause-timer" id="pause-timer">
+  <div class="timer-info">
+    <div class="timer-label">⏱️ Pause</div>
+    <div class="timer-hint" id="timer-hint">Erhole dich</div>
+  </div>
+  <div class="timer-countdown" id="timer-display">2:00</div>
+  <div class="timer-btns">
+    <button class="timer-btn" onclick="adjustTimer(-15)">−15</button>
+    <button class="timer-btn" onclick="adjustTimer(30)">+30</button>
+    <button class="timer-btn timer-skip" onclick="skipTimer()">Weiter →</button>
   </div>
 </div>
 
@@ -939,6 +986,51 @@ function getToday() {
   return new Date().toISOString().split('T')[0];
 }
 
+// ── Pause Timer ──────────────────────────────────────────────────
+let timerInterval = null;
+let timerRemaining = 0;
+let timerTotal = 0;
+
+function startPauseTimer(seconds, hint) {
+  clearInterval(timerInterval);
+  timerRemaining = seconds;
+  timerTotal = seconds;
+  document.getElementById('timer-hint').textContent = hint || 'Erhole dich';
+  updateTimerDisplay();
+  document.getElementById('pause-timer').classList.add('visible');
+  timerInterval = setInterval(() => {
+    timerRemaining--;
+    updateTimerDisplay();
+    if (timerRemaining <= 0) {
+      clearInterval(timerInterval);
+      document.getElementById('pause-timer').classList.remove('visible');
+      if (navigator.vibrate) navigator.vibrate([150, 80, 150]);
+      showToast('💪 Nächster Satz!', 'success');
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const t = Math.max(0, timerRemaining);
+  const min = Math.floor(t / 60);
+  const sec = t % 60;
+  const el = document.getElementById('timer-display');
+  if (el) {
+    el.textContent = `${min}:${sec.toString().padStart(2,'0')}`;
+    el.classList.toggle('urgent', timerRemaining <= 10 && timerRemaining > 0);
+  }
+}
+
+function skipTimer() {
+  clearInterval(timerInterval);
+  document.getElementById('pause-timer').classList.remove('visible');
+}
+
+function adjustTimer(delta) {
+  timerRemaining = Math.max(5, timerRemaining + delta);
+  updateTimerDisplay();
+}
+
 // ── Init ─────────────────────────────────────────────────────────
 async function init() {
   const ctx = await requireProfile();
@@ -1105,14 +1197,18 @@ function renderWorkout() {
   // Attach set checkbox events
   el.querySelectorAll('.set-done-btn').forEach(btn => {
     btn.addEventListener('click', function() {
-      const setKey = this.dataset.key;
       const isNowDone = !this.classList.contains('done');
       this.classList.toggle('done', isNowDone);
       this.textContent = isNowDone ? '✓' : '○';
-      // Save to state
       if (!sessionSets[this.dataset.muster]) sessionSets[this.dataset.muster] = {};
       if (!sessionSets[this.dataset.muster][this.dataset.satz]) sessionSets[this.dataset.muster][this.dataset.satz] = {};
       sessionSets[this.dataset.muster][this.dataset.satz].done = isNowDone;
+      // Auto-start pause timer
+      if (isNowDone && activeSession) {
+        const meta = MUSTER_META[this.dataset.muster];
+        const isCompound = meta?.pause?.includes('Verbund');
+        startPauseTimer(isCompound ? 120 : 60, meta?.pause || 'Erhole dich');
+      }
     });
   });
 
@@ -1253,7 +1349,10 @@ async function startSession(tagId) {
     renderWorkout();
     showToast('Training gestartet! 💪', 'success');
   } catch(e) {
-    showToast('Fehler beim Starten', 'error');
+    const msg = e?.message?.includes('relation') || e?.message?.includes('does not exist')
+      ? 'Tabelle fehlt — Migration in Supabase ausführen!'
+      : (e?.message || 'Fehler beim Starten');
+    showToast(msg, 'error');
   }
 }
 
