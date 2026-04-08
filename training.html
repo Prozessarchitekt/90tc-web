@@ -1094,7 +1094,7 @@ async function init() {
 
 async function loadPRs() {
   try {
-    const { data } = await supabase
+    const { data } = await sb
       .from('personal_records')
       .select('uebung, gewicht_kg')
       .eq('user_id', userId);
@@ -1104,7 +1104,7 @@ async function loadPRs() {
 
 async function checkTodaySession() {
   try {
-    const { data } = await supabase
+    const { data } = await sb
       .from('training_sessions')
       .select('id, plan_name')
       .eq('user_id', userId)
@@ -1331,7 +1331,7 @@ async function startSession(tagId) {
   if (!tag) return;
 
   try {
-    const { data, error } = await supabase
+    const { data, error } = await sb
       .from('training_sessions')
       .insert({
         user_id: userId,
@@ -1393,12 +1393,12 @@ async function endSession() {
   try {
     // Save sets
     if (allSets.length > 0) {
-      await supabase.from('training_sets').insert(allSets);
+      await sb.from('training_sets').insert(allSets);
     }
 
     // Update PRs
     for (const pr of newPRs) {
-      await supabase.from('personal_records').upsert({
+      await sb.from('personal_records').upsert({
         user_id: userId,
         uebung: pr.uebung,
         gewicht_kg: pr.gewicht,
@@ -1426,13 +1426,13 @@ async function endSession() {
 
 async function awardTrainingXP() {
   try {
-    const { data: profile } = await supabase
+    const { data: profile } = await sb
       .from('profiles')
       .select('xp_gesamt')
       .eq('id', userId)
       .single();
     if (profile) {
-      await supabase.from('profiles')
+      await sb.from('profiles')
         .update({ xp_gesamt: (profile.xp_gesamt || 0) + 50 })
         .eq('id', userId);
     }
