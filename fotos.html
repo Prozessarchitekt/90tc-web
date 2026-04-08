@@ -284,23 +284,24 @@ async function uploadFoto(input, winkel) {
     return
   }
 
-  const { data: urlData } = sb.storage.from('photos').getPublicUrl(path)
-  const url = urlData.publicUrl + '?t=' + Date.now()
+  // Signed URL (1h gültig) — Bucket bleibt privat
+  const { data: signedData } = await sb.storage.from('photos').createSignedUrl(path, 3600)
+  const url = signedData?.signedUrl || ''
 
-  // upsert in photos table (uses woche_nr field — run migration first!)
+  // upsert in photos table — speichert nur den Pfad, nicht die URL
   const { error: dbErr } = await sb.from('photos').upsert({
     user_id: currentUser.id,
     datum: new Date().toISOString().split('T')[0],
     woche_nr: currentWoche,
     winkel: winkel,
     typ: 'woche',
-    url: url,
+    url: path,  // Pfad speichern, nicht die signierte URL
   }, { onConflict: 'user_id,woche_nr,winkel' })
 
   document.getElementById('upload-overlay').style.display = 'none'
 
   if (dbErr) {
-    // If onConflict fails (no unique index yet), try delete+insert
+    // Fallback: delete + insert
     await sb.from('photos')
       .delete()
       .eq('user_id', currentUser.id)
@@ -312,7 +313,7 @@ async function uploadFoto(input, winkel) {
       woche_nr: currentWoche,
       winkel: winkel,
       typ: 'woche',
-      url: url,
+      url: path,
     })
   }
 
@@ -414,11 +415,20 @@ async function init() {
     .eq('user_id', currentUser.id)
     .order('woche_nr')
 
-  if (photos) {
+  if (photos && photos.length > 0) {
+    // Alle Pfade auf einmal als Signed URLs auflösen
+    const paths = photos.map(p => p.url).filter(u => u && !u.startsWith('http'))
+    let signedMap = {}
+    if (paths.length > 0) {
+      const { data: signed } = await sb.storage.from('photos').createSignedUrls(paths, 3600)
+      if (signed) signed.forEach(s => { if (s.signedUrl) signedMap[s.path] = s.signedUrl })
+    }
     for (const p of photos) {
       if (!p.woche_nr) continue
       if (!photoMap[p.woche_nr]) photoMap[p.woche_nr] = {}
-      photoMap[p.woche_nr][p.winkel] = { id: p.id, url: p.url }
+      // Unterstützt alte (volle URL) und neue (Pfad) Einträge
+      const url = p.url?.startsWith('http') ? p.url : (signedMap[p.url] || '')
+      photoMap[p.woche_nr][p.winkel] = { id: p.id, url }
     }
   }
 
