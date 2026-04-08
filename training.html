@@ -760,6 +760,11 @@ function obGoStep(step) {
   const el = document.getElementById(stepId);
   if (el) el.classList.add('active');
   renderObProgress(step);
+  // Always refresh plan result when showing step 5
+  if (step === 5 && obState.planId) {
+    const p5 = PLAN_DB.find(p => p.id === obState.planId);
+    if (p5) showPlanResult(p5);
+  }
 }
 
 function obSelect(step, field, el) {
@@ -946,7 +951,8 @@ async function init() {
 
   // Plan check
   const savedPlanId = localStorage.getItem(LS_PLAN);
-  obState.gender = profile.geschlecht || 'maenner';
+  const rawGender = profile.geschlecht || 'maennlich';
+  obState.gender = (rawGender === 'weiblich' || rawGender === 'frauen') ? 'frauen' : 'maenner';
   if (savedPlanId) applyPlan(savedPlanId);
 
   document.getElementById('loading').style.display = 'none';
