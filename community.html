@@ -55,12 +55,23 @@
   </div>
 </div>
 
-<nav class="bottom-nav">
-  <a href="dashboard.html" class="nav-item"><span class="nav-icon">🏠</span>Home</a>
-  <a href="tagebuch.html" class="nav-item"><span class="nav-icon">📖</span>Tagebuch</a>
-  <a href="checkin.html" class="nav-fab">+</a>
-  <a href="community.html" class="nav-item active"><span class="nav-icon">🏆</span>Community</a>
-  <a href="profil.html" class="nav-item"><span class="nav-icon">👤</span>Profil</a>
+<nav class="bnav">
+  <a href="dashboard.html" class="bnav-item active">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    Start
+  </a>
+  <a href="training.html" class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="8" width="4" height="8" rx="1"/><rect x="18" y="8" width="4" height="8" rx="1"/><line x1="6" y1="12" x2="10" y2="12"/><line x1="14" y1="12" x2="18" y2="12"/><rect x="10" y="9" width="4" height="6" rx="1"/></svg>
+    Training
+  </a>
+  <a href="fortschritt.html" class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    Statistik
+  </a>
+  <a href="profil.html" class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Profil
+  </a>
 </nav>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
