@@ -125,9 +125,282 @@
 
     .info-hint { font-size:12px; color:var(--text2); margin-top:8px; line-height:1.5; }
     .rest-hint { font-size:11px; color:var(--text2); margin-top:6px; font-style:italic; }
+
+    /* ── Onboarding Overlay ── */
+    .ob-overlay {
+      position:fixed; inset:0; z-index:500;
+      background:var(--bg);
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:flex-start;
+      overflow-y:auto;
+      padding: max(24px,env(safe-area-inset-top)) 20px calc(40px + env(safe-area-inset-bottom));
+    }
+    .ob-overlay.hidden { display:none; }
+    .ob-progress { display:flex; gap:6px; width:100%; max-width:400px; margin-bottom:32px; }
+    .ob-step-dot { flex:1; height:3px; border-radius:2px; background:var(--border2); transition:background .3s; }
+    .ob-step-dot.done { background:var(--accent); }
+    .ob-step { display:none; width:100%; max-width:400px; }
+    .ob-step.active { display:block; }
+    .ob-icon { font-size:52px; text-align:center; display:block; margin-bottom:16px; }
+    .ob-h { font-size:24px; font-weight:900; margin-bottom:8px; line-height:1.2; }
+    .ob-sub { font-size:15px; color:var(--text2); margin-bottom:28px; line-height:1.6; }
+    .ob-options { display:flex; flex-direction:column; gap:12px; }
+    .ob-option {
+      background:rgba(255,255,255,.04); border:1.5px solid rgba(255,255,255,.09);
+      border-radius:16px; padding:18px 20px;
+      cursor:pointer; transition:all .2s; display:flex; align-items:center; gap:14px;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .ob-option:active { transform:scale(.98); }
+    .ob-option.selected { border-color:var(--accent); background:var(--accent-dim); }
+    .ob-option-icon { font-size:28px; flex-shrink:0; }
+    .ob-option-text { flex:1; }
+    .ob-option-title { font-size:16px; font-weight:800; }
+    .ob-option-sub { font-size:13px; color:var(--text2); margin-top:2px; }
+    .ob-check-grid { display:flex; flex-direction:column; gap:10px; }
+    .ob-check-item {
+      background:rgba(255,255,255,.04); border:1.5px solid rgba(255,255,255,.09);
+      border-radius:14px; padding:14px 18px;
+      cursor:pointer; display:flex; align-items:center; gap:14px;
+      transition:all .2s; -webkit-tap-highlight-color:transparent;
+    }
+    .ob-check-item.checked { border-color:var(--accent); background:var(--accent-dim); }
+    .ob-check-box {
+      width:22px; height:22px; border-radius:6px; border:2px solid rgba(255,255,255,.25);
+      display:flex; align-items:center; justify-content:center; flex-shrink:0;
+      transition:all .2s; font-size:13px; font-weight:900;
+    }
+    .ob-check-item.checked .ob-check-box { background:var(--accent); border-color:var(--accent); color:#000; }
+    .ob-nav { display:flex; gap:12px; margin-top:28px; }
+    .ob-btn-back { flex:1; background:rgba(255,255,255,.07); border:none; border-radius:50px; padding:16px; color:var(--text2); font-size:16px; font-weight:700; cursor:pointer; font-family:inherit; }
+    .ob-btn-next { flex:2; background:linear-gradient(135deg,var(--accent),#00a653); border:none; border-radius:50px; padding:16px; color:#000; font-size:16px; font-weight:800; cursor:pointer; font-family:inherit; }
+    .ob-btn-next:disabled { opacity:.4; cursor:not-allowed; }
+
+    /* Plan Result Card */
+    .plan-result {
+      background:rgba(0,209,102,.06); border:1.5px solid rgba(0,209,102,.25);
+      border-radius:20px; padding:20px; margin-bottom:20px;
+    }
+    .plan-result-name { font-size:20px; font-weight:900; margin-bottom:4px; }
+    .plan-result-sub { font-size:14px; color:var(--text2); margin-bottom:16px; }
+    .plan-pdf-btn {
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      background:var(--accent); color:#000; border:none; border-radius:14px;
+      padding:14px; font-size:15px; font-weight:800; width:100%;
+      text-decoration:none; margin-bottom:10px;
+    }
+
+    /* Plan Banner (in main view) */
+    .plan-banner {
+      background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
+      border-radius:14px; padding:12px 16px; margin-bottom:12px;
+      display:flex; align-items:center; gap:12px;
+    }
+    .plan-banner-info { flex:1; min-width:0; }
+    .plan-banner-name { font-size:13px; font-weight:800; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .plan-banner-sub { font-size:11px; color:var(--text2); margin-top:1px; }
+    .plan-banner-btns { display:flex; gap:6px; flex-shrink:0; }
+    .plan-banner-pdf { background:var(--accent-dim); border:1px solid var(--accent-border); color:var(--accent); border-radius:10px; padding:6px 10px; font-size:12px; font-weight:700; text-decoration:none; white-space:nowrap; }
+    .plan-banner-change { background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.1); color:var(--text2); border-radius:10px; padding:6px 10px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; font-family:inherit; border:none; }
+
+    /* Multiple options */
+    .plan-options-grid { display:flex; flex-direction:column; gap:10px; margin-bottom:20px; }
+    .plan-opt {
+      background:rgba(255,255,255,.04); border:1.5px solid rgba(255,255,255,.09);
+      border-radius:14px; padding:16px 18px; cursor:pointer; transition:all .2s;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .plan-opt.selected { border-color:var(--accent); background:var(--accent-dim); }
+    .plan-opt-title { font-size:15px; font-weight:800; }
+    .plan-opt-sub { font-size:12px; color:var(--text2); margin-top:3px; }
   </style>
 </head>
 <body>
+
+<!-- Training Onboarding Overlay -->
+<div class="ob-overlay hidden" id="ob-overlay">
+  <div class="ob-progress" id="ob-progress"></div>
+
+  <!-- Step 1: Trainingsort -->
+  <div class="ob-step active" id="ob-step-1">
+    <span class="ob-icon">🏟️</span>
+    <h2 class="ob-h">Wo trainierst du?</h2>
+    <p class="ob-sub">Damit finden wir den passenden Plan für dich.</p>
+    <div class="ob-options">
+      <div class="ob-option" data-val="gym" onclick="obSelect(1,'ort',this)">
+        <span class="ob-option-icon">🏋️</span>
+        <div class="ob-option-text">
+          <div class="ob-option-title">Fitnessstudio</div>
+          <div class="ob-option-sub">Maschinen, Langhanteln, freie Gewichte</div>
+        </div>
+      </div>
+      <div class="ob-option" data-val="homefit" onclick="obSelect(1,'ort',this)">
+        <span class="ob-option-icon">🏠</span>
+        <div class="ob-option-text">
+          <div class="ob-option-title">Zuhause / Homefit</div>
+          <div class="ob-option-sub">Kurzhanteln, Bänder, Körpergewicht</div>
+        </div>
+      </div>
+    </div>
+    <div class="ob-nav">
+      <button class="ob-btn-next" id="ob-next-1" onclick="obNext(1)" disabled>Weiter →</button>
+    </div>
+  </div>
+
+  <!-- Step 2a: Erfahrung (Gym) -->
+  <div class="ob-step" id="ob-step-2a">
+    <span class="ob-icon">💪</span>
+    <h2 class="ob-h">Deine Erfahrung</h2>
+    <p class="ob-sub">Wie lange trainierst du schon mit Gewichten?</p>
+    <div class="ob-options">
+      <div class="ob-option" data-val="einsteiger" onclick="obSelect(2,'level',this)">
+        <span class="ob-option-icon">🌱</span>
+        <div class="ob-option-text">
+          <div class="ob-option-title">Einsteiger</div>
+          <div class="ob-option-sub">0–1 Jahr Trainingserfahrung</div>
+        </div>
+      </div>
+      <div class="ob-option" data-val="fortgeschritten" onclick="obSelect(2,'level',this)">
+        <span class="ob-option-icon">🔥</span>
+        <div class="ob-option-text">
+          <div class="ob-option-title">Fortgeschritten</div>
+          <div class="ob-option-sub">1–3 Jahre, solide Technik</div>
+        </div>
+      </div>
+      <div class="ob-option" data-val="profi" onclick="obSelect(2,'level',this)">
+        <span class="ob-option-icon">🏆</span>
+        <div class="ob-option-text">
+          <div class="ob-option-title">Profi</div>
+          <div class="ob-option-sub">3+ Jahre, fortgeschrittene Techniken</div>
+        </div>
+      </div>
+    </div>
+    <div class="ob-nav">
+      <button class="ob-btn-back" onclick="obBack(2)">←</button>
+      <button class="ob-btn-next" id="ob-next-2a" onclick="obNext(2)" disabled>Weiter →</button>
+    </div>
+  </div>
+
+  <!-- Step 2b: Equipment (Homefit) -->
+  <div class="ob-step" id="ob-step-2b">
+    <span class="ob-icon">🛠️</span>
+    <h2 class="ob-h">Dein Equipment</h2>
+    <p class="ob-sub">Was hast du zuhause? Mehrfachauswahl möglich.</p>
+    <div class="ob-check-grid" id="equip-checks">
+      <div class="ob-check-item checked" data-val="kw" onclick="obToggleCheck(this)">
+        <div class="ob-check-box">✓</div>
+        <div class="ob-option-text">
+          <div class="ob-option-title">🤸 Körpergewicht</div>
+          <div class="ob-option-sub">Liegestütze, Kniebeugen, etc.</div>
+        </div>
+      </div>
+      <div class="ob-check-item" data-val="kh" onclick="obToggleCheck(this)">
+        <div class="ob-check-box"></div>
+        <div class="ob-option-text">
+          <div class="ob-option-title">🏋️ Kurzhanteln</div>
+          <div class="ob-option-sub">Verstellbar oder feste Sets</div>
+        </div>
+      </div>
+      <div class="ob-check-item" data-val="band" onclick="obToggleCheck(this)">
+        <div class="ob-check-box"></div>
+        <div class="ob-option-text">
+          <div class="ob-option-title">🔗 Widerstandsbänder</div>
+          <div class="ob-option-sub">Loop- oder Langhantelbänder</div>
+        </div>
+      </div>
+      <div class="ob-check-item" data-val="bank" onclick="obToggleCheck(this)">
+        <div class="ob-check-box"></div>
+        <div class="ob-option-text">
+          <div class="ob-option-title">🪑 Verstellbare Bank</div>
+          <div class="ob-option-sub">Für Bankdrücken, Bulgarian Squats, etc.</div>
+        </div>
+      </div>
+      <div class="ob-check-item" data-val="stange" onclick="obToggleCheck(this)">
+        <div class="ob-check-box"></div>
+        <div class="ob-option-text">
+          <div class="ob-option-title">🏗️ Klimmzugstange</div>
+          <div class="ob-option-sub">Türrahmen- oder Wandmontage</div>
+        </div>
+      </div>
+    </div>
+    <div class="ob-nav">
+      <button class="ob-btn-back" onclick="obBack(2)">←</button>
+      <button class="ob-btn-next" onclick="obNext(2)">Weiter →</button>
+    </div>
+  </div>
+
+  <!-- Step 3: Trainingstage -->
+  <div class="ob-step" id="ob-step-3">
+    <span class="ob-icon">📅</span>
+    <h2 class="ob-h">Trainingstage</h2>
+    <p class="ob-sub">Wie viele Tage pro Woche kannst du realistisch trainieren?</p>
+    <div class="ob-options" id="tage-options">
+      <div class="ob-option" data-val="2" onclick="obSelect(3,'tage',this)">
+        <span class="ob-option-icon">2️⃣</span>
+        <div class="ob-option-text">
+          <div class="ob-option-title">2 Tage / Woche</div>
+          <div class="ob-option-sub">Optimal für Einsteiger oder bei wenig Zeit</div>
+        </div>
+      </div>
+      <div class="ob-option" data-val="3" onclick="obSelect(3,'tage',this)">
+        <span class="ob-option-icon">3️⃣</span>
+        <div class="ob-option-text">
+          <div class="ob-option-title">3 Tage / Woche</div>
+          <div class="ob-option-sub">Solide Basis, gut für Anfang</div>
+        </div>
+      </div>
+      <div class="ob-option" data-val="4" onclick="obSelect(3,'tage',this)">
+        <span class="ob-option-icon">4️⃣</span>
+        <div class="ob-option-text">
+          <div class="ob-option-title">4 Tage / Woche</div>
+          <div class="ob-option-sub">Empfohlen — gutes Volumen + Erholung</div>
+        </div>
+      </div>
+      <div class="ob-option" data-val="5" onclick="obSelect(3,'tage',this)">
+        <span class="ob-option-icon">5️⃣</span>
+        <div class="ob-option-text">
+          <div class="ob-option-title">5 Tage / Woche</div>
+          <div class="ob-option-sub">Für Fortgeschrittene mit hoher Regeneration</div>
+        </div>
+      </div>
+    </div>
+    <div class="ob-nav">
+      <button class="ob-btn-back" onclick="obBack(3)">←</button>
+      <button class="ob-btn-next" id="ob-next-3" onclick="obNext(3)" disabled>Weiter →</button>
+    </div>
+  </div>
+
+  <!-- Step 4: Split-Auswahl (falls mehrere Optionen) -->
+  <div class="ob-step" id="ob-step-4">
+    <span class="ob-icon">⚡</span>
+    <h2 class="ob-h">Split-Variante</h2>
+    <p class="ob-sub">Für deine Kombination gibt es mehrere Optionen. Was passt besser zu dir?</p>
+    <div class="plan-options-grid" id="plan-options"></div>
+    <div class="ob-nav">
+      <button class="ob-btn-back" onclick="obBack(4)">←</button>
+      <button class="ob-btn-next" id="ob-next-4" onclick="obNext(4)" disabled>Weiter →</button>
+    </div>
+  </div>
+
+  <!-- Step 5: Plan Ergebnis -->
+  <div class="ob-step" id="ob-step-5">
+    <span class="ob-icon">🎯</span>
+    <h2 class="ob-h">Dein Plan ist bereit!</h2>
+    <p class="ob-sub">Basierend auf deinen Angaben empfehlen wir:</p>
+    <div class="plan-result" id="plan-result">
+      <div class="plan-result-name" id="plan-result-name">—</div>
+      <div class="plan-result-sub" id="plan-result-sub">—</div>
+      <a id="plan-pdf-btn" class="plan-pdf-btn" href="#" target="_blank" download>
+        📄 Plan als PDF herunterladen
+      </a>
+    </div>
+    <button class="ob-btn-next" style="width:100%" onclick="confirmPlan()">Plan starten 🚀</button>
+    <div class="ob-nav" style="margin-top:12px">
+      <button class="ob-btn-back" style="flex:1" onclick="obBack(5)">← Zurück</button>
+    </div>
+  </div>
+</div>
+
 <div id="app">
   <div class="splash" id="loading"><div class="spinner"></div></div>
 
@@ -137,10 +410,22 @@
       <!-- Header -->
       <div class="dash-header">
         <div>
-          <div style="font-size:12px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Homefit · 4 Tage · GK/OK/UK/GK</div>
+          <div style="font-size:12px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:0.5px" id="header-plan-label">Training</div>
           <div class="dash-name" style="font-size:22px">Trainingsplan 💪</div>
         </div>
         <div id="week-badge" style="background:var(--accent-dim);border:1.5px solid var(--accent-border);color:var(--accent);padding:6px 12px;border-radius:20px;font-size:13px;font-weight:800">W–</div>
+      </div>
+
+      <!-- Plan Banner -->
+      <div class="plan-banner" id="plan-banner" style="display:none">
+        <div class="plan-banner-info">
+          <div class="plan-banner-name" id="plan-banner-name">—</div>
+          <div class="plan-banner-sub" id="plan-banner-sub">—</div>
+        </div>
+        <div class="plan-banner-btns">
+          <a id="plan-banner-pdf" class="plan-banner-pdf" href="#" target="_blank" download style="display:none">PDF</a>
+          <button class="plan-banner-change" onclick="resetPlan()">Wechseln</button>
+        </div>
       </div>
 
       <!-- Wochenübersicht -->
@@ -206,8 +491,91 @@
 <script src="js/gamification.js"></script>
 <script>
 
-// ── Trainingsplan Daten ──────────────────────────────────────────
-const TAGE = [
+// ── Plan Datenbank ───────────────────────────────────────────────
+const PLAN_DB = [
+  // MÄNNER HOMEFIT
+  { id:'mh2',   gender:'maenner', ort:'homefit', tage:2, split:'GK-A/B',          name:'Homefit 2×/Woche · Ganzkörper A/B',     pdf:'plans/maenner-homefit-2T.pdf',                  tagKonfig:['gk_a','gk_b'] },
+  { id:'mh3g',  gender:'maenner', ort:'homefit', tage:3, split:'GK-A/B/C',        name:'Homefit 3×/Woche · Ganzkörper A/B/C',   pdf:'plans/maenner-homefit-3T-gk.pdf',               tagKonfig:['gk_a','gk_b','gk_c'] },
+  { id:'mh3o',  gender:'maenner', ort:'homefit', tage:3, split:'GK/OK/UK',        name:'Homefit 3×/Woche · GK + OK/UK',         pdf:'plans/maenner-homefit-3T-okuk.pdf',             tagKonfig:['gk_leicht','ok','uk'] },
+  { id:'mh4',   gender:'maenner', ort:'homefit', tage:4, split:'GK/OK/UK/GK',    name:'Homefit 4×/Woche · GK/OK/UK/GK',        pdf:'plans/maenner-homefit-4T.pdf',                  tagKonfig:['gk_a','ok','uk','gk_b'] },
+  { id:'mh5o',  gender:'maenner', ort:'homefit', tage:5, split:'OK/UK/OK/UK/GK', name:'Homefit 5×/Woche · OK/UK alternierend', pdf:'plans/maenner-homefit-5T-okuk.pdf',             tagKonfig:['ok_a','uk_a','ok_b','uk_b','gk_leicht'] },
+  { id:'mh5p',  gender:'maenner', ort:'homefit', tage:5, split:'Push/Pull/Beine', name:'Homefit 5×/Woche · Push/Pull/Beine',   pdf:'plans/maenner-homefit-5T-ppb.pdf',              tagKonfig:['push','pull','beine','push','pull'] },
+  // FRAUEN HOMEFIT
+  { id:'fh2',   gender:'frauen',  ort:'homefit', tage:2, split:'GK-A/B',          name:'Homefit 2×/Woche · Ganzkörper A/B',     pdf:'plans/frauen-homefit-2T.pdf',                   tagKonfig:['gk_a','gk_b'] },
+  { id:'fh3g',  gender:'frauen',  ort:'homefit', tage:3, split:'GK-A/B/C',        name:'Homefit 3×/Woche · Ganzkörper A/B/C',   pdf:'plans/frauen-homefit-3T-gk.pdf',                tagKonfig:['gk_a','gk_b','gk_c'] },
+  { id:'fh3o',  gender:'frauen',  ort:'homefit', tage:3, split:'GK/OK/UK',        name:'Homefit 3×/Woche · GK + OK/UK',         pdf:'plans/frauen-homefit-3T-okuk.pdf',              tagKonfig:['gk_leicht','ok','uk'] },
+  { id:'fh4g',  gender:'frauen',  ort:'homefit', tage:4, split:'GK/OK/UK/GK',    name:'Homefit 4×/Woche · GK/OK/UK/GK',        pdf:'plans/frauen-homefit-4T-gk.pdf',                tagKonfig:['gk_a','ok','uk','gk_b'] },
+  { id:'fh4o',  gender:'frauen',  ort:'homefit', tage:4, split:'OK/UK alternierend', name:'Homefit 4×/Woche · OK/UK/OK/UK',     pdf:'plans/frauen-homefit-4T-okuk.pdf',              tagKonfig:['ok_a','uk_a','ok_b','uk_b'] },
+  { id:'fh5p',  gender:'frauen',  ort:'homefit', tage:5, split:'Push/Pull/Beine', name:'Homefit 5×/Woche · Push/Pull/Beine',   pdf:'plans/frauen-homefit-5T-ppb.pdf',               tagKonfig:['push','pull','beine','push','pull'] },
+  { id:'fh5o',  gender:'frauen',  ort:'homefit', tage:5, split:'OK/UK alternierend', name:'Homefit 5×/Woche · OK/UK/OK/UK/GK', pdf:'plans/frauen-homefit-5T-okuk.pdf',              tagKonfig:['ok_a','uk_a','ok_b','uk_b','gk_leicht'] },
+  // MÄNNER GYM - Einsteiger
+  { id:'mge2',  gender:'maenner', ort:'gym', level:'einsteiger',    tage:2, split:'GK-A/B',    name:'Gym Einsteiger 2×/Woche · Ganzkörper',   pdf:'plans/maenner-gym-einsteiger-2T.pdf',           tagKonfig:['gk_a_gym','gk_b_gym'] },
+  { id:'mge3g', gender:'maenner', ort:'gym', level:'einsteiger',    tage:3, split:'GK-A/B/C',  name:'Gym Einsteiger 3×/Woche · Ganzkörper',   pdf:'plans/maenner-gym-einsteiger-3T-gk.pdf',        tagKonfig:['gk_a_gym','gk_b_gym','gk_c_gym'] },
+  { id:'mge3o', gender:'maenner', ort:'gym', level:'einsteiger',    tage:3, split:'GK/OK/UK',  name:'Gym Einsteiger 3×/Woche · GK+OK/UK',     pdf:'plans/maenner-gym-einsteiger-3T-okuk.pdf',      tagKonfig:['gk_leicht_gym','ok_gym','uk_gym'] },
+  { id:'mge4g', gender:'maenner', ort:'gym', level:'einsteiger',    tage:4, split:'GK+OK/UK',  name:'Gym Einsteiger 4×/Woche · GK/OK/UK/GK',  pdf:'plans/maenner-gym-einsteiger-4T-gk.pdf',        tagKonfig:['gk_a_gym','ok_gym','uk_gym','gk_b_gym'] },
+  { id:'mge4o', gender:'maenner', ort:'gym', level:'einsteiger',    tage:4, split:'OK/UK',     name:'Gym Einsteiger 4×/Woche · OK/UK alternierend', pdf:'plans/maenner-gym-einsteiger-4T-okuk.pdf', tagKonfig:['ok_gym','uk_gym','ok_gym','uk_gym'] },
+  // MÄNNER GYM - Fortgeschritten
+  { id:'mgf3',  gender:'maenner', ort:'gym', level:'fortgeschritten', tage:3, split:'GK-A/B/C', name:'Gym Fortgeschritten 3×/Woche · Ganzkörper', pdf:'plans/maenner-gym-fortgeschritten-3T-gk.pdf', tagKonfig:['gk_a_gym','gk_b_gym','gk_c_gym'] },
+  { id:'mgf4g', gender:'maenner', ort:'gym', level:'fortgeschritten', tage:4, split:'GK+OK/UK', name:'Gym Fortgeschritten 4×/Woche · GK/OK/UK/GK', pdf:'plans/maenner-gym-fortgeschritten-4T-gk.pdf', tagKonfig:['gk_a_gym','ok_gym','uk_gym','gk_b_gym'] },
+  { id:'mgf4o', gender:'maenner', ort:'gym', level:'fortgeschritten', tage:4, split:'OK/UK',    name:'Gym Fortgeschritten 4×/Woche · OK/UK',     pdf:'plans/maenner-gym-fortgeschritten-4T-okuk.pdf', tagKonfig:['ok_gym','uk_gym','ok_gym','uk_gym'] },
+  { id:'mgf5o', gender:'maenner', ort:'gym', level:'fortgeschritten', tage:5, split:'OK/UK/GK', name:'Gym Fortgeschritten 5×/Woche · OK/UK/GK',  pdf:'plans/maenner-gym-fortgeschritten-5T-okuk.pdf', tagKonfig:['ok_a_gym','uk_gym','ok_b_gym','uk_gym','gk_leicht_gym'] },
+  { id:'mgf5p', gender:'maenner', ort:'gym', level:'fortgeschritten', tage:5, split:'Push/Pull/Beine', name:'Gym Fortgeschritten 5×/Woche · Push/Pull/Beine', pdf:'plans/maenner-gym-fortgeschritten-5T-ppb.pdf', tagKonfig:['push_gym','pull_gym','beine_gym','push_gym','pull_gym'] },
+  // MÄNNER GYM - Profi
+  { id:'mgp3',  gender:'maenner', ort:'gym', level:'profi', tage:3, split:'GK-A/B/C', name:'Gym Profi 3×/Woche · Ganzkörper',     pdf:'plans/maenner-gym-profi-3T.pdf',                tagKonfig:['gk_a_gym','gk_b_gym','gk_c_gym'] },
+  { id:'mgp4o', gender:'maenner', ort:'gym', level:'profi', tage:4, split:'OK/UK',    name:'Gym Profi 4×/Woche · OK/UK',          pdf:'plans/maenner-gym-profi-4T-okuk.pdf',           tagKonfig:['ok_gym','uk_gym','ok_gym','uk_gym'] },
+  { id:'mgp4g', gender:'maenner', ort:'gym', level:'profi', tage:4, split:'GK+OK/UK', name:'Gym Profi 4×/Woche · GK/OK/UK/GK',   pdf:'plans/maenner-gym-profi-4T-gk.pdf',             tagKonfig:['gk_a_gym','ok_gym','uk_gym','gk_b_gym'] },
+  { id:'mgp5o', gender:'maenner', ort:'gym', level:'profi', tage:5, split:'OK/UK/GK', name:'Gym Profi 5×/Woche · OK/UK/GK',      pdf:'plans/maenner-gym-profi-5T-okuk.pdf',           tagKonfig:['ok_a_gym','uk_gym','ok_b_gym','uk_gym','gk_leicht_gym'] },
+  { id:'mgp5p', gender:'maenner', ort:'gym', level:'profi', tage:5, split:'Push/Pull/Beine', name:'Gym Profi 5×/Woche · Push/Pull/Beine', pdf:'plans/maenner-gym-profi-5T-ppb.pdf', tagKonfig:['push_gym','pull_gym','beine_gym','push_gym','pull_gym'] },
+  // FRAUEN GYM - Einsteiger
+  { id:'fge2',  gender:'frauen',  ort:'gym', level:'einsteiger', tage:2, split:'GK-A/B',   name:'Gym Einsteiger 2×/Woche · Ganzkörper',    pdf:'plans/frauen-gym-einsteiger-2T.pdf',            tagKonfig:['gk_a_gym','gk_b_gym'] },
+  { id:'fge3g', gender:'frauen',  ort:'gym', level:'einsteiger', tage:3, split:'GK-A/B/C', name:'Gym Einsteiger 3×/Woche · Ganzkörper',    pdf:'plans/frauen-gym-einsteiger-3T-gk.pdf',         tagKonfig:['gk_a_gym','gk_b_gym','gk_c_gym'] },
+  { id:'fge3o', gender:'frauen',  ort:'gym', level:'einsteiger', tage:3, split:'GK/OK/UK', name:'Gym Einsteiger 3×/Woche · GK+OK/UK',      pdf:'plans/frauen-gym-einsteiger-3T-okuk.pdf',       tagKonfig:['gk_leicht_gym','ok_gym','uk_gym'] },
+  { id:'fge4g', gender:'frauen',  ort:'gym', level:'einsteiger', tage:4, split:'GK+OK/UK', name:'Gym Einsteiger 4×/Woche · GK/OK/UK/GK',  pdf:'plans/frauen-gym-einsteiger-4T-gk.pdf',         tagKonfig:['gk_a_gym','ok_gym','uk_gym','gk_b_gym'] },
+  { id:'fge4o', gender:'frauen',  ort:'gym', level:'einsteiger', tage:4, split:'OK/UK',    name:'Gym Einsteiger 4×/Woche · OK/UK',         pdf:'plans/frauen-gym-einsteiger-4T-okuk.pdf',       tagKonfig:['ok_gym','uk_gym','ok_gym','uk_gym'] },
+  // FRAUEN GYM - Fortgeschritten
+  { id:'fgf3',  gender:'frauen',  ort:'gym', level:'fortgeschritten', tage:3, split:'GK-A/B/C', name:'Gym Fortgeschritten 3×/Woche · Ganzkörper', pdf:'plans/frauen-gym-fortgeschritten-3T-gk.pdf', tagKonfig:['gk_a_gym','gk_b_gym','gk_c_gym'] },
+  { id:'fgf4g', gender:'frauen',  ort:'gym', level:'fortgeschritten', tage:4, split:'GK+OK/UK', name:'Gym Fortgeschritten 4×/Woche · GK/OK/UK/GK', pdf:'plans/frauen-gym-fortgeschritten-4T-gk.pdf', tagKonfig:['gk_a_gym','ok_gym','uk_gym','gk_b_gym'] },
+  { id:'fgf4o', gender:'frauen',  ort:'gym', level:'fortgeschritten', tage:4, split:'OK/UK',    name:'Gym Fortgeschritten 4×/Woche · OK/UK',    pdf:'plans/frauen-gym-fortgeschritten-4T-okuk.pdf', tagKonfig:['ok_gym','uk_gym','ok_gym','uk_gym'] },
+  { id:'fgf5',  gender:'frauen',  ort:'gym', level:'fortgeschritten', tage:5, split:'UK/OK/UK/OK/UK', name:'Gym Fortgeschritten 5×/Woche · UK/OK alternierend', pdf:'plans/frauen-gym-fortgeschritten-5T.pdf', tagKonfig:['uk_gym','ok_gym','uk_gym','ok_gym','uk_gym'] },
+  // FRAUEN GYM - Profi
+  { id:'fgp3',  gender:'frauen',  ort:'gym', level:'profi', tage:3, split:'GK-A/B/C', name:'Gym Profi 3×/Woche · Ganzkörper',     pdf:'plans/frauen-gym-profi-3T.pdf',                 tagKonfig:['gk_a_gym','gk_b_gym','gk_c_gym'] },
+  { id:'fgp4g', gender:'frauen',  ort:'gym', level:'profi', tage:4, split:'GK+OK/UK', name:'Gym Profi 4×/Woche · GK/OK/UK/GK',   pdf:'plans/frauen-gym-profi-4T-gk.pdf',              tagKonfig:['gk_a_gym','ok_gym','uk_gym','gk_b_gym'] },
+  { id:'fgp4o', gender:'frauen',  ort:'gym', level:'profi', tage:4, split:'OK/UK',    name:'Gym Profi 4×/Woche · OK/UK',          pdf:'plans/frauen-gym-profi-4T-okuk.pdf',            tagKonfig:['ok_gym','uk_gym','ok_gym','uk_gym'] },
+  { id:'fgp5',  gender:'frauen',  ort:'gym', level:'profi', tage:5, split:'UK/OK alternierend', name:'Gym Profi 5×/Woche · UK/OK/UK/OK/UK', pdf:'plans/frauen-gym-profi-5T.pdf',        tagKonfig:['uk_gym','ok_gym','uk_gym','ok_gym','uk_gym'] },
+]
+
+// ── Tag-Konfigurationen (alle Split-Varianten) ───────────────────
+const ALLE_TAGE_KONFIGS = {
+  // HOMEFIT
+  'gk_a':       { label:'Tag 1', typ:'Ganzkörper A', kurz:'GK-A', icon:'🏋️', muster:['beine_quad','beine_hintere_kette','push_horizontal','pull_vertikal','push_vertikal','pull_horizontal'] },
+  'gk_b':       { label:'Tag 4', typ:'Ganzkörper B', kurz:'GK-B', icon:'🔥', muster:['push_horizontal','pull_vertikal','beine_quad','beine_hintere_kette','push_vertikal','pull_horizontal'] },
+  'gk_c':       { label:'Tag 3', typ:'Ganzkörper C', kurz:'GK-C', icon:'⚡', muster:['beine_quad','beine_glute','push_horizontal','pull_horizontal','schulter_seite','beine_hintere_kette'] },
+  'gk_leicht':  { label:'GK', typ:'Ganzkörper', kurz:'GK', icon:'🏋️', muster:['beine_quad','beine_hintere_kette','push_horizontal','pull_horizontal'] },
+  'ok':         { label:'OK', typ:'Oberkörper', kurz:'OK', icon:'💪', muster:['push_horizontal','pull_horizontal','push_vertikal','pull_vertikal','schulter_seite','brust_isoliert'] },
+  'uk':         { label:'UK', typ:'Unterkörper', kurz:'UK', icon:'🦵', muster:['beine_quad','beine_hintere_kette','beine_glute','beinbeuger','beinstrecker','waden'] },
+  'ok_a':       { label:'OK-A', typ:'Oberkörper A', kurz:'OK-A', icon:'💪', muster:['push_horizontal','pull_horizontal','push_vertikal','pull_vertikal'] },
+  'ok_b':       { label:'OK-B', typ:'Oberkörper B', kurz:'OK-B', icon:'💪', muster:['push_horizontal','pull_horizontal','schulter_seite','brust_isoliert','pull_vertikal'] },
+  'uk_a':       { label:'UK-A', typ:'Unterkörper A', kurz:'UK-A', icon:'🦵', muster:['beine_quad','beine_hintere_kette','beine_glute','beinbeuger','waden'] },
+  'uk_b':       { label:'UK-B', typ:'Unterkörper B', kurz:'UK-B', icon:'🦵', muster:['beine_quad','beine_hintere_kette','beine_glute','beinstrecker','waden'] },
+  'push':       { label:'Push', typ:'Push', kurz:'Push', icon:'⬆️', muster:['push_horizontal','push_vertikal','schulter_seite','brust_isoliert'] },
+  'pull':       { label:'Pull', typ:'Pull', kurz:'Pull', icon:'⬇️', muster:['pull_vertikal','pull_horizontal','pull_vertikal'] },
+  'beine':      { label:'Beine', typ:'Beine', kurz:'Beine', icon:'🦵', muster:['beine_quad','beine_hintere_kette','beine_glute','beinbeuger','beinstrecker','waden'] },
+  // GYM (selbe Struktur, aber mit _gym suffix für ID-Trennung, gleiche Muster)
+  'gk_a_gym':      { label:'Tag 1', typ:'Ganzkörper A', kurz:'GK-A', icon:'🏋️', muster:['beine_quad','beine_hintere_kette','push_horizontal','pull_vertikal','push_vertikal','pull_horizontal'] },
+  'gk_b_gym':      { label:'Tag 4', typ:'Ganzkörper B', kurz:'GK-B', icon:'🔥', muster:['push_horizontal','pull_vertikal','beine_quad','beine_hintere_kette','push_vertikal','pull_horizontal'] },
+  'gk_c_gym':      { label:'Tag 3', typ:'Ganzkörper C', kurz:'GK-C', icon:'⚡', muster:['beine_quad','beine_glute','push_horizontal','pull_horizontal','schulter_seite','beine_hintere_kette'] },
+  'gk_leicht_gym': { label:'GK', typ:'Ganzkörper', kurz:'GK', icon:'🏋️', muster:['beine_quad','beine_hintere_kette','push_horizontal','pull_horizontal'] },
+  'ok_gym':        { label:'OK', typ:'Oberkörper', kurz:'OK', icon:'💪', muster:['push_horizontal','pull_horizontal','push_vertikal','pull_vertikal','schulter_seite','brust_isoliert'] },
+  'uk_gym':        { label:'UK', typ:'Unterkörper', kurz:'UK', icon:'🦵', muster:['beine_quad','beine_hintere_kette','beine_glute','beinbeuger','beinstrecker','waden'] },
+  'ok_a_gym':      { label:'OK-A', typ:'Oberkörper A', kurz:'OK-A', icon:'💪', muster:['push_horizontal','pull_horizontal','push_vertikal','pull_vertikal'] },
+  'ok_b_gym':      { label:'OK-B', typ:'Oberkörper B', kurz:'OK-B', icon:'💪', muster:['push_horizontal','pull_horizontal','schulter_seite','brust_isoliert','pull_vertikal'] },
+  'push_gym':      { label:'Push', typ:'Push', kurz:'Push', icon:'⬆️', muster:['push_horizontal','push_vertikal','schulter_seite','brust_isoliert'] },
+  'pull_gym':      { label:'Pull', typ:'Pull', kurz:'Pull', icon:'⬇️', muster:['pull_vertikal','pull_horizontal','pull_vertikal'] },
+  'beine_gym':     { label:'Beine', typ:'Beine', kurz:'Beine', icon:'🦵', muster:['beine_quad','beine_hintere_kette','beine_glute','beinbeuger','beinstrecker','waden'] },
+}
+
+// ── Trainingsplan Daten (dynamisch befüllt) ──────────────────────
+let TAGE = [
   {
     id: 'gk_a', label: 'Tag 1', typ: 'Ganzkörper A', kurz: 'GK-A', icon: '🏋️',
     muster: ['beine_quad','beine_hintere_kette','push_horizontal','pull_vertikal','push_vertikal','pull_horizontal']
@@ -241,73 +609,104 @@ const MUSTER_META = {
   'brust_isoliert':      { name: 'Brust – Isoliert',        icon: '💪', pause: '1–2 Min. Pause (Isolation)' },
 };
 
-// Equipment-Icons: kw=Körpergewicht, kh=Kurzhantel, bank=Bank, band=Widerstandsband, booty=Booty-Band, matte=Matte, mb=Medizinball
+// Equipment-Icons: kw=Körpergewicht, kh=Kurzhantel, bank=Bank, band=Widerstandsband, booty=Booty-Band, matte=Matte, mb=Medizinball, lh=Langhantel, maschine=Maschine, kabel=Kabelzug
 const UEBUNGEN = {
   'push_horizontal': [
-    { name: 'KH-Bankdrücken flach',     equip: 'bank+kh', eicon: '🪑🏋️', info: 'Flache Bank, KH 3–24 kg' },
-    { name: 'KH-Bankdrücken Schrägbank',equip: 'bank+kh', eicon: '🪑🏋️', info: 'Bank ~30°, toller Bruststretch' },
-    { name: 'Liegestütze im Defizit',   equip: 'kh',      eicon: '🏋️',  info: 'Hände auf KH, tiefer Stretch' },
-    { name: 'Liegestütze',              equip: 'kw',      eicon: '🤸',   info: 'Körpergewicht, Standardvariante' },
-    { name: 'Liegestütze mit Band',     equip: 'band',    eicon: '🔗',   info: 'Band über den Rücken gespannt' },
+    { name: 'KH-Bankdrücken flach',        equip: 'bank+kh',  eicon: '🪑🏋️', info: 'Flache Bank, KH 3–24 kg' },
+    { name: 'KH-Bankdrücken Schrägbank',   equip: 'bank+kh',  eicon: '🪑🏋️', info: 'Bank ~30°, toller Bruststretch' },
+    { name: 'Liegestütze im Defizit',      equip: 'kh',       eicon: '🏋️',   info: 'Hände auf KH, tiefer Stretch' },
+    { name: 'Liegestütze',                 equip: 'kw',       eicon: '🤸',    info: 'Körpergewicht, Standardvariante' },
+    { name: 'Liegestütze mit Band',        equip: 'band',     eicon: '🔗',    info: 'Band über den Rücken gespannt' },
+    { name: 'LH-Bankdrücken flach',        equip: 'lh',       eicon: '🏋️',   info: 'Schulterbreiter Griff, volle ROM' },
+    { name: 'LH-Bankdrücken Schrägbank',   equip: 'lh',       eicon: '🏋️',   info: 'Ca. 30°, obere Brust betonen' },
+    { name: 'Maschine Brustdrücken',       equip: 'maschine', eicon: '⚙️',    info: 'Gleichmäßige Spannung, gelenksschonend' },
+    { name: 'Kabelzug Fliegende',          equip: 'kabel',    eicon: '🔄',    info: 'Kabel auf mittlere Höhe, weiter Bogen' },
   ],
   'pull_horizontal': [
-    { name: 'KH-Rudern einarmig',        equip: 'bank+kh', eicon: '🪑🏋️', info: 'Auf Bank abgestützt, volle ROM' },
-    { name: 'KH-Rudern vorgebeugt',      equip: 'kh',      eicon: '🏋️',  info: 'Oberkörper ~45°, beide Arme' },
-    { name: 'Rudern vorgebeugt mit Band',equip: 'band',    eicon: '🔗',   info: 'Band unter Füßen fixieren' },
+    { name: 'KH-Rudern einarmig',          equip: 'bank+kh',  eicon: '🪑🏋️', info: 'Auf Bank abgestützt, volle ROM' },
+    { name: 'KH-Rudern vorgebeugt',        equip: 'kh',       eicon: '🏋️',   info: 'Oberkörper ~45°, beide Arme' },
+    { name: 'Rudern vorgebeugt mit Band',  equip: 'band',     eicon: '🔗',    info: 'Band unter Füßen fixieren' },
+    { name: 'LH-Rudern vorgebeugt',        equip: 'lh',       eicon: '🏋️',   info: 'Rücken gerade, Knie leicht gebeugt' },
+    { name: 'Kabelrudern sitzend',         equip: 'kabel',    eicon: '🔄',    info: 'Enger oder breiter Griff, Sitz aufrecht' },
+    { name: 'Maschine Rudern',             equip: 'maschine', eicon: '⚙️',    info: 'Brust anlehnen, volle ROM' },
   ],
   'push_vertikal': [
-    { name: 'KH-Schulterdrücken sitzend', equip: 'bank+kh', eicon: '🪑🏋️', info: 'Bank aufrecht, Ellbogen 90°' },
-    { name: 'KH-Schulterdrücken stehend', equip: 'kh',      eicon: '🏋️',  info: 'Stehend, Core aktiv halten' },
-    { name: 'Schulterdrücken mit Band',   equip: 'band',    eicon: '🔗',   info: 'Band unter Füßen, sitzend' },
+    { name: 'KH-Schulterdrücken sitzend',  equip: 'bank+kh',  eicon: '🪑🏋️', info: 'Bank aufrecht, Ellbogen 90°' },
+    { name: 'KH-Schulterdrücken stehend',  equip: 'kh',       eicon: '🏋️',   info: 'Stehend, Core aktiv halten' },
+    { name: 'Schulterdrücken mit Band',    equip: 'band',     eicon: '🔗',    info: 'Band unter Füßen, sitzend' },
+    { name: 'LH-Schulterdrücken',          equip: 'lh',       eicon: '🏋️',   info: 'Stehend oder sitzend, Stange vor dem Kopf' },
+    { name: 'Maschine Schulterdrücken',    equip: 'maschine', eicon: '⚙️',    info: 'Geführte Bewegung, ideal für Einsteiger' },
+    { name: 'Kabelzug Schulterdrücken',    equip: 'kabel',    eicon: '🔄',    info: 'Kabel unten, einarmig für mehr Stabilität' },
   ],
   'pull_vertikal': [
-    { name: 'KH-Pullover auf Bank',        equip: 'bank+kh', eicon: '🪑🏋️', info: 'Quer auf Bank, 1 KH beidarmig' },
-    { name: 'Latzug mit Band',             equip: 'band',    eicon: '🔗',   info: 'Band oben fixiert (Türrahmen)' },
-    { name: 'Latzug einarmig mit Band',    equip: 'band',    eicon: '🔗',   info: 'Abwechselnd, mehr Fokus' },
+    { name: 'KH-Pullover auf Bank',        equip: 'bank+kh',  eicon: '🪑🏋️', info: 'Quer auf Bank, 1 KH beidarmig' },
+    { name: 'Latzug mit Band',             equip: 'band',     eicon: '🔗',    info: 'Band oben fixiert (Türrahmen)' },
+    { name: 'Latzug einarmig mit Band',    equip: 'band',     eicon: '🔗',    info: 'Abwechselnd, mehr Fokus' },
+    { name: 'Klimmzüge',                   equip: 'stange',   eicon: '🏗️',    info: 'Schulterbreiter Griff, Kinn über Stange' },
+    { name: 'Lat-Ziehen am Kabel',         equip: 'kabel',    eicon: '🔄',    info: 'Breiter oder enger Griff, Schulterblätter zusammen' },
+    { name: 'Maschine Lat-Ziehen',         equip: 'maschine', eicon: '⚙️',    info: 'Geführt, gute Muskelverbindung' },
   ],
   'schulter_seite': [
-    { name: 'KH-Seitheben',           equip: 'kh',   eicon: '🏋️', info: 'Leichte KH, sauber ausführen' },
-    { name: 'Seitheben mit Band',      equip: 'band', eicon: '🔗',  info: 'Band unter dem Fuß' },
-    { name: 'V-Raises mit Band',       equip: 'band', eicon: '🔗',  info: 'Y-Form, nach vorne-oben heben' },
+    { name: 'KH-Seitheben',               equip: 'kh',       eicon: '🏋️',   info: 'Leichte KH, sauber ausführen' },
+    { name: 'Seitheben mit Band',          equip: 'band',     eicon: '🔗',    info: 'Band unter dem Fuß' },
+    { name: 'V-Raises mit Band',           equip: 'band',     eicon: '🔗',    info: 'Y-Form, nach vorne-oben heben' },
+    { name: 'KH-Seitheben sitzend',        equip: 'kh',       eicon: '🏋️',   info: 'Sitzend für mehr Isolation' },
+    { name: 'Kabelzug Seitheben',          equip: 'kabel',    eicon: '🔄',    info: 'Kabel auf Bodenhöhe, konstante Spannung' },
   ],
   'brust_isoliert': [
-    { name: 'KH-Fliegende flach',      equip: 'bank+kh', eicon: '🪑🏋️', info: 'Flache Bank, weiter Bogen' },
-    { name: 'KH-Fliegende Schrägbank', equip: 'bank+kh', eicon: '🪑🏋️', info: 'Bank 30°, obere Brust' },
-    { name: 'Fliegende mit Band',      equip: 'band',    eicon: '🔗',   info: 'Band beidseitig fixiert (Türrahmen)' },
+    { name: 'KH-Fliegende flach',          equip: 'bank+kh',  eicon: '🪑🏋️', info: 'Flache Bank, weiter Bogen' },
+    { name: 'KH-Fliegende Schrägbank',     equip: 'bank+kh',  eicon: '🪑🏋️', info: 'Bank 30°, obere Brust' },
+    { name: 'Fliegende mit Band',          equip: 'band',     eicon: '🔗',    info: 'Band beidseitig fixiert (Türrahmen)' },
+    { name: 'Kabelzug Fliegende',          equip: 'kabel',    eicon: '🔄',    info: 'Kabel auf Brusthöhe, weiter Bogen' },
+    { name: 'Maschine Pec Deck',           equip: 'maschine', eicon: '⚙️',    info: 'Pec Deck, kontrolliert zusammenführen' },
   ],
   'beine_quad': [
-    { name: 'Goblet Squat mit KH',            equip: 'kh',      eicon: '🏋️',  info: 'KH vor der Brust, tief gehen' },
-    { name: 'Bulgarian Split Squat mit KH',   equip: 'bank+kh', eicon: '🪑🏋️', info: 'Hinterer Fuß auf Bank, KH halten' },
-    { name: 'Ausfallschritte mit KH',         equip: 'kh',      eicon: '🏋️',  info: 'KH in jeder Hand, alternierend' },
-    { name: 'Ausfallschritte mit Band',       equip: 'band',    eicon: '🔗',   info: 'Band über Schultern gespannt' },
+    { name: 'Goblet Squat mit KH',         equip: 'kh',       eicon: '🏋️',   info: 'KH vor der Brust, tief gehen' },
+    { name: 'Bulgarian Split Squat mit KH',equip: 'bank+kh',  eicon: '🪑🏋️', info: 'Hinterer Fuß auf Bank, KH halten' },
+    { name: 'Ausfallschritte mit KH',      equip: 'kh',       eicon: '🏋️',   info: 'KH in jeder Hand, alternierend' },
+    { name: 'Ausfallschritte mit Band',    equip: 'band',     eicon: '🔗',    info: 'Band über Schultern gespannt' },
+    { name: 'Kniebeugen (LH)',             equip: 'lh',       eicon: '🏋️',   info: 'Klassische Kniebeuge, Stange auf Schultern' },
+    { name: 'Beinpresse',                  equip: 'maschine', eicon: '⚙️',    info: 'Füße schulterbreit, tief in die Maschine' },
+    { name: 'Hack Squat / Hackenschmidt',  equip: 'maschine', eicon: '⚙️',    info: 'Kniebetont, hohe Quaddominanz' },
+    { name: 'Bulgarian Split Squat (LH)',  equip: 'lh',       eicon: '🏋️',   info: 'LH auf Schultern, hinten auf Bank' },
   ],
   'beine_hintere_kette': [
-    { name: 'Rumänisches KH-Kreuzheben',         equip: 'kh',   eicon: '🏋️', info: 'Knie leicht gebeugt, KH nah am Körper' },
-    { name: 'Einbeiniges rum. KH-Kreuzheben',    equip: 'kh',   eicon: '🏋️', info: 'Balance + Kraft, 1 KH' },
-    { name: 'Rum. Kreuzheben mit Band',           equip: 'band', eicon: '🔗',  info: 'Band unter Füßen, Spannung oben halten' },
-    { name: 'Good Mornings mit Band',             equip: 'band', eicon: '🔗',  info: 'Band über Schultern, vorgebeugt' },
+    { name: 'Rumänisches KH-Kreuzheben',      equip: 'kh',       eicon: '🏋️',  info: 'Knie leicht gebeugt, KH nah am Körper' },
+    { name: 'Einbeiniges rum. KH-Kreuzheben', equip: 'kh',       eicon: '🏋️',  info: 'Balance + Kraft, 1 KH' },
+    { name: 'Rum. Kreuzheben mit Band',        equip: 'band',     eicon: '🔗',   info: 'Band unter Füßen, Spannung oben halten' },
+    { name: 'Good Mornings mit Band',          equip: 'band',     eicon: '🔗',   info: 'Band über Schultern, vorgebeugt' },
+    { name: 'Kreuzheben (LH)',                 equip: 'lh',       eicon: '🏋️',  info: 'Hip-Hinge, Rücken gerade, hüftbreit' },
+    { name: 'Rum. Kreuzheben (LH)',            equip: 'lh',       eicon: '🏋️',  info: 'Knie leicht gebeugt, Stange nah am Körper' },
+    { name: 'Maschine Beinbeuger liegend',     equip: 'maschine', eicon: '⚙️',   info: 'Liegend, kurze ROM oben am effektivsten' },
   ],
   'beine_glute': [
-    { name: 'Hip Thrust auf Bank mit KH',    equip: 'bank+kh', eicon: '🪑🏋️', info: 'Schultern auf Bank, KH auf Hüfte' },
-    { name: 'Hip Thrust mit Booty-Band',     equip: 'booty',   eicon: '💜',   info: 'Band über Knie, höhere Reps' },
-    { name: 'Einbeinige Hip Thrust auf Bank',equip: 'bank',    eicon: '🪑',   info: 'Intensiver, einbeinig' },
-    { name: 'Po Brücke mit Booty-Band',      equip: 'booty',   eicon: '💜',   info: 'Liegend auf Matte, Band über Knie' },
-    { name: 'Bulgarian Split Squat tief',    equip: 'bank+kh', eicon: '🪑🏋️', info: 'Tiefer als normal, maximaler Stretch' },
+    { name: 'Hip Thrust auf Bank mit KH',      equip: 'bank+kh',  eicon: '🪑🏋️', info: 'Schultern auf Bank, KH auf Hüfte' },
+    { name: 'Hip Thrust mit Booty-Band',        equip: 'booty',    eicon: '💜',   info: 'Band über Knie, höhere Reps' },
+    { name: 'Einbeinige Hip Thrust auf Bank',   equip: 'bank',     eicon: '🪑',   info: 'Intensiver, einbeinig' },
+    { name: 'Po Brücke mit Booty-Band',         equip: 'booty',    eicon: '💜',   info: 'Liegend auf Matte, Band über Knie' },
+    { name: 'Bulgarian Split Squat tief',       equip: 'bank+kh',  eicon: '🪑🏋️', info: 'Tiefer als normal, maximaler Stretch' },
+    { name: 'Hip Thrust (LH)',                  equip: 'lh',       eicon: '🏋️',  info: 'Stange auf Hüfte gepolstert, Bank' },
+    { name: 'Glute Kickback Maschine',          equip: 'maschine', eicon: '⚙️',   info: 'Kabelzug oder Maschine, kontrolliert' },
   ],
   'beinbeuger': [
-    { name: 'Nordic Curl',            equip: 'matte', eicon: '🧘', info: 'Füße fixieren, langsam ablassen (negativ)' },
-    { name: 'Beinbeuger mit Band',    equip: 'band',  eicon: '🔗',  info: 'Liegend auf Matte, Band am Knöchel' },
-    { name: 'Medizinball Leg Curl',   equip: 'mb',    eicon: '⚽',  info: '6kg Ball zwischen Knöcheln klemmen, liegend' },
+    { name: 'Nordic Curl',                 equip: 'matte',    eicon: '🧘',   info: 'Füße fixieren, langsam ablassen (negativ)' },
+    { name: 'Beinbeuger mit Band',         equip: 'band',     eicon: '🔗',   info: 'Liegend auf Matte, Band am Knöchel' },
+    { name: 'Medizinball Leg Curl',        equip: 'mb',       eicon: '⚽',   info: '6kg Ball zwischen Knöcheln klemmen, liegend' },
+    { name: 'Maschine Beinbeuger liegend', equip: 'maschine', eicon: '⚙️',   info: 'Liegend, langsam und kontrolliert' },
+    { name: 'Maschine Beinbeuger sitzend', equip: 'maschine', eicon: '⚙️',   info: 'Sitzend, gute Muskelverbindung' },
   ],
   'beinstrecker': [
-    { name: 'Beinstrecker mit Band',         equip: 'band', eicon: '🔗', info: 'Sitzend, Band am Knöchel fixiert' },
-    { name: 'Reverse Nordic Curl mit Band',  equip: 'band', eicon: '🔗', info: 'Knie auf Matte, Band als Hilfe zurücklehnen' },
-    { name: 'Einbeinige Kniebeuge (Negativ)',equip: 'kw',   eicon: '🤸', info: 'Körpergewicht, langsam runter' },
+    { name: 'Beinstrecker mit Band',          equip: 'band',     eicon: '🔗',  info: 'Sitzend, Band am Knöchel fixiert' },
+    { name: 'Reverse Nordic Curl mit Band',   equip: 'band',     eicon: '🔗',  info: 'Knie auf Matte, Band als Hilfe zurücklehnen' },
+    { name: 'Einbeinige Kniebeuge (Negativ)', equip: 'kw',       eicon: '🤸',  info: 'Körpergewicht, langsam runter' },
+    { name: 'Maschine Beinstrecker',          equip: 'maschine', eicon: '⚙️',  info: 'Sitzend, oben kurz halten für bessere Kontraktion' },
   ],
   'waden': [
-    { name: 'KH-Wadenheben einbeinig',    equip: 'kh',   eicon: '🏋️', info: 'KH in einer Hand, auf Zehenspitzen' },
-    { name: 'Wadenheben mit Band stehend',equip: 'band',  eicon: '🔗',  info: 'Band unter Füßen, Spannung konstant' },
-    { name: 'Wadenheben auf Stufe',       equip: 'kw',   eicon: '🤸',  info: 'Stufe für mehr ROM, langsam und kontrolliert' },
+    { name: 'KH-Wadenheben einbeinig',     equip: 'kh',       eicon: '🏋️',  info: 'KH in einer Hand, auf Zehenspitzen' },
+    { name: 'Wadenheben mit Band stehend', equip: 'band',     eicon: '🔗',   info: 'Band unter Füßen, Spannung konstant' },
+    { name: 'Wadenheben auf Stufe',        equip: 'kw',       eicon: '🤸',   info: 'Stufe für mehr ROM, langsam und kontrolliert' },
+    { name: 'Wadenpresse an Beinpresse',   equip: 'maschine', eicon: '⚙️',   info: 'Füße auf unterem Rand der Plattform' },
+    { name: 'Maschine Wadenheben',         equip: 'maschine', eicon: '⚙️',   info: 'Sitzend oder stehend, volle ROM' },
   ],
 };
 
@@ -321,7 +720,203 @@ let userId = null;
 
 // LocalStorage keys
 const LS_SELECTIONS = 'tc_exercise_sel';  // { muster_id: uebungName }
+const LS_PLAN = 'tc_training_plan';
 let exerciseSelections = {};
+let currentPlanOrt = 'homefit';
+
+function getUebungenForPlan(musterId) {
+  const all = UEBUNGEN[musterId] || [];
+  if (currentPlanOrt === 'gym') return all;
+  const gymOnly = ['lh', 'maschine', 'kabel', 'smith'];
+  return all.filter(u => !gymOnly.some(g => u.equip.includes(g)));
+}
+
+// ── Onboarding ───────────────────────────────────────────────────
+let obState = { gender: null, ort: null, level: null, equipment: ['kw'], tage: null, planId: null };
+
+function showOnboarding() {
+  // Reset equipment checks to default (kw only checked)
+  document.querySelectorAll('#equip-checks .ob-check-item').forEach(el => {
+    const isKw = el.dataset.val === 'kw';
+    el.classList.toggle('checked', isKw);
+    const box = el.querySelector('.ob-check-box');
+    if (box) box.textContent = isKw ? '✓' : '';
+  });
+  document.getElementById('ob-overlay').classList.remove('hidden');
+  obGoStep(1);
+}
+
+function hideOnboarding() {
+  document.getElementById('ob-overlay').classList.add('hidden');
+}
+
+function renderObProgress(activeStep) {
+  const prog = document.getElementById('ob-progress');
+  prog.innerHTML = '';
+  for (let i = 1; i <= 5; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'ob-step-dot' + (i <= activeStep ? ' done' : '');
+    prog.appendChild(dot);
+  }
+}
+
+function obGoStep(step) {
+  document.querySelectorAll('.ob-step').forEach(s => s.classList.remove('active'));
+  let stepId;
+  if (step === 2) {
+    stepId = obState.ort === 'gym' ? 'ob-step-2a' : 'ob-step-2b';
+  } else {
+    stepId = `ob-step-${step}`;
+  }
+  const el = document.getElementById(stepId);
+  if (el) el.classList.add('active');
+  renderObProgress(step);
+}
+
+function obSelect(step, field, el) {
+  const parent = el.closest('.ob-options');
+  if (parent) parent.querySelectorAll('.ob-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  obState[field] = el.dataset.val;
+  // Enable next buttons for this step (handles 2a/2b)
+  [`ob-next-${step}`, `ob-next-${step}a`, `ob-next-${step}b`].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) btn.disabled = false;
+  });
+}
+
+function obNext(step) {
+  if (step === 1) {
+    obGoStep(2);
+  } else if (step === 2) {
+    if (obState.ort === 'homefit') {
+      obState.equipment = [...document.querySelectorAll('#equip-checks .ob-check-item.checked')].map(c => c.dataset.val);
+      if (!obState.equipment.includes('kw')) obState.equipment.push('kw');
+    }
+    obGoStep(3);
+  } else if (step === 3) {
+    const matches = findMatchingPlans();
+    if (matches.length > 1) {
+      renderPlanOptions(matches);
+      obGoStep(4);
+    } else {
+      const plan = matches[0] || findClosestPlan();
+      if (plan) { obState.planId = plan.id; showPlanResult(plan); }
+      obGoStep(5);
+    }
+  } else if (step === 4) {
+    const plan = PLAN_DB.find(p => p.id === obState.planId);
+    if (plan) showPlanResult(plan);
+    obGoStep(5);
+  }
+}
+
+function obBack(step) {
+  if (step <= 2) { obGoStep(1); }
+  else if (step === 3) { obGoStep(2); }
+  else if (step === 4) { obGoStep(3); }
+  else if (step === 5) {
+    const matches = findMatchingPlans();
+    obGoStep(matches.length > 1 ? 4 : 3);
+  }
+}
+
+function obToggleCheck(el) {
+  el.classList.toggle('checked');
+  const box = el.querySelector('.ob-check-box');
+  if (box) box.textContent = el.classList.contains('checked') ? '✓' : '';
+}
+
+function findMatchingPlans() {
+  const gender = obState.gender || 'maenner';
+  const tage = parseInt(obState.tage);
+  return PLAN_DB.filter(p => {
+    if (p.gender !== gender) return false;
+    if (p.ort !== obState.ort) return false;
+    if (p.tage !== tage) return false;
+    if (obState.ort === 'gym' && p.level !== obState.level) return false;
+    return true;
+  });
+}
+
+function findClosestPlan() {
+  const gender = obState.gender || 'maenner';
+  const tage = parseInt(obState.tage) || 3;
+  let plans = PLAN_DB.filter(p => p.gender === gender && p.ort === obState.ort);
+  if (!plans.length) plans = PLAN_DB.filter(p => p.gender === gender);
+  plans.sort((a, b) => Math.abs(a.tage - tage) - Math.abs(b.tage - tage));
+  return plans[0] || null;
+}
+
+function renderPlanOptions(plans) {
+  document.getElementById('plan-options').innerHTML = plans.map(p =>
+    `<div class="plan-opt" data-id="${p.id}" onclick="obSelectPlan(this)">
+      <div class="plan-opt-title">${p.name}</div>
+      <div class="plan-opt-sub">${p.split}</div>
+    </div>`
+  ).join('');
+  document.getElementById('ob-next-4').disabled = true;
+  obState.planId = null;
+}
+
+function obSelectPlan(el) {
+  document.querySelectorAll('.plan-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  obState.planId = el.dataset.id;
+  document.getElementById('ob-next-4').disabled = false;
+}
+
+function showPlanResult(plan) {
+  document.getElementById('plan-result-name').textContent = plan.name;
+  document.getElementById('plan-result-sub').textContent =
+    `${plan.tage}×/Woche · ${plan.split} · ${plan.ort === 'gym' ? 'Fitnessstudio' : 'Homefit'}`;
+  document.getElementById('plan-pdf-btn').href = plan.pdf;
+}
+
+function confirmPlan() {
+  if (!obState.planId) return;
+  localStorage.setItem(LS_PLAN, obState.planId);
+  applyPlan(obState.planId);
+  hideOnboarding();
+  renderPlanBanner(obState.planId);
+  selectedDay = 0;
+  renderDayTabs();
+  renderWorkout();
+  showToast('Trainingsplan gespeichert! 💪', 'success');
+}
+
+function resetPlan() {
+  if (!confirm('Plan wirklich wechseln? Deine Übungsauswahl wird zurückgesetzt.')) return;
+  localStorage.removeItem(LS_PLAN);
+  localStorage.removeItem(LS_SELECTIONS);
+  exerciseSelections = {};
+  obState = { gender: obState.gender, ort: null, level: null, equipment: ['kw'], tage: null, planId: null };
+  document.getElementById('plan-banner').style.display = 'none';
+  showOnboarding();
+}
+
+function applyPlan(planId) {
+  const plan = PLAN_DB.find(p => p.id === planId);
+  if (!plan) return;
+  currentPlanOrt = plan.ort;
+  TAGE = plan.tagKonfig.map((konfigId, i) => {
+    const k = ALLE_TAGE_KONFIGS[konfigId];
+    if (!k) return null;
+    return { id: konfigId, label: `Tag ${i + 1}`, typ: k.typ, kurz: k.kurz, icon: k.icon, muster: k.muster };
+  }).filter(Boolean);
+}
+
+function renderPlanBanner(planId) {
+  const plan = PLAN_DB.find(p => p.id === planId);
+  if (!plan) return;
+  document.getElementById('plan-banner-name').textContent = plan.name;
+  document.getElementById('plan-banner-sub').textContent =
+    `${plan.tage}×/Woche · ${plan.ort === 'gym' ? 'Studio' : 'Homefit'}`;
+  const pdfEl = document.getElementById('plan-banner-pdf');
+  pdfEl.href = plan.pdf;
+  pdfEl.style.display = '';
+  document.getElementById('plan-banner').style.display = 'flex';
+}
 
 // ── Helpers ──────────────────────────────────────────────────────
 function calcWeek(startdatum) {
@@ -364,6 +959,11 @@ async function init() {
   exerciseSelections = JSON.parse(localStorage.getItem(LS_SELECTIONS) || '{}');
   currentWeek = calcWeek(profile.startdatum);
 
+  // Plan check
+  const savedPlanId = localStorage.getItem(LS_PLAN);
+  obState.gender = profile.geschlecht || 'maenner';
+  if (savedPlanId) applyPlan(savedPlanId);
+
   document.getElementById('loading').style.display = 'none';
   document.getElementById('main').style.display = 'block';
 
@@ -394,13 +994,17 @@ async function init() {
   // Check active session today
   await checkTodaySession();
 
-  // Render day tabs
-  renderDayTabs();
+  // Show plan banner or launch onboarding
+  if (savedPlanId) {
+    renderPlanBanner(savedPlanId);
+  } else {
+    showOnboarding();
+  }
 
-  // Auto-select today's training day (Montag=GK-A, Di=OK, Mi=UK, Do=GK-B, Fr=GK-A, etc.)
+  // Auto-select today's training day
   const dow = new Date().getDay(); // 0=Sun, 1=Mon...
   const dayMap = { 1:0, 2:1, 3:2, 4:3, 5:0, 6:1, 0:2 };
-  selectedDay = dayMap[dow] ?? 0;
+  selectedDay = Math.min(dayMap[dow] ?? 0, TAGE.length - 1);
   renderDayTabs();
   renderWorkout();
 }
@@ -493,7 +1097,7 @@ function renderWorkout() {
   tag.muster.forEach((musterId, movIdx) => {
     const sets = getSätze(currentWeek, movIdx);
     const meta = MUSTER_META[musterId];
-    const uebungen = UEBUNGEN[musterId] || [];
+    const uebungen = getUebungenForPlan(musterId);
     const selectedUebung = exerciseSelections[musterId] || null;
     const isTraining = isThisDayActive && !isDone;
 
