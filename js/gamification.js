@@ -105,24 +105,21 @@ function calculateMacros(gewicht, geschlecht, stunden, ziel, anpassung = 300) {
 
 // ── Score berechnen (7 Erfolgsfaktoren) ─────────────
 function berechneScore(entry, profile) {
-  let s = 0
-  // 1. Kalorien ±10%
-  if (entry.kalorien_ist && profile.kalorien_ziel) {
-    if (Math.abs(entry.kalorien_ist - profile.kalorien_ziel) <= profile.kalorien_ziel * 0.10) s++
-  }
-  // 2. Protein ≥ Ziel
-  if (entry.protein_ist_g && profile.protein_ziel_g && entry.protein_ist_g >= profile.protein_ziel_g) s++
-  // 3. Schlaf 7–8.5h
-  if (entry.schlaf_ist_h && entry.schlaf_ist_h >= 7) s++
-  // 4. Wasser ≥ Ziel
-  if (entry.wasser_ist_l && profile.wasser_ziel_l && entry.wasser_ist_l >= profile.wasser_ziel_l) s++
-  // 5. Training
-  if (entry.training_gemacht) s++
-  // 6. Progression
-  if (entry.progression) s++
-  // 7. Schritte
-  if (entry.schritte_ist && profile.schritte_ziel && entry.schritte_ist >= profile.schritte_ziel) s++
-  return Math.min(7, s)
+  return berechneScoreDetail(entry, profile).score
+}
+
+function berechneScoreDetail(entry, profile) {
+  const faktoren = [
+    !!(entry.kalorien_ist && profile.kalorien_ziel && Math.abs(entry.kalorien_ist - profile.kalorien_ziel) <= profile.kalorien_ziel * 0.10),
+    !!(entry.protein_ist_g && profile.protein_ziel_g && entry.protein_ist_g >= profile.protein_ziel_g),
+    !!(entry.schlaf_ist_h && entry.schlaf_ist_h >= 7),
+    !!(entry.wasser_ist_l && profile.wasser_ziel_l && entry.wasser_ist_l >= profile.wasser_ziel_l),
+    !!(entry.training_gemacht),
+    !!(entry.progression),
+    !!(entry.schritte_ist && profile.schritte_ziel && entry.schritte_ist >= profile.schritte_ziel),
+  ]
+  const score = Math.min(7, faktoren.filter(Boolean).length)
+  return { score, faktoren }
 }
 
 // ── Streak Update ─────────────────────────────────────

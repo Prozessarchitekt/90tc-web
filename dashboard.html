@@ -167,10 +167,20 @@
   <div id="main" style="display:none">
     <div class="dash-page">
 
+      <!-- Boss-Woche Banner -->
+      <div class="boss-banner" id="boss-banner" style="display:none;margin:16px 16px 0">
+        <span class="boss-icon">💀</span>
+        <div class="boss-info">
+          <div class="boss-title" id="boss-title">BOSS-WOCHE</div>
+          <div class="boss-sub" id="boss-sub">Zeig was du drauf hast — das ist deine Woche!</div>
+        </div>
+      </div>
+
       <!-- Hero -->
       <div class="dash-hero">
         <span class="dash-flame">🔥</span>
-        <div class="dash-title">90 Tage Challenge</div>
+        <div class="dash-title" id="dash-greeting">90 Tage Challenge</div>
+        <div class="motto-display" id="dash-motto" style="display:none"></div>
 
         <!-- Double Ring -->
         <div class="ring-wrap">
@@ -246,6 +256,13 @@
         </a>
       </div>
 
+      <!-- Tages-Quote -->
+      <div class="quote-card card" id="quote-card" style="margin:0 16px 14px;display:none">
+        <div class="quote-icon">💬</div>
+        <div class="quote-text" id="quote-text"></div>
+        <div class="quote-author" id="quote-author"></div>
+      </div>
+
       <!-- Weekly reminder -->
       <a href="maße.html" class="weekly-rem" id="weekly-rem" style="display:none">
         <span style="font-size:26px">📏</span>
@@ -295,11 +312,54 @@ async function init() {
   if (!ctx) return
   const { user, profile } = ctx
 
+  // Apply theme
+  if (profile.theme && profile.theme !== 'orange') {
+    document.documentElement.setAttribute('data-theme', profile.theme)
+  }
+
   document.getElementById('loading').style.display = 'none'
   document.getElementById('main').style.display = 'block'
 
   const dayNr   = calcDayNr(profile.startdatum)
   const pct     = Math.min(Math.round((dayNr / 90) * 100), 100)
+
+  // Motto
+  if (profile.motto) {
+    const el = document.getElementById('dash-motto')
+    el.textContent = '„' + profile.motto + '"'
+    el.style.display = 'block'
+  }
+
+  // Personalisiertes Zitat nach Tag-Phase
+  const quotes = typeof QUOTES !== 'undefined' ? QUOTES : []
+  if (quotes.length) {
+    let pool
+    if (dayNr <= 30) pool = quotes.filter(q => q.phase === 'start' || !q.phase)
+    else if (dayNr <= 60) pool = quotes.filter(q => q.phase === 'mitte' || !q.phase)
+    else pool = quotes.filter(q => q.phase === 'ziel' || !q.phase)
+    if (!pool.length) pool = quotes
+    const q = pool[dayNr % pool.length]
+    if (q) {
+      document.getElementById('quote-text').textContent = q.text || q.quote || q
+      document.getElementById('quote-author').textContent = q.author || ''
+      document.getElementById('quote-card').style.display = 'block'
+    }
+  }
+
+  // Boss-Woche Banner (Woche 4, 8, 12 = Tage 22-28, 50-56, 78-84)
+  const bossWeeks = [[22,28],[50,56],[78,84]]
+  const bossNr = bossWeeks.findIndex(([a,b]) => dayNr >= a && dayNr <= b)
+  if (bossNr >= 0) {
+    const titles = ['BOSS-WOCHE 1 💀','BOSS-WOCHE 2 ⚡','FINALBOSS 🏆']
+    const subs = [
+      'Woche 4 — Push beyond your limits!',
+      'Woche 8 — Du bist halb durch. Alles geben!',
+      'Letzte Woche — 90 Tage sind zum Greifen nah!'
+    ]
+    document.getElementById('boss-title').textContent = titles[bossNr]
+    document.getElementById('boss-sub').textContent = subs[bossNr]
+    document.getElementById('boss-banner').style.display = 'flex'
+  }
 
   // Ring
   document.getElementById('ring-day').textContent = dayNr

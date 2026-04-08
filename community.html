@@ -56,7 +56,7 @@
 </div>
 
 <nav class="bnav">
-  <a href="dashboard.html" class="bnav-item active">
+  <a href="dashboard.html" class="bnav-item">
     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
     Start
   </a>
@@ -149,6 +149,8 @@ async function loadFeed() {
     const isMe = post.user_id === currentProfile.id
     const d = new Date(post.created_at)
     const dateStr = d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}) + ' ' + d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})
+    const likedPosts = JSON.parse(localStorage.getItem('liked_posts') || '[]')
+    const isLiked = likedPosts.includes(post.id)
     return `
       <div class="post-card card mb-12">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
@@ -159,7 +161,11 @@ async function loadFeed() {
           ${isMe ? `<button onclick="deletePost('${post.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:0">🗑</button>` : ''}
         </div>
         <div style="font-size:15px;line-height:1.6;color:var(--text)">${escapeHtml(post.message)}</div>
-        ${post.likes > 0 ? `<div style="margin-top:10px;font-size:13px;color:var(--muted)">❤️ ${post.likes}</div>` : ''}
+        <div style="margin-top:12px;display:flex;align-items:center;gap:10px">
+          <button class="like-btn ${isLiked?'liked':''}" onclick="likePost('${post.id}',this)" data-likes="${post.likes||0}">
+            ❤️ ${post.likes || 0}
+          </button>
+        </div>
       </div>`
   }).join('')
 }
@@ -191,6 +197,18 @@ async function deletePost(id) {
   if (!confirm('Post löschen?')) return
   await sb.from('community_posts').delete().eq('id', id)
   loadFeed()
+}
+
+async function likePost(id, btn) {
+  const liked = JSON.parse(localStorage.getItem('liked_posts') || '[]')
+  if (liked.includes(id)) return // already liked
+  liked.push(id)
+  localStorage.setItem('liked_posts', JSON.stringify(liked))
+  const current = parseInt(btn.dataset.likes) || 0
+  await sb.from('community_posts').update({ likes: current + 1 }).eq('id', id)
+  btn.dataset.likes = current + 1
+  btn.textContent = `❤️ ${current + 1}`
+  btn.classList.add('liked')
 }
 
 async function init() {

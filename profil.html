@@ -134,6 +134,57 @@
         <div style="font-size:15px;font-style:italic;line-height:1.7" id="p-warum"></div>
       </div>
 
+      <!-- Motto & Theme -->
+      <div class="card mb-12">
+        <div class="section-header">
+          <span class="section-title">PERSONALISIERUNG</span>
+        </div>
+
+        <!-- Motto -->
+        <div style="margin-bottom:16px">
+          <label class="field-label">Dein Motto</label>
+          <div style="display:flex;gap:8px;margin-top:6px">
+            <input type="text" id="motto-input" placeholder="Kein Zurück mehr..." maxlength="60" style="flex:1">
+            <button onclick="saveMotto()" style="background:var(--accent);border:none;border-radius:14px;color:#fff;padding:0 16px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit">OK</button>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px">Erscheint täglich auf dem Dashboard</div>
+        </div>
+
+        <!-- Theme -->
+        <div>
+          <label class="field-label">Theme</label>
+          <div class="theme-selector">
+            <div class="theme-dot" data-theme="orange" onclick="setTheme('orange',this)" style="background:linear-gradient(135deg,#ff6b35,#f97316)" title="Orange (Standard)">
+              <span id="theme-check-orange" style="display:none;color:#fff;font-size:18px">✓</span>
+            </div>
+            <div class="theme-dot" data-theme="ice" onclick="setTheme('ice',this)" style="background:linear-gradient(135deg,#38bdf8,#0ea5e9)" title="Ice Blue">
+              <span id="theme-check-ice" style="display:none;color:#fff;font-size:18px">✓</span>
+            </div>
+            <div class="theme-dot" data-theme="nature" onclick="setTheme('nature',this)" style="background:linear-gradient(135deg,#22c55e,#16a34a)" title="Nature Green">
+              <span id="theme-check-nature" style="display:none;color:#fff;font-size:18px">✓</span>
+            </div>
+            <div class="theme-dot" data-theme="night" onclick="setTheme('night',this)" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9)" title="Night Purple">
+              <span id="theme-check-night" style="display:none;color:#fff;font-size:18px">✓</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Streak-Schutz -->
+      <div class="card mb-12" id="schutz-card">
+        <div class="section-header">
+          <span class="section-title">STREAK-SCHUTZ</span>
+        </div>
+        <div class="schutz-banner" style="margin:0">
+          <span style="font-size:28px">🛡️</span>
+          <div class="schutz-info">
+            <div class="schutz-title" id="schutz-title">1× Schutz verfügbar</div>
+            <div class="schutz-sub">Aktiviere ihn an einem Tag ohne Check-in — dein Streak bleibt erhalten</div>
+          </div>
+          <button class="btn-schutz" id="btn-schutz" onclick="activateStreakSchutz()">Aktivieren</button>
+        </div>
+      </div>
+
       <!-- Settings -->
       <div class="card mb-12">
         <div class="card-title">EINSTELLUNGEN</div>
@@ -301,6 +352,27 @@ function renderProfile(p) {
     document.getElementById('p-warum').textContent = '„' + p.mein_warum + '"'
   }
 
+  // Motto
+  if (p.motto) document.getElementById('motto-input').value = p.motto
+
+  // Theme
+  const activeTheme = p.theme || 'orange'
+  if (activeTheme !== 'orange') document.documentElement.setAttribute('data-theme', activeTheme)
+  document.getElementById('theme-check-' + activeTheme).style.display = 'block'
+  document.querySelector(`.theme-dot[data-theme="${activeTheme}"]`)?.classList.add('active')
+
+  // Streak-Schutz
+  const schutz = p.streak_schutz_verfuegbar ?? 1
+  const today = getToday()
+  if (schutz <= 0) {
+    document.getElementById('btn-schutz').disabled = true
+    document.getElementById('schutz-title').textContent = 'Kein Schutz verfügbar'
+  } else if (p.streak_schutz_genutzt_am === today) {
+    document.getElementById('btn-schutz').disabled = true
+    document.getElementById('schutz-title').textContent = '🛡️ Heute bereits genutzt'
+  } else {
+    document.getElementById('schutz-title').textContent = `${schutz}× Schutz verfügbar`
+  }
 }
 
 async function uploadAvatar(input) {
@@ -360,10 +432,54 @@ function doSignOut() {
   sb.auth.signOut().then(() => window.location.href = 'login.html')
 }
 
+async function saveMotto() {
+  const motto = document.getElementById('motto-input').value.trim()
+  const { error } = await sb.from('profiles').update({ motto: motto || null }).eq('id', currentProfile.id)
+  if (error) { showToast(error.message, 'error'); return }
+  currentProfile.motto = motto
+  showToast(motto ? 'Motto gespeichert ✓' : 'Motto entfernt')
+}
+
+function setTheme(theme, el) {
+  document.documentElement.setAttribute('data-theme', theme === 'orange' ? '' : theme)
+  // update meta theme-color
+  const colors = { orange: '#ff6b35', ice: '#38bdf8', nature: '#22c55e', night: '#8b5cf6' }
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', colors[theme])
+  // update checkmarks
+  document.querySelectorAll('[id^="theme-check-"]').forEach(e => e.style.display = 'none')
+  document.getElementById('theme-check-' + theme).style.display = 'block'
+  // update active dots
+  document.querySelectorAll('.theme-dot').forEach(d => d.classList.remove('active'))
+  el.classList.add('active')
+  // save
+  sb.from('profiles').update({ theme }).eq('id', currentProfile.id)
+  currentProfile.theme = theme
+}
+
+async function activateStreakSchutz() {
+  const today = getToday()
+  if (currentProfile.streak_schutz_genutzt_am === today) { showToast('Heute bereits genutzt', 'error'); return }
+  if (!currentProfile.streak_schutz_verfuegbar) { showToast('Kein Schutz mehr verfügbar', 'error'); return }
+
+  const { error } = await sb.from('profiles').update({
+    streak_schutz_verfuegbar: Math.max(0, (currentProfile.streak_schutz_verfuegbar || 1) - 1),
+    streak_schutz_genutzt_am: today,
+    letzter_checkin: today,
+  }).eq('id', currentProfile.id)
+  if (error) { showToast(error.message, 'error'); return }
+  currentProfile.streak_schutz_verfuegbar = Math.max(0, (currentProfile.streak_schutz_verfuegbar || 1) - 1)
+  document.getElementById('btn-schutz').disabled = true
+  document.getElementById('schutz-title').textContent = '🛡️ Streak gerettet!'
+  showToast('Streak-Schutz aktiviert! Dein Streak bleibt erhalten. 🛡️')
+}
+
 async function init() {
   const ctx = await requireProfile()
   if (!ctx) return
   currentProfile = ctx.profile
+  if (currentProfile.theme && currentProfile.theme !== 'orange') {
+    document.documentElement.setAttribute('data-theme', currentProfile.theme)
+  }
   renderProfile(ctx.profile)
   document.getElementById('loading').style.display = 'none'
   document.getElementById('main').style.display = 'block'

@@ -176,7 +176,7 @@ async function init() {
       document.getElementById('score-detail').textContent = scoreDetail
       document.getElementById('score-faktoren').innerHTML = FAKTOR_LABELS.map((lbl, i) => {
         const ok = faktoren[i]
-        return `<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--surface);border-radius:var(--r-sm)">
+        return `<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:rgba(255,255,255,.04);border-radius:10px">
           <span>${FAKTOR_ICONS[i]}</span>
           <span style="font-size:13px;flex:1;color:${ok?'var(--text)':'var(--muted)'}">${lbl}</span>
           <span>${ok ? '✅' : '❌'}</span>
@@ -192,11 +192,12 @@ async function init() {
     document.getElementById('morgen-card').style.display = 'block'
     let html = ''
     if (e.gewicht_kg) html += row('Gewicht', e.gewicht_kg + ' kg', 'var(--text)')
-    if (e.schlaf_h) {
-      const c = e.schlaf_h >= 7 && e.schlaf_h <= 8.5 ? 'var(--green2)' : e.schlaf_h < 6 ? 'var(--danger)' : 'var(--gold2)'
-      html += row('Schlaf', e.schlaf_h + ' h', c)
+    if (e.schlaf_ist_h) {
+      const c = e.schlaf_ist_h >= 7 && e.schlaf_ist_h <= 8.5 ? 'var(--green2)' : e.schlaf_ist_h < 6 ? 'var(--danger)' : 'var(--gold2)'
+      html += row('Schlaf', e.schlaf_ist_h + ' h', c)
     }
     if (e.energie_level) html += row('Energie', ENERGIE_LABEL[e.energie_level - 1] || '—', 'var(--text)')
+    if (e.intention) html += row('Intention', '„' + e.intention + '"', 'var(--purple)')
     if (!html) html = row('—', 'Keine Details', '')
     document.getElementById('morgen-grid').innerHTML = html
   }
@@ -205,33 +206,37 @@ async function init() {
   if (e.checkin_abend) {
     document.getElementById('abend-card').style.display = 'block'
     let html = ''
-    if (e.wasser_l) {
-      const c = e.wasser_l >= (profile.wasser_ziel_l || 3.5) ? 'var(--green2)' : 'var(--text2)'
-      html += row('Wasser', e.wasser_l + ' L', c)
+    if (e.wasser_ist_l) {
+      const c = e.wasser_ist_l >= (profile.wasser_ziel_l || 3.5) ? 'var(--green2)' : 'var(--text2)'
+      html += row('Wasser', e.wasser_ist_l + ' L', c)
     }
-    if (e.schritte) {
-      const c = e.schritte >= (profile.schritte_ziel || 10000) ? 'var(--green2)' : 'var(--text2)'
-      html += row('Schritte', e.schritte.toLocaleString('de-DE'), c)
+    if (e.schritte_ist) {
+      const c = e.schritte_ist >= (profile.schritte_ziel || 10000) ? 'var(--green2)' : 'var(--text2)'
+      html += row('Schritte', e.schritte_ist.toLocaleString('de-DE'), c)
     }
     if (e.training_gemacht != null) html += row('Training', e.training_gemacht ? '✅ Ja' : '❌ Nein', '')
     if (e.progression != null) html += row('Progression', e.progression ? '📈 Ja' : '—', '')
     if (e.stimmung != null) html += row('Stimmung', STIMMUNG_LABEL[e.stimmung - 1] || '—', '')
+    if (e.koerper_gefuehl) {
+      const kgLabels = ['😣 Sehr schlecht','😕 Schlecht','😐 Ok','💪 Gut','🚀 Sehr gut']
+      html += row('Körpergefühl', kgLabels[e.koerper_gefuehl - 1] || '—', 'var(--text)')
+    }
     if (!html) html = row('—', 'Keine Details', '')
     document.getElementById('abend-grid').innerHTML = html
 
     // Makros
-    if (e.kalorien_ist || e.protein_ist || e.fett_ist || e.carbs_ist) {
+    if (e.kalorien_ist || e.protein_ist_g || e.fett_ist_g || e.carbs_ist_g) {
       document.getElementById('macro-section').style.display = 'block'
       document.getElementById('macro-bars').innerHTML =
         macroBar('kcal', e.kalorien_ist, profile.kalorien_ziel, 'var(--gold2)') +
-        macroBar('Protein', e.protein_ist, profile.protein_ziel_g, 'var(--accent)') +
-        macroBar('Fett', e.fett_ist, profile.fett_ziel_g, 'var(--purple)') +
-        macroBar('Carbs', e.carbs_ist, profile.carbs_ziel_g, 'var(--green2)')
+        macroBar('Protein', e.protein_ist_g, profile.protein_ziel_g, 'var(--accent)') +
+        macroBar('Fett', e.fett_ist_g, profile.fett_ziel_g, 'var(--purple)') +
+        macroBar('Carbs', e.carbs_ist_g, profile.carbs_ziel_g, 'var(--green2)')
     }
   }
 
   // 3 gute Dinge
-  const gut = [e.gut_1, e.gut_2, e.gut_3].filter(Boolean)
+  const gut = [e.gut_gelaufen_1, e.gut_gelaufen_2, e.gut_gelaufen_3].filter(Boolean)
   if (gut.length) {
     document.getElementById('gut-card').style.display = 'block'
     document.getElementById('gut-list').innerHTML = gut.map((t,i) =>
@@ -242,7 +247,7 @@ async function init() {
   }
 
   // Tagesziele
-  const ziele = [e.ziel_1, e.ziel_2, e.ziel_3].filter(Boolean)
+  const ziele = [e.ziel_heute_1, e.ziel_heute_2, e.ziel_heute_3].filter(Boolean)
   if (ziele.length) {
     document.getElementById('ziele-card').style.display = 'block'
     document.getElementById('ziele-list').innerHTML = ziele.map(t =>

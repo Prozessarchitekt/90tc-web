@@ -86,6 +86,12 @@
           </div>
         </div>
 
+        <!-- Tages-Intention -->
+        <div class="field-group">
+          <label class="field-label">Meine Intention für heute</label>
+          <input type="text" id="intention" placeholder="Ich bin heute..." maxlength="100">
+        </div>
+
         <!-- 3 Tagesziele -->
         <div class="field-group">
           <label class="field-label">3 Dinge, die ich heute umsetze</label>
@@ -198,6 +204,18 @@
           </div>
         </div>
 
+        <!-- Körpergefühl -->
+        <div class="field-group">
+          <label class="field-label">Körpergefühl heute</label>
+          <div class="koerper-grid">
+            <button class="koerper-btn" onclick="setKoerper(1,this)"><span class="koerper-emoji">😣</span><span class="koerper-label">Sehr schlecht</span></button>
+            <button class="koerper-btn" onclick="setKoerper(2,this)"><span class="koerper-emoji">😕</span><span class="koerper-label">Schlecht</span></button>
+            <button class="koerper-btn" onclick="setKoerper(3,this)"><span class="koerper-emoji">😐</span><span class="koerper-label">Ok</span></button>
+            <button class="koerper-btn" onclick="setKoerper(4,this)"><span class="koerper-emoji">💪</span><span class="koerper-label">Gut</span></button>
+            <button class="koerper-btn" onclick="setKoerper(5,this)"><span class="koerper-emoji">🚀</span><span class="koerper-label">Sehr gut</span></button>
+          </div>
+        </div>
+
         <!-- 3 gute Dinge -->
         <div class="field-group">
           <label class="field-label">3 Dinge, die heute gut liefen</label>
@@ -205,6 +223,29 @@
             <div class="ziel-row"><div class="ziel-nr" style="background:var(--green)">1</div><input type="text" id="g1" placeholder="Was lief gut?"></div>
             <div class="ziel-row"><div class="ziel-nr" style="background:var(--green)">2</div><input type="text" id="g2" placeholder="Was lief gut?"></div>
             <div class="ziel-row"><div class="ziel-nr" style="background:var(--green)">3</div><input type="text" id="g3" placeholder="Was lief gut?"></div>
+          </div>
+        </div>
+
+        <!-- Wöchentliche Reflexion (nur Sonntags) -->
+        <div class="reflexion-section" id="reflexion-section" style="display:none">
+          <div class="checkin-section-header">
+            <span class="checkin-section-icon">🪞</span>
+            <div>
+              <div class="checkin-section-title">Wöchentliche Reflexion</div>
+              <div class="checkin-section-sub">Ende der Woche — kurz innehalten</div>
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="reflexion-q">Was lief diese Woche richtig gut?</label>
+            <textarea id="ref-gut" placeholder="z.B. Ich habe alle Trainings absolviert..." rows="2"></textarea>
+          </div>
+          <div class="field-group">
+            <label class="reflexion-q">Was war schwierig oder frustrierend?</label>
+            <textarea id="ref-schwer" placeholder="z.B. Die Ernährung am Wochenende..." rows="2"></textarea>
+          </div>
+          <div class="field-group">
+            <label class="reflexion-q">Was ändere ich nächste Woche?</label>
+            <textarea id="ref-aenderung" placeholder="z.B. Ich bereite mein Essen vor..." rows="2"></textarea>
           </div>
         </div>
 
@@ -243,7 +284,7 @@
 <script src="js/auth.js"></script>
 <script>
 let currentProfile = null
-let energie = 0, training = null, progression = null, stimmung = 0
+let energie = 0, training = null, progression = null, stimmung = 0, koerperGefuehl = 0
 let alreadyMorgen = false, alreadyAbend = false
 
 function setEnergie(val, btn) {
@@ -268,6 +309,11 @@ function setStimmung(val, btn) {
   document.querySelectorAll('.stimmung-btn').forEach(b => b.classList.remove('active'))
   btn.classList.add('active')
 }
+function setKoerper(val, btn) {
+  koerperGefuehl = val
+  document.querySelectorAll('.koerper-btn').forEach(b => b.classList.remove('active'))
+  btn.classList.add('active')
+}
 
 async function saveMorgen() {
   const btn = document.getElementById('btn-morgen')
@@ -281,6 +327,7 @@ async function saveMorgen() {
     gewicht_kg:    v('gewicht') ? parseFloat(v('gewicht')) : null,
     schlaf_ist_h:  v('schlaf')  ? parseFloat(v('schlaf'))  : null,
     energie_level: energie || null,
+    intention:     v('intention') || null,
     ziel_heute_1:  v('z1') || null, ziel_heute_2: v('z2') || null, ziel_heute_3: v('z3') || null,
     checkin_morgen: true,
   }, {onConflict:'user_id,datum'})
@@ -315,6 +362,7 @@ async function saveAbend() {
     wasser_ist_l: v('wasser') ? parseFloat(v('wasser')) : null,
     schritte_ist: v('schritte') ? parseInt(v('schritte')) : null,
     training_gemacht: training, progression, stimmung: stimmung || null,
+    koerper_gefuehl: koerperGefuehl || null,
     gut_gelaufen_1: v('g1') || null, gut_gelaufen_2: v('g2') || null, gut_gelaufen_3: v('g3') || null,
     checkin_abend: true,
   }
@@ -324,8 +372,9 @@ async function saveAbend() {
     .select('schlaf_ist_h').eq('user_id', profile.id).eq('datum', today).maybeSingle()
   const fullEntry = { ...entry, schlaf_ist_h: existing?.schlaf_ist_h || (v('schlaf') ? parseFloat(v('schlaf')) : null) }
 
-  const score = berechneScore(fullEntry, profile)
+  const { score, faktoren } = berechneScoreDetail(fullEntry, profile)
   entry.score_von_7 = score
+  entry.score_faktoren = JSON.stringify(faktoren)
 
   const { error } = await sb.from('daily_entries').upsert({
     user_id: profile.id, datum: today, tag_nr: dayNr, ...entry
@@ -340,6 +389,18 @@ async function saveAbend() {
   if (!alreadyAbend) {
     await updateStreak(profile, xpEarned)
     alreadyAbend = true
+  }
+
+  // Wöchentliche Reflexion speichern (wenn ausgefüllt)
+  const refGut = v('ref-gut'), refSchwer = v('ref-schwer'), refAenderung = v('ref-aenderung')
+  if (refGut || refSchwer || refAenderung) {
+    const wocheNr = Math.ceil(dayNr / 7)
+    await sb.from('weekly_reflections').upsert({
+      user_id: profile.id, woche_nr: wocheNr,
+      gut_gelaufen: refGut || null,
+      schwer_gewesen: refSchwer || null,
+      aenderung: refAenderung || null
+    }, { onConflict: 'user_id,woche_nr' })
   }
 
   showScoreOverlay(score, xpEarned, fullEntry, profile)
@@ -367,17 +428,12 @@ function showScoreOverlay(score, xpEarned, entry, profile) {
   document.getElementById('score-nr').style.color = score >= 7 ? 'var(--green2)' : score >= 5 ? 'var(--accent)' : score >= 3 ? 'var(--gold2)' : 'var(--text2)'
   document.getElementById('score-xp').textContent = `+${xpEarned} XP 🪙+${xpEarned}`
 
-  const factors = [
-    { label: 'Kalorien ±10%',    ok: entry.kalorien_ist && profile.kalorien_ziel && Math.abs(entry.kalorien_ist - profile.kalorien_ziel) <= profile.kalorien_ziel * 0.10 },
-    { label: 'Protein erreicht', ok: entry.protein_ist_g && profile.protein_ziel_g && entry.protein_ist_g >= profile.protein_ziel_g },
-    { label: 'Schlaf 7–8,5h',    ok: entry.schlaf_ist_h && entry.schlaf_ist_h >= 7 },
-    { label: 'Wasser ≥ Ziel',    ok: entry.wasser_ist_l && profile.wasser_ziel_l && entry.wasser_ist_l >= profile.wasser_ziel_l },
-    { label: 'Training',         ok: entry.training_gemacht },
-    { label: 'Progression',      ok: entry.progression },
-    { label: 'Schritte',         ok: entry.schritte_ist && profile.schritte_ziel && entry.schritte_ist >= profile.schritte_ziel },
-  ]
-  document.getElementById('score-factors').innerHTML = factors.map(f =>
-    `<div class="factor-item"><span class="factor-icon">${f.ok ? '✅' : '⬜'}</span>${f.label}</div>`
+  const { faktoren: fArr } = berechneScoreDetail(entry, profile)
+  const FAKTOR_LABELS_DISPLAY = ['Kalorien ±10%','Protein erreicht','Schlaf 7–8,5h','Wasser ≥ Ziel','Training','Progression','Schritte']
+  const FAKTOR_ICONS_DISPLAY  = ['🍽️','💪','😴','💧','🏋️','📈','👟']
+  const factors = FAKTOR_LABELS_DISPLAY.map((label, i) => ({ label, ok: fArr[i] }))
+  document.getElementById('score-factors').innerHTML = factors.map((f,i) =>
+    `<div class="factor-item"><span class="factor-icon">${f.ok ? '✅' : '⬜'}</span>${FAKTOR_ICONS_DISPLAY[i]} ${f.label}</div>`
   ).join('')
 
   document.getElementById('score-overlay').style.display = 'flex'
@@ -412,6 +468,7 @@ async function init() {
       document.getElementById('done-banner').style.display = 'block'
       if (entry.gewicht_kg) document.getElementById('gewicht').value = entry.gewicht_kg
       if (entry.schlaf_ist_h) document.getElementById('schlaf').value = entry.schlaf_ist_h
+      if (entry.intention) document.getElementById('intention').value = entry.intention
       if (entry.ziel_heute_1) document.getElementById('z1').value = entry.ziel_heute_1
       if (entry.ziel_heute_2) document.getElementById('z2').value = entry.ziel_heute_2
       if (entry.ziel_heute_3) document.getElementById('z3').value = entry.ziel_heute_3
@@ -434,6 +491,21 @@ async function init() {
       if (entry.training_gemacht !== null) setTraining(entry.training_gemacht)
       if (entry.progression !== null) setProgression(entry.progression)
       if (entry.stimmung) { stimmung = entry.stimmung; document.querySelectorAll('.stimmung-btn')[stimmung-1]?.classList.add('active') }
+      if (entry.koerper_gefuehl) { koerperGefuehl = entry.koerper_gefuehl; document.querySelectorAll('.koerper-btn')[koerperGefuehl-1]?.classList.add('active') }
+    }
+  }
+
+  // Wöchentliche Reflexion: zeige jeden 7. Tag (Sonntags der Challenge)
+  if (dayNr > 1 && dayNr % 7 === 0) {
+    document.getElementById('reflexion-section').style.display = 'block'
+    // Lade vorhandene Reflexion
+    const wocheNr = Math.ceil(dayNr / 7)
+    const { data: ref } = await sb.from('weekly_reflections')
+      .select('*').eq('user_id', user.id).eq('woche_nr', wocheNr).maybeSingle()
+    if (ref) {
+      if (ref.gut_gelaufen) document.getElementById('ref-gut').value = ref.gut_gelaufen
+      if (ref.schwer_gewesen) document.getElementById('ref-schwer').value = ref.schwer_gewesen
+      if (ref.aenderung) document.getElementById('ref-aenderung').value = ref.aenderung
     }
   }
 

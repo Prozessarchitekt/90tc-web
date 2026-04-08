@@ -92,6 +92,24 @@
         </div>
       </div>
 
+      <!-- Energie-Muster -->
+      <div class="card" id="energie-card" style="display:none">
+        <div class="section-header">
+          <span class="section-title">ENERGIE-MUSTER</span>
+          <span class="text-muted fs-12">Basierend auf deinen Daten</span>
+        </div>
+        <div id="energie-insights"></div>
+      </div>
+
+      <!-- Wöchentliche Missionen -->
+      <div class="card">
+        <div class="section-header">
+          <span class="section-title">WÖCHENTLICHE MISSIONEN</span>
+          <span class="text-muted fs-12" id="mission-week">Diese Woche</span>
+        </div>
+        <div id="mission-list"></div>
+      </div>
+
       <!-- Badges -->
       <div class="card">
         <div class="section-header">
@@ -294,6 +312,146 @@ async function init() {
       <div class="badge-name">${b.name}</div>
     </div>
   `).join('')
+
+  // Energie-Muster (nur wenn genug Daten)
+  if (entries?.length >= 7) renderEnergieMuster(entries, profile)
+
+  // Wöchentliche Missionen
+  renderMissionen(entries, profile)
+}
+
+function renderEnergieMuster(entries, profile) {
+  const card = document.getElementById('energie-card')
+  const el = document.getElementById('energie-insights')
+  card.style.display = 'block'
+
+  const insights = []
+
+  // Beste Energie nach Wochentag
+  const byDay = {}
+  entries.forEach(e => {
+    if (!e.energie_level) return
+    const d = new Date(e.datum + 'T00:00:00').getDay()
+    if (!byDay[d]) byDay[d] = []
+    byDay[d].push(e.energie_level)
+  })
+  const dayNames = ['So','Mo','Di','Mi','Do','Fr','Sa']
+  let bestDay = -1, bestAvg = 0
+  Object.entries(byDay).forEach(([d, vals]) => {
+    const avg = vals.reduce((s,v) => s+v, 0) / vals.length
+    if (avg > bestAvg) { bestAvg = avg; bestDay = parseInt(d) }
+  })
+  if (bestDay >= 0) {
+    const emojis = ['😴','😐','⚡','🚀']
+    insights.push({ icon:'⚡', label:'Bester Wochentag', value: dayNames[bestDay], sub: `Ø ${bestAvg.toFixed(1)}/4 Energie ${emojis[Math.round(bestAvg)-1]||''}` })
+  }
+
+  // Schlaf → Energie Korrelation
+  const withBoth = entries.filter(e => e.schlaf_ist_h && e.energie_level)
+  if (withBoth.length >= 5) {
+    const gut = withBoth.filter(e => e.schlaf_ist_h >= 7)
+    const schlecht = withBoth.filter(e => e.schlaf_ist_h < 7)
+    if (gut.length && schlecht.length) {
+      const avgGut = gut.reduce((s,e) => s+e.energie_level, 0) / gut.length
+      const avgSchlecht = schlecht.reduce((s,e) => s+e.energie_level, 0) / schlecht.length
+      if (avgGut > avgSchlecht + 0.3) {
+        insights.push({ icon:'😴', label:'Schlaf macht den Unterschied', value: `+${((avgGut-avgSchlecht)/4*100).toFixed(0)}% mehr Energie`, sub: 'Bei ≥7h Schlaf vs. weniger Schlaf' })
+      }
+    }
+  }
+
+  // Trainings-Energie Boost
+  const trainingDays = entries.filter(e => e.training_gemacht && e.stimmung)
+  const restDays = entries.filter(e => e.training_gemacht === false && e.stimmung)
+  if (trainingDays.length >= 3 && restDays.length >= 3) {
+    const avgT = trainingDays.reduce((s,e) => s+e.stimmung, 0) / trainingDays.length
+    const avgR = restDays.reduce((s,e) => s+e.stimmung, 0) / restDays.length
+    if (avgT > avgR + 0.3) {
+      insights.push({ icon:'🏋️', label:'Training hebt deine Stimmung', value: `+${((avgT-avgR)/5*100).toFixed(0)}% bessere Stimmung`, sub: 'An Trainingstagen vs. Ruhetagen' })
+    }
+  }
+
+  // Durchschnittliche Schritte
+  const stepsEntries = entries.filter(e => e.schritte_ist)
+  if (stepsEntries.length >= 5) {
+    const avgSteps = Math.round(stepsEntries.reduce((s,e) => s+e.schritte_ist, 0) / stepsEntries.length)
+    const goal = profile.schritte_ziel || 10000
+    const pct = Math.round(avgSteps / goal * 100)
+    insights.push({ icon:'👟', label:'Schritte-Durchschnitt', value: avgSteps.toLocaleString('de-DE'), sub: `${pct}% des Ziels (${goal.toLocaleString('de-DE')} Schritte)` })
+  }
+
+  if (!insights.length) { card.style.display = 'none'; return }
+
+  el.innerHTML = insights.map(i => `
+    <div class="insight-card">
+      <div class="insight-icon">${i.icon}</div>
+      <div class="insight-info">
+        <div class="insight-label">${i.label}</div>
+        <div class="insight-value">${i.value}</div>
+        <div class="insight-sub">${i.sub}</div>
+      </div>
+    </div>`).join('')
+}
+
+function renderMissionen(entries, profile) {
+  const el = document.getElementById('mission-list')
+  const thisWeekEntries = (entries || []).slice(-7)
+
+  const MISSIONEN = [
+    {
+      icon: '💧', name: 'Hydrations-Champion',
+      desc: '5× diese Woche Wasserziel erreichen',
+      reward: '+100 XP',
+      current: thisWeekEntries.filter(e => e.wasser_ist_l && profile.wasser_ziel_l && e.wasser_ist_l >= profile.wasser_ziel_l).length,
+      target: 5,
+    },
+    {
+      icon: '🏋️', name: 'Trainings-Krieger',
+      desc: '4× diese Woche trainieren',
+      reward: '+150 XP',
+      current: thisWeekEntries.filter(e => e.training_gemacht).length,
+      target: 4,
+    },
+    {
+      icon: '💪', name: 'Protein-Profi',
+      desc: '5× Proteinziel erreichen',
+      reward: '+100 XP',
+      current: thisWeekEntries.filter(e => e.protein_ist_g && profile.protein_ziel_g && e.protein_ist_g >= profile.protein_ziel_g).length,
+      target: 5,
+    },
+    {
+      icon: '😴', name: 'Schlaf-Meister',
+      desc: '5× mindestens 7h schlafen',
+      reward: '+100 XP',
+      current: thisWeekEntries.filter(e => e.schlaf_ist_h && e.schlaf_ist_h >= 7).length,
+      target: 5,
+    },
+    {
+      icon: '⭐', name: 'Perfekte Woche',
+      desc: '7 Tage Streak + alle 7 Check-ins',
+      reward: '+300 XP 🏆',
+      current: thisWeekEntries.filter(e => e.checkin_morgen && e.checkin_abend).length,
+      target: 7,
+    },
+  ]
+
+  el.innerHTML = MISSIONEN.map(m => {
+    const pct = Math.min(100, Math.round(m.current / m.target * 100))
+    const done = m.current >= m.target
+    return `
+      <div class="mission-card ${done ? 'done' : ''}">
+        <div class="mission-header">
+          <div class="mission-icon">${m.icon}</div>
+          <div class="mission-info">
+            <div class="mission-name">${m.name} ${done ? '✅' : ''}</div>
+            <div class="mission-desc">${m.desc}</div>
+          </div>
+          <div class="mission-reward">${m.reward}</div>
+        </div>
+        <div class="mission-bar-track"><div class="mission-bar-fill" style="width:${pct}%;${done?'background:var(--green)':''}"></div></div>
+        <div class="mission-status ${done ? 'done' : ''}">${done ? 'Abgeschlossen! 🎉' : `${m.current} / ${m.target}`}</div>
+      </div>`
+  }).join('')
 }
 
 async function checkBadges(user, profile, entries, earnedIds) {
