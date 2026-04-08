@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>90TC — Fortschrittsfotos</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ff6b35">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="90TC">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <style>
+    .foto-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .foto-slot {
+      aspect-ratio: 3/4;
+      background: var(--surface);
+      border-radius: var(--r-sm);
+      border: 2px dashed var(--border2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      overflow: hidden;
+      position: relative;
+      transition: border-color .2s;
+    }
+    .foto-slot:hover { border-color: var(--accent); }
+    .foto-slot img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      inset: 0;
+    }
+    .foto-slot-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+    .foto-slot-icon { font-size: 28px; }
+    .foto-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(transparent, rgba(0,0,0,.7));
+      padding: 6px 8px 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .foto-overlay-label { font-size: 11px; font-weight: 700; color: #fff; text-transform: uppercase; letter-spacing: .05em; }
+    .foto-delete-btn { font-size: 16px; cursor: pointer; line-height: 1; }
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .compare-col {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .compare-col-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      text-align: center;
+      padding: 6px 0;
+    }
+    .compare-img-wrap {
+      aspect-ratio: 3/4;
+      background: var(--surface);
+      border-radius: var(--r-sm);
+      overflow: hidden;
+      position: relative;
+    }
+    .compare-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .compare-img-empty {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 22px;
+    }
+    .compare-type-label {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      background: rgba(0,0,0,.6);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      padding: 3px 7px;
+      border-radius: 20px;
+    }
+    .week-selector {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .week-selector select {
+      flex: 1;
+      background: var(--surface);
+      border: 1.5px solid var(--border2);
+      border-radius: var(--r-sm);
+      padding: 10px 14px;
+      color: var(--text);
+      font-size: 14px;
+    }
+    .uploading-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      background: rgba(0,0,0,.7);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      color: #fff;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="splash" id="loading"><div class="spinner"></div></div>
+  <div id="main" style="display:none">
+    <div class="page">
+      <div class="page-header">
+        <a href="profil.html" class="page-back">←</a>
+        <div>
+          <div class="page-title">📸 Fortschrittsfotos</div>
+          <div class="page-subtitle" id="page-sub">Woche ? von 13</div>
+        </div>
+        <div style="width:40px"></div>
+      </div>
+
+      <!-- Info Card -->
+      <div class="card" style="background:var(--accent-dim);border-color:var(--accent-border);margin-bottom:16px">
+        <div style="font-size:14px;line-height:1.6;color:var(--text2)">
+          📌 <strong style="color:var(--text)">Wöchentliches Foto</strong> — morgens, gleiche Uhrzeit,<br>
+          gleiche Pose, gleiches Licht. Konstanz macht den Unterschied.
+        </div>
+      </div>
+
+      <!-- Upload Section -->
+      <div class="card mb-12">
+        <div class="card-title" id="upload-title">DIESE WOCHE · FOTOS HOCHLADEN</div>
+        <div class="foto-grid">
+          <div>
+            <div class="foto-slot" id="slot-vorne" onclick="triggerUpload('vorne')">
+              <span class="foto-slot-icon">🤸</span>
+            </div>
+            <div class="foto-slot-label" style="text-align:center;margin-top:6px">Vorne</div>
+            <input type="file" id="inp-vorne" accept="image/*" capture="environment" style="display:none" onchange="uploadFoto(this,'vorne')">
+          </div>
+          <div>
+            <div class="foto-slot" id="slot-seite" onclick="triggerUpload('seite')">
+              <span class="foto-slot-icon">🧍</span>
+            </div>
+            <div class="foto-slot-label" style="text-align:center;margin-top:6px">Seite</div>
+            <input type="file" id="inp-seite" accept="image/*" capture="environment" style="display:none" onchange="uploadFoto(this,'seite')">
+          </div>
+          <div>
+            <div class="foto-slot" id="slot-hinten" onclick="triggerUpload('hinten')">
+              <span class="foto-slot-icon">🔄</span>
+            </div>
+            <div class="foto-slot-label" style="text-align:center;margin-top:6px">Hinten</div>
+            <input type="file" id="inp-hinten" accept="image/*" capture="environment" style="display:none" onchange="uploadFoto(this,'hinten')">
+          </div>
+        </div>
+      </div>
+
+      <!-- Comparison Section -->
+      <div class="card mb-12" id="compare-section" style="display:none">
+        <div class="card-title">VERGLEICH</div>
+        <div style="display:flex;gap:8px;margin-bottom:14px">
+          <div style="flex:1">
+            <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Referenzwoche</div>
+            <select id="compare-week-sel" onchange="loadComparison()">
+              <option value="">— Woche wählen —</option>
+            </select>
+          </div>
+          <div style="flex:1">
+            <div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Ansicht</div>
+            <select id="compare-winkel-sel" onchange="loadComparison()">
+              <option value="vorne">Vorne</option>
+              <option value="seite">Seite</option>
+              <option value="hinten">Hinten</option>
+            </select>
+          </div>
+        </div>
+        <div class="compare-grid" id="compare-grid">
+          <!-- filled by JS -->
+        </div>
+      </div>
+
+      <div style="height:88px"></div>
+    </div>
+  </div>
+</div>
+
+<div class="uploading-overlay" id="upload-overlay" style="display:none">
+  <div class="spinner" style="width:40px;height:40px;border-width:3px"></div>
+  <div>Foto wird hochgeladen...</div>
+</div>
+
+<nav class="bnav">
+  <a href="dashboard.html" class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    Start
+  </a>
+  <a href="training.html" class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="8" width="4" height="8" rx="1"/><rect x="18" y="8" width="4" height="8" rx="1"/><line x1="6" y1="12" x2="10" y2="12"/><line x1="14" y1="12" x2="18" y2="12"/><rect x="10" y="9" width="4" height="6" rx="1"/></svg>
+    Training
+  </a>
+  <a href="fortschritt.html" class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    Statistik
+  </a>
+  <a href="profil.html" class="bnav-item active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Profil
+  </a>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/gamification.js"></script>
+<script src="js/auth.js"></script>
+<script>
+let currentUser = null
+let currentProfile = null
+let currentWoche = 1
+// photos indexed by: woche_nr → winkel → {id, url}
+let photoMap = {}
+
+const WINKEL_LABELS = { vorne: 'Vorne', seite: 'Seite', seite_r: 'Seite', hinten: 'Hinten' }
+
+function triggerUpload(winkel) {
+  document.getElementById('inp-' + winkel).click()
+}
+
+async function uploadFoto(input, winkel) {
+  const file = input.files[0]
+  if (!file) return
+  if (file.size > 15 * 1024 * 1024) { showToast('Foto max. 15 MB', 'error'); return }
+
+  document.getElementById('upload-overlay').style.display = 'flex'
+
+  const ext = file.name.split('.').pop().toLowerCase() || 'jpg'
+  const path = `${currentUser.id}/woche_${currentWoche}_${winkel}.${ext}`
+
+  const { error: upErr } = await sb.storage.from('photos').upload(path, file, { upsert: true })
+  if (upErr) {
+    document.getElementById('upload-overlay').style.display = 'none'
+    showToast(upErr.message, 'error')
+    return
+  }
+
+  const { data: urlData } = sb.storage.from('photos').getPublicUrl(path)
+  const url = urlData.publicUrl + '?t=' + Date.now()
+
+  // upsert in photos table (uses woche_nr field — run migration first!)
+  const { error: dbErr } = await sb.from('photos').upsert({
+    user_id: currentUser.id,
+    datum: new Date().toISOString().split('T')[0],
+    woche_nr: currentWoche,
+    winkel: winkel,
+    typ: 'woche',
+    url: url,
+  }, { onConflict: 'user_id,woche_nr,winkel' })
+
+  document.getElementById('upload-overlay').style.display = 'none'
+
+  if (dbErr) {
+    // If onConflict fails (no unique index yet), try delete+insert
+    await sb.from('photos')
+      .delete()
+      .eq('user_id', currentUser.id)
+      .eq('woche_nr', currentWoche)
+      .eq('winkel', winkel)
+    await sb.from('photos').insert({
+      user_id: currentUser.id,
+      datum: new Date().toISOString().split('T')[0],
+      woche_nr: currentWoche,
+      winkel: winkel,
+      typ: 'woche',
+      url: url,
+    })
+  }
+
+  // Update local map
+  if (!photoMap[currentWoche]) photoMap[currentWoche] = {}
+  photoMap[currentWoche][winkel] = { url }
+
+  renderSlot(winkel, url)
+  showToast('Foto gespeichert 📸')
+  input.value = ''
+
+  // Refresh comparison if open
+  loadComparison()
+}
+
+function renderSlot(winkel, url) {
+  const slot = document.getElementById('slot-' + winkel)
+  if (!slot) return
+  if (url) {
+    slot.innerHTML = `
+      <img src="${url}" alt="${winkel}">
+      <div class="foto-overlay">
+        <span class="foto-overlay-label">${WINKEL_LABELS[winkel] || winkel}</span>
+        <span class="foto-delete-btn" onclick="deleteFoto(event,'${winkel}')">🗑️</span>
+      </div>`
+  } else {
+    const icons = { vorne: '🤸', seite: '🧍', hinten: '🔄' }
+    slot.innerHTML = `<span class="foto-slot-icon">${icons[winkel] || '📷'}</span>`
+  }
+}
+
+async function deleteFoto(e, winkel) {
+  e.stopPropagation()
+  if (!confirm(`${WINKEL_LABELS[winkel] || winkel}-Foto löschen?`)) return
+
+  const path = `${currentUser.id}/woche_${currentWoche}_${winkel}`
+  // Try both .jpg and .jpeg extensions
+  await sb.storage.from('photos').remove([path + '.jpg', path + '.jpeg', path + '.png', path + '.webp'])
+  await sb.from('photos')
+    .delete()
+    .eq('user_id', currentUser.id)
+    .eq('woche_nr', currentWoche)
+    .eq('winkel', winkel)
+
+  if (photoMap[currentWoche]) delete photoMap[currentWoche][winkel]
+  renderSlot(winkel, null)
+  loadComparison()
+  showToast('Foto gelöscht')
+}
+
+function loadComparison() {
+  const refWeek = parseInt(document.getElementById('compare-week-sel').value)
+  const winkel  = document.getElementById('compare-winkel-sel').value
+  const grid    = document.getElementById('compare-grid')
+
+  if (!refWeek || isNaN(refWeek)) {
+    grid.innerHTML = '<div style="color:var(--muted);font-size:14px;text-align:center;padding:20px;grid-column:1/-1">Referenzwoche auswählen</div>'
+    return
+  }
+
+  const refUrl  = photoMap[refWeek]?.[winkel]?.url || null
+  const currUrl = photoMap[currentWoche]?.[winkel]?.url || null
+
+  grid.innerHTML = `
+    <div class="compare-col">
+      <div class="compare-col-title" style="color:var(--text2)">Woche ${refWeek}</div>
+      <div class="compare-img-wrap">
+        ${refUrl
+          ? `<img src="${refUrl}" alt="Woche ${refWeek}">`
+          : `<div class="compare-img-empty">📷</div>`}
+        ${refUrl ? `<div class="compare-type-label">${WINKEL_LABELS[winkel] || winkel}</div>` : ''}
+      </div>
+    </div>
+    <div class="compare-col">
+      <div class="compare-col-title" style="color:var(--accent)">Woche ${currentWoche} (jetzt)</div>
+      <div class="compare-img-wrap">
+        ${currUrl
+          ? `<img src="${currUrl}" alt="Woche ${currentWoche}">`
+          : `<div class="compare-img-empty">📷</div>`}
+        ${currUrl ? `<div class="compare-type-label">${WINKEL_LABELS[winkel] || winkel}</div>` : ''}
+      </div>
+    </div>`
+}
+
+async function init() {
+  const ctx = await requireProfile()
+  if (!ctx) return
+  currentUser    = ctx.user
+  currentProfile = ctx.profile
+
+  const dayNr = calcDayNr(currentProfile.startdatum)
+  currentWoche = Math.min(13, Math.max(1, Math.ceil(dayNr / 7)))
+  document.getElementById('page-sub').textContent = `Woche ${currentWoche} von 13 · Tag ${dayNr}`
+  document.getElementById('upload-title').textContent = `WOCHE ${currentWoche} · FOTOS HOCHLADEN`
+
+  // Load all photos for this user
+  const { data: photos } = await sb.from('photos')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .order('woche_nr')
+
+  if (photos) {
+    for (const p of photos) {
+      if (!p.woche_nr) continue
+      if (!photoMap[p.woche_nr]) photoMap[p.woche_nr] = {}
+      photoMap[p.woche_nr][p.winkel] = { id: p.id, url: p.url }
+    }
+  }
+
+  // Render current week slots
+  for (const w of ['vorne', 'seite', 'hinten']) {
+    const url = photoMap[currentWoche]?.[w]?.url || null
+    renderSlot(w, url)
+  }
+
+  // Build comparison week selector — show weeks that have at least one photo (excluding current)
+  const weeksWithPhotos = Object.keys(photoMap)
+    .map(Number)
+    .filter(w => w !== currentWoche)
+    .sort((a, b) => a - b)
+
+  const sel = document.getElementById('compare-week-sel')
+  for (const w of weeksWithPhotos) {
+    const opt = document.createElement('option')
+    opt.value = w
+    opt.textContent = `Woche ${w}`
+    sel.appendChild(opt)
+  }
+
+  // Show comparison section if there are other weeks
+  if (weeksWithPhotos.length > 0) {
+    document.getElementById('compare-section').style.display = 'block'
+    // Auto-select first available reference week
+    sel.value = weeksWithPhotos[0]
+    loadComparison()
+  }
+
+  document.getElementById('loading').style.display = 'none'
+  document.getElementById('main').style.display = 'block'
+}
+
+init()
+</script>
+</body>
+</html>

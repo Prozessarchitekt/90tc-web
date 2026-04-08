@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>90TC — Profil</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ff6b35">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="90TC">
+  <link rel="apple-touch-icon" href="icon.svg">
+</head>
+<body>
+<div id="app">
+  <div class="splash" id="loading"><div class="spinner"></div></div>
+  <div id="main" style="display:none">
+    <div class="page">
+      <div class="page-header">
+        <a href="dashboard.html" class="page-back">←</a>
+        <div><div class="page-title">👤 Profil</div></div>
+        <div style="width:40px"></div>
+      </div>
+
+      <!-- Profile Hero -->
+      <div class="profile-hero glass mb-12">
+        <div class="profile-avatar-wrap" onclick="document.getElementById('avatar-input').click()" title="Foto ändern">
+          <div class="profile-avatar" id="p-avatar">🏋️</div>
+          <div class="avatar-upload-hint">📷</div>
+        </div>
+        <input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
+        <div class="profile-name" id="p-name">—</div>
+        <div style="margin-top:6px;margin-bottom:12px">
+          <span class="profile-level" id="p-level">🏅 Rookie · Lv.1</span>
+        </div>
+        <div style="display:flex;justify-content:center;gap:24px;font-size:13px;color:var(--text2)">
+          <div style="text-align:center"><div style="font-size:20px;font-weight:900;color:var(--accent)" id="p-streak">0</div><div>Streak 🔥</div></div>
+          <div style="text-align:center"><div style="font-size:20px;font-weight:900;color:var(--gold2)" id="p-xp">0</div><div>XP</div></div>
+          <div style="text-align:center"><div style="font-size:20px;font-weight:900;color:var(--gold2)" id="p-coins">0</div><div>Coins 🪙</div></div>
+          <div style="text-align:center"><div style="font-size:20px;font-weight:900;color:var(--text)" id="p-days">0</div><div>Tag</div></div>
+        </div>
+      </div>
+
+      <!-- Ziel & Makros -->
+      <div class="card mb-12">
+        <div class="section-header">
+          <span class="section-title">ZIEL & MAKROS</span>
+          <button class="section-link" onclick="toggleEdit()">Bearbeiten</button>
+        </div>
+        <div id="view-mode">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+            <span style="font-size:22px" id="ziel-icon">⚡</span>
+            <div>
+              <div style="font-weight:800" id="ziel-name">Recomp</div>
+              <div style="font-size:13px;color:var(--text2)" id="ziel-desc">Körperzusammensetzung verbessern</div>
+            </div>
+          </div>
+          <div class="macro-target-grid">
+            <div class="macro-target-box"><div class="macro-target-val" style="color:var(--gold2)" id="m-kcal">—</div><div class="macro-target-lbl">kcal</div></div>
+            <div class="macro-target-box"><div class="macro-target-val" style="color:var(--accent)" id="m-prot">—</div><div class="macro-target-lbl">Protein</div></div>
+            <div class="macro-target-box"><div class="macro-target-val" style="color:var(--purple)" id="m-fett">—</div><div class="macro-target-lbl">Fett</div></div>
+            <div class="macro-target-box"><div class="macro-target-val" style="color:var(--green2)" id="m-carbs">—</div><div class="macro-target-lbl">Carbs</div></div>
+          </div>
+        </div>
+        <div id="edit-mode" style="display:none">
+          <div class="input-group mb-12">
+            <label class="input-label">Ziel</label>
+            <select id="e-ziel">
+              <option value="definieren">🔥 Definieren (Fett verlieren)</option>
+              <option value="aufbauen">💪 Aufbauen (Muskeln)</option>
+              <option value="recomp">⚡ Body Recomp</option>
+            </select>
+          </div>
+          <div class="input-row mb-12">
+            <div class="input-group">
+              <label class="input-label">Kalorien</label>
+              <div class="input-with-unit"><input type="number" id="e-kcal" min="500" max="15000"><span class="input-unit">kcal</span></div>
+            </div>
+            <div class="input-group">
+              <label class="input-label">Protein</label>
+              <div class="input-with-unit"><input type="number" id="e-prot" min="0" max="999"><span class="input-unit">g</span></div>
+            </div>
+          </div>
+          <div class="input-row mb-12">
+            <div class="input-group">
+              <label class="input-label">Fett</label>
+              <div class="input-with-unit"><input type="number" id="e-fett" min="0" max="999"><span class="input-unit">g</span></div>
+            </div>
+            <div class="input-group">
+              <label class="input-label">Carbs</label>
+              <div class="input-with-unit"><input type="number" id="e-carbs" min="0" max="999"><span class="input-unit">g</span></div>
+            </div>
+          </div>
+          <div class="input-row">
+            <div class="input-group">
+              <label class="input-label">Wasser</label>
+              <div class="input-with-unit"><input type="number" id="e-wasser" step="0.5" min="1" max="10"><span class="input-unit">L</span></div>
+            </div>
+            <div class="input-group">
+              <label class="input-label">Schritte</label>
+              <input type="number" id="e-schritte" min="1000" max="50000">
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:16px">
+            <button class="btn btn-ghost" onclick="toggleEdit()" style="flex:1">Abbrechen</button>
+            <button class="btn btn-primary" onclick="saveMacros()" style="flex:2" id="btn-save-macros">Speichern</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Persönliche Ziele -->
+      <div class="card mb-12">
+        <div class="card-title">PERSÖNLICHE ZIELE</div>
+        <div style="display:flex;gap:10px">
+          <div style="flex:1;background:var(--surface);border-radius:var(--r-sm);padding:12px;text-align:center">
+            <div style="font-size:20px;font-weight:900;color:#60cfee" id="p-wasser">3.5 L</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:3px">💧 Wasser</div>
+          </div>
+          <div style="flex:1;background:var(--surface);border-radius:var(--r-sm);padding:12px;text-align:center">
+            <div style="font-size:20px;font-weight:900;color:var(--purple)" id="p-schlaf">8 h</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:3px">😴 Schlaf</div>
+          </div>
+          <div style="flex:1;background:var(--surface);border-radius:var(--r-sm);padding:12px;text-align:center">
+            <div style="font-size:20px;font-weight:900;color:var(--green2)" id="p-schritte">10.000</div>
+            <div style="font-size:11px;color:var(--text2);margin-top:3px">👟 Schritte</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Warum -->
+      <div class="card mb-12" id="warum-card" style="display:none;background:var(--accent-dim);border-color:var(--accent-border)">
+        <div class="card-title">💭 DEIN WARUM</div>
+        <div style="font-size:15px;font-style:italic;line-height:1.7" id="p-warum"></div>
+      </div>
+
+      <!-- Settings -->
+      <div class="card mb-12">
+        <div class="card-title">EINSTELLUNGEN</div>
+        <a href="maße.html" class="setting-row">
+          <span class="setting-icon">📏</span>
+          <span class="setting-label">Körpermaße eintragen</span>
+          <span class="setting-arrow">›</span>
+        </a>
+        <a href="fotos.html" class="setting-row">
+          <span class="setting-icon">📸</span>
+          <span class="setting-label">Fortschrittsfotos</span>
+          <span class="setting-arrow">›</span>
+        </a>
+        <a href="fortschritt.html" class="setting-row">
+          <span class="setting-icon">📊</span>
+          <span class="setting-label">Fortschritt & Badges</span>
+          <span class="setting-arrow">›</span>
+        </a>
+        <div class="setting-row" onclick="showResetModal()" style="color:var(--danger)">
+          <span class="setting-icon">🔄</span>
+          <span class="setting-label">Challenge neu starten</span>
+          <span class="setting-arrow">›</span>
+        </div>
+        <div class="setting-row" onclick="doSignOut()">
+          <span class="setting-icon">🚪</span>
+          <span class="setting-label">Ausloggen</span>
+          <span class="setting-arrow">›</span>
+        </div>
+      </div>
+
+      <!-- Version -->
+      <div style="text-align:center;color:var(--muted);font-size:12px;padding-bottom:16px">
+        90TC App · Made with 🔥 · Version 1.0
+      </div>
+
+      <div style="height:88px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Reset Modal -->
+<div id="reset-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.75);align-items:flex-end;padding:16px">
+  <div class="card" style="width:100%;max-width:430px;margin:0 auto;padding:24px">
+    <div style="font-size:18px;font-weight:900;margin-bottom:6px">Challenge neu starten 🔄</div>
+    <div style="font-size:14px;color:var(--text2);margin-bottom:20px">Was möchtest du zurücksetzen?</div>
+    <button class="btn btn-primary" onclick="resetDateOnly()" style="width:100%;margin-bottom:10px;text-align:left;display:block;padding:14px 16px">
+      <div style="font-weight:700">📅 Nur Datum zurücksetzen</div>
+      <div style="font-size:12px;opacity:.8;margin-top:2px;font-weight:400">Profil, XP, Badges & Daten bleiben erhalten</div>
+    </button>
+    <button class="btn" onclick="resetAll()" style="width:100%;margin-bottom:10px;text-align:left;display:block;padding:14px 16px;background:var(--danger);color:#fff">
+      <div style="font-weight:700">🗑️ Komplett neu starten</div>
+      <div style="font-size:12px;opacity:.8;margin-top:2px;font-weight:400">Alle Daten werden unwiderruflich gelöscht</div>
+    </button>
+    <button class="btn btn-ghost" onclick="closeResetModal()" style="width:100%">Abbrechen</button>
+  </div>
+</div>
+
+<nav class="bnav">
+  <a href="dashboard.html" class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    Start
+  </a>
+  <a href="training.html" class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="8" width="4" height="8" rx="1"/><rect x="18" y="8" width="4" height="8" rx="1"/><line x1="6" y1="12" x2="10" y2="12"/><line x1="14" y1="12" x2="18" y2="12"/><rect x="10" y="9" width="4" height="6" rx="1"/></svg>
+    Training
+  </a>
+  <a href="fortschritt.html" class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    Statistik
+  </a>
+  <a href="profil.html" class="bnav-item active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Profil
+  </a>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/gamification.js"></script>
+<script src="js/auth.js"></script>
+<script>
+let currentProfile = null
+let editOpen = false
+
+const ZIEL_DATA = {
+  definieren: { icon:'🔥', name:'Definieren', desc:'Fett verlieren & Muskeln sichtbar machen' },
+  aufbauen:   { icon:'💪', name:'Aufbauen',   desc:'Muskelmasse aufbauen & stärker werden' },
+  recomp:     { icon:'⚡', name:'Body Recomp', desc:'Körperzusammensetzung verbessern' },
+}
+
+function toggleEdit() {
+  editOpen = !editOpen
+  document.getElementById('view-mode').style.display = editOpen ? 'none' : 'block'
+  document.getElementById('edit-mode').style.display = editOpen ? 'block' : 'none'
+  if (editOpen) {
+    const p = currentProfile
+    document.getElementById('e-ziel').value   = p.ziel || 'recomp'
+    document.getElementById('e-kcal').value   = p.kalorien_ziel || ''
+    document.getElementById('e-prot').value   = p.protein_ziel_g || ''
+    document.getElementById('e-fett').value   = p.fett_ziel_g || ''
+    document.getElementById('e-carbs').value  = p.carbs_ziel_g || ''
+    document.getElementById('e-wasser').value = p.wasser_ziel_l || 3.5
+    document.getElementById('e-schritte').value = p.schritte_ziel || 10000
+  }
+}
+
+async function saveMacros() {
+  const btn = document.getElementById('btn-save-macros')
+  btn.disabled = true; btn.textContent = 'Speichern...'
+  const updates = {
+    ziel:          document.getElementById('e-ziel').value,
+    kalorien_ziel: parseInt(document.getElementById('e-kcal').value) || null,
+    protein_ziel_g:parseInt(document.getElementById('e-prot').value) || null,
+    fett_ziel_g:   parseInt(document.getElementById('e-fett').value) || null,
+    carbs_ziel_g:  parseInt(document.getElementById('e-carbs').value) || null,
+    wasser_ziel_l: parseFloat(document.getElementById('e-wasser').value) || 3.5,
+    schritte_ziel: parseInt(document.getElementById('e-schritte').value) || 10000,
+  }
+  const { error } = await sb.from('profiles').update(updates).eq('id', currentProfile.id)
+  if (error) { showToast(error.message, 'error'); btn.disabled = false; btn.textContent = 'Speichern'; return }
+  Object.assign(currentProfile, updates)
+  renderProfile(currentProfile)
+  toggleEdit()
+  showToast('Profil aktualisiert ✓')
+  btn.disabled = false; btn.textContent = 'Speichern'
+}
+
+function renderProfile(p) {
+  const li = getLevelInfo(p.xp_gesamt || 0)
+  const dayNr = calcDayNr(p.startdatum)
+  const zd = ZIEL_DATA[p.ziel] || ZIEL_DATA.recomp
+
+  const avatarEl = document.getElementById('p-avatar')
+  if (p.avatar_url) {
+    avatarEl.innerHTML = `<img src="${p.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
+  } else {
+    avatarEl.textContent = '🏋️'
+  }
+  document.getElementById('p-name').textContent    = p.name
+  document.getElementById('p-level').textContent   = `🏅 ${li.name} · Lv.${li.level}`
+  document.getElementById('p-streak').textContent  = p.streak_aktuell || 0
+  document.getElementById('p-xp').textContent      = (p.xp_gesamt || 0).toLocaleString('de-DE')
+  document.getElementById('p-coins').textContent   = (p.coins || 0).toLocaleString('de-DE')
+  document.getElementById('p-days').textContent    = dayNr
+
+  document.getElementById('ziel-icon').textContent = zd.icon
+  document.getElementById('ziel-name').textContent = zd.name
+  document.getElementById('ziel-desc').textContent = zd.desc
+
+  document.getElementById('m-kcal').textContent  = p.kalorien_ziel || '—'
+  document.getElementById('m-prot').textContent  = p.protein_ziel_g ? p.protein_ziel_g + 'g' : '—'
+  document.getElementById('m-fett').textContent  = p.fett_ziel_g ? p.fett_ziel_g + 'g' : '—'
+  document.getElementById('m-carbs').textContent = p.carbs_ziel_g ? p.carbs_ziel_g + 'g' : '—'
+
+  document.getElementById('p-wasser').textContent  = (p.wasser_ziel_l || 3.5) + ' L'
+  document.getElementById('p-schlaf').textContent  = (p.schlaf_ziel_h || 8) + ' h'
+  document.getElementById('p-schritte').textContent = (p.schritte_ziel || 10000).toLocaleString('de-DE')
+
+  if (p.mein_warum) {
+    document.getElementById('warum-card').style.display = 'block'
+    document.getElementById('p-warum').textContent = '„' + p.mein_warum + '"'
+  }
+
+}
+
+async function uploadAvatar(input) {
+  const file = input.files[0]
+  if (!file) return
+  if (file.size > 5 * 1024 * 1024) { showToast('Bild max. 5 MB', 'error'); return }
+
+  showToast('Wird hochgeladen...')
+  const ext = file.name.split('.').pop()
+  const path = `${currentProfile.id}/avatar.${ext}`
+
+  const { error: upErr } = await sb.storage.from('avatars').upload(path, file, { upsert: true })
+  if (upErr) { showToast(upErr.message, 'error'); return }
+
+  const { data } = sb.storage.from('avatars').getPublicUrl(path)
+  const url = data.publicUrl + '?t=' + Date.now()
+
+  const { error: dbErr } = await sb.from('profiles').update({ avatar_url: url }).eq('id', currentProfile.id)
+  if (dbErr) { showToast(dbErr.message, 'error'); return }
+
+  currentProfile.avatar_url = url
+  const avatarEl = document.getElementById('p-avatar')
+  avatarEl.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
+  showToast('Foto gespeichert ✓')
+}
+
+function showResetModal() {
+  document.getElementById('reset-modal').style.display = 'flex'
+}
+
+function closeResetModal() {
+  document.getElementById('reset-modal').style.display = 'none'
+}
+
+async function resetDateOnly() {
+  closeResetModal()
+  const today = new Date().toISOString().split('T')[0]
+  const { error } = await sb.from('profiles').update({ startdatum: today }).eq('id', currentProfile.id)
+  if (error) { showToast(error.message, 'error'); return }
+  showToast('Challenge neu gestartet! Tag 1 beginnt heute. 🚀')
+  setTimeout(() => window.location.href = 'dashboard.html', 1500)
+}
+
+async function resetAll() {
+  if (!confirm('Wirklich ALLE Daten löschen? Das kann nicht rückgängig gemacht werden!')) return
+  closeResetModal()
+  const { data: { user } } = await sb.auth.getUser()
+  await sb.from('daily_entries').delete().eq('user_id', user.id)
+  await sb.from('weekly_checks').delete().eq('user_id', user.id)
+  await sb.from('user_badges').delete().eq('user_id', user.id)
+  await sb.from('photos').delete().eq('user_id', user.id)
+  await sb.from('profiles').delete().eq('id', user.id)
+  window.location.href = 'onboarding.html'
+}
+
+function doSignOut() {
+  sb.auth.signOut().then(() => window.location.href = 'login.html')
+}
+
+async function init() {
+  const ctx = await requireProfile()
+  if (!ctx) return
+  currentProfile = ctx.profile
+  renderProfile(ctx.profile)
+  document.getElementById('loading').style.display = 'none'
+  document.getElementById('main').style.display = 'block'
+}
+
+init()
+</script>
+</body>
+</html>

@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>90TC — Training</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ff6b35">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="90TC">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <style>
+    .week-dots { display:flex; gap:5px; flex-wrap:wrap; margin-top:10px; }
+    .week-dot {
+      width:20px; height:20px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:9px; font-weight:700; cursor:default;
+      border: 1.5px solid var(--border2);
+      color: var(--text2);
+      background: var(--card);
+    }
+    .week-dot.done { background: var(--accent); border-color: var(--accent); color:#fff; }
+    .week-dot.current { background: var(--accent-dim); border-color: var(--accent); color:var(--accent); }
+    .week-dot.deload { background: rgba(59,130,246,0.15); border-color: var(--blue); color:var(--blue); }
+    .week-dot.deload.current { background: rgba(59,130,246,0.3); }
+
+    .day-scroll { display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none; }
+    .day-scroll::-webkit-scrollbar { display:none; }
+    .day-card {
+      flex: 0 0 auto; min-width:88px; padding:12px 10px; border-radius:14px;
+      border: 1.5px solid var(--border); background:var(--card); cursor:pointer;
+      text-align:center; transition: all 0.2s;
+    }
+    .day-card.active { border-color:var(--accent); background:var(--accent-dim); }
+    .day-card.active .day-card-nr { color:var(--accent); }
+    .day-card-nr { font-size:11px; font-weight:700; color:var(--text2); margin-bottom:4px; text-transform:uppercase; }
+    .day-card-icon { font-size:24px; margin-bottom:4px; }
+    .day-card-type { font-size:11px; font-weight:600; color:var(--text); }
+    .day-card-sub { font-size:10px; color:var(--text2); margin-top:2px; }
+
+    .movement-card {
+      border-radius:14px; border:1.5px solid var(--border);
+      background:var(--card); margin-bottom:10px; overflow:hidden;
+    }
+    .movement-header {
+      display:flex; align-items:center; gap:10px; padding:14px 16px;
+      cursor:pointer; user-select:none;
+    }
+    .movement-icon { font-size:20px; flex-shrink:0; }
+    .movement-name { font-size:14px; font-weight:700; flex:1; }
+    .movement-prescription {
+      font-size:11px; color:var(--text2);
+      background:var(--card2); padding:3px 8px; border-radius:20px;
+    }
+    .movement-chevron { color:var(--text2); font-size:14px; transition:transform 0.2s; }
+    .movement-chevron.open { transform:rotate(180deg); }
+    .movement-body { padding:0 16px 16px; border-top:1px solid var(--border); }
+
+    .exercise-select-label { font-size:12px; color:var(--text2); margin-top:12px; margin-bottom:6px; font-weight:600; }
+    .exercise-btn {
+      display:flex; align-items:center; gap:8px; padding:10px 12px;
+      border-radius:10px; border:1.5px solid var(--border);
+      background:var(--card2); cursor:pointer; margin-bottom:6px;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .exercise-btn.selected { border-color:var(--accent); background:var(--accent-dim); }
+    .exercise-btn-name { font-size:13px; font-weight:600; flex:1; }
+    .exercise-btn-info { font-size:11px; color:var(--text2); }
+    .exercise-equip { font-size:14px; }
+
+    .set-table { margin-top:12px; }
+    .set-row {
+      display:grid; grid-template-columns:32px 1fr 1fr 44px; gap:6px;
+      align-items:center; margin-bottom:8px;
+    }
+    .set-nr { font-size:12px; font-weight:700; color:var(--text2); text-align:center; }
+    .set-input {
+      background:var(--card2); border:1.5px solid var(--border);
+      border-radius:8px; padding:8px 10px; color:var(--text); font-size:14px;
+      text-align:center; width:100%; font-weight:600;
+    }
+    .set-input:focus { outline:none; border-color:var(--accent); }
+    .set-done-btn {
+      width:38px; height:38px; border-radius:50%; border:none; cursor:pointer;
+      background:var(--card2); border:1.5px solid var(--border);
+      font-size:16px; display:flex; align-items:center; justify-content:center;
+      transition:all 0.15s;
+    }
+    .set-done-btn.done { background:var(--green); border-color:var(--green); }
+    .set-col-header { font-size:11px; color:var(--text2); font-weight:600; text-align:center; }
+
+    .pr-badge {
+      display:inline-flex; align-items:center; gap:4px;
+      background: rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.4);
+      color:var(--gold2); border-radius:20px; padding:2px 8px;
+      font-size:11px; font-weight:700; margin-top:4px;
+    }
+
+    .start-workout-btn {
+      width:100%; padding:16px; border-radius:14px; border:none;
+      background: linear-gradient(135deg, var(--accent), var(--gold2));
+      color:#fff; font-size:16px; font-weight:800; cursor:pointer;
+      margin-top:8px; letter-spacing:0.5px;
+    }
+    .end-workout-btn {
+      width:100%; padding:16px; border-radius:14px; border:none;
+      background: var(--green); color:#fff; font-size:16px; font-weight:800;
+      cursor:pointer; margin-top:16px; margin-bottom:8px;
+    }
+
+    .session-done-card {
+      background:var(--green-dim); border:1.5px solid rgba(34,197,94,0.3);
+      border-radius:14px; padding:20px; text-align:center; margin-bottom:16px;
+    }
+    .session-done-icon { font-size:48px; margin-bottom:8px; }
+    .session-done-title { font-size:18px; font-weight:800; color:var(--green2); }
+
+    .deload-banner {
+      background:rgba(59,130,246,0.08); border:1.5px solid rgba(59,130,246,0.3);
+      border-radius:12px; padding:12px 16px; margin-bottom:12px;
+      display:flex; align-items:center; gap:10px;
+    }
+
+    .info-hint { font-size:12px; color:var(--text2); margin-top:8px; line-height:1.5; }
+    .rest-hint { font-size:11px; color:var(--text2); margin-top:6px; font-style:italic; }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="splash" id="loading"><div class="spinner"></div></div>
+
+  <div id="main" style="display:none">
+    <div class="page">
+
+      <!-- Header -->
+      <div class="dash-header">
+        <div>
+          <div style="font-size:12px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Homefit · 4 Tage · GK/OK/UK/GK</div>
+          <div class="dash-name" style="font-size:22px">Trainingsplan 💪</div>
+        </div>
+        <div id="week-badge" style="background:var(--accent-dim);border:1.5px solid var(--accent-border);color:var(--accent);padding:6px 12px;border-radius:20px;font-size:13px;font-weight:800">W–</div>
+      </div>
+
+      <!-- Wochenübersicht -->
+      <div class="card glass mb-12">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-size:12px;color:var(--text2);font-weight:600;margin-bottom:2px">AKTUELLE WOCHE</div>
+            <div id="week-title" style="font-size:17px;font-weight:800">—</div>
+            <div id="week-sub" style="font-size:12px;color:var(--text2);margin-top:2px">—</div>
+          </div>
+          <div id="deload-pill" style="display:none;background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.4);color:var(--blue);padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700">DELOAD</div>
+        </div>
+        <div class="week-dots" id="week-dots"></div>
+      </div>
+
+      <!-- Deload Banner -->
+      <div class="deload-banner" id="deload-banner" style="display:none">
+        <span style="font-size:24px">🧘</span>
+        <div>
+          <div style="font-weight:700;color:var(--blue)">Deload-Woche</div>
+          <div style="font-size:12px;color:var(--text2)">Weniger Volumen, gleiche Übungen. Erholung ist Training!</div>
+        </div>
+      </div>
+
+      <!-- Tag-Auswahl -->
+      <div class="section-title mb-8">TRAININGSTAGE</div>
+      <div class="day-scroll mb-16" id="day-tabs"></div>
+
+      <!-- Workout Content -->
+      <div id="workout-content"></div>
+
+      <div style="height:88px"></div>
+    </div>
+  </div>
+</div>
+
+<nav class="bnav">
+  <a href="dashboard.html" class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    Start
+  </a>
+  <a href="training.html" class="bnav-item active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="8" width="4" height="8" rx="1"/><rect x="18" y="8" width="4" height="8" rx="1"/><line x1="6" y1="12" x2="10" y2="12"/><line x1="14" y1="12" x2="18" y2="12"/><rect x="10" y="9" width="4" height="6" rx="1"/></svg>
+    Training
+  </a>
+  <a href="fortschritt.html" class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    Statistik
+  </a>
+  <a href="profil.html" class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Profil
+  </a>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/gamification.js"></script>
+<script>
+
+// ── Trainingsplan Daten ──────────────────────────────────────────
+const TAGE = [
+  {
+    id: 'gk_a', label: 'Tag 1', typ: 'Ganzkörper A', kurz: 'GK-A', icon: '🏋️',
+    muster: ['beine_quad','beine_hintere_kette','push_horizontal','pull_vertikal','push_vertikal','pull_horizontal']
+  },
+  {
+    id: 'ok', label: 'Tag 2', typ: 'Oberkörper', kurz: 'OK', icon: '💪',
+    muster: ['push_horizontal','pull_horizontal','push_vertikal','pull_vertikal','schulter_seite','brust_isoliert']
+  },
+  {
+    id: 'uk', label: 'Tag 3', typ: 'Unterkörper', kurz: 'UK', icon: '🦵',
+    muster: ['beine_quad','beine_hintere_kette','beine_glute','beinbeuger','beinstrecker','waden']
+  },
+  {
+    id: 'gk_b', label: 'Tag 4', typ: 'Ganzkörper B', kurz: 'GK-B', icon: '🔥',
+    muster: ['push_horizontal','pull_vertikal','beine_quad','beine_hintere_kette','push_vertikal','pull_horizontal']
+  }
+];
+
+const MUSTER_META = {
+  'beine_quad':          { name: 'Beine – Quaddominant',    icon: '🦵', pause: '2–3 Min. Pause (Verbundübung)' },
+  'beine_hintere_kette': { name: 'Beine – Hintere Kette',   icon: '🍑', pause: '2–3 Min. Pause (Verbundübung)' },
+  'beine_glute':         { name: 'Beine – Glutedominant',   icon: '🍑', pause: '2 Min. Pause' },
+  'beinbeuger':          { name: 'Beinbeuger',              icon: '🦵', pause: '1–2 Min. Pause (Isolation)' },
+  'beinstrecker':        { name: 'Beinstrecker',            icon: '🦵', pause: '1–2 Min. Pause (Isolation)' },
+  'waden':               { name: 'Waden',                   icon: '🦶', pause: '1–2 Min. Pause (Isolation)' },
+  'push_horizontal':     { name: 'Push Horizontal',         icon: '🏋️', pause: '2–3 Min. Pause (Verbundübung)' },
+  'push_vertikal':       { name: 'Push Vertikal',           icon: '🏋️', pause: '2–3 Min. Pause (Verbundübung)' },
+  'pull_horizontal':     { name: 'Pull Horizontal',         icon: '🏋️', pause: '2–3 Min. Pause (Verbundübung)' },
+  'pull_vertikal':       { name: 'Pull Vertikal',           icon: '🏋️', pause: '2–3 Min. Pause (Verbundübung)' },
+  'schulter_seite':      { name: 'Schulter – Seite',        icon: '💪', pause: '1–2 Min. Pause (Isolation)' },
+  'brust_isoliert':      { name: 'Brust – Isoliert',        icon: '💪', pause: '1–2 Min. Pause (Isolation)' },
+};
+
+// Equipment-Icons: kw=Körpergewicht, kh=Kurzhantel, bank=Bank, band=Widerstandsband, booty=Booty-Band, matte=Matte, mb=Medizinball
+const UEBUNGEN = {
+  'push_horizontal': [
+    { name: 'KH-Bankdrücken flach',     equip: 'bank+kh', eicon: '🪑🏋️', info: 'Flache Bank, KH 3–24 kg' },
+    { name: 'KH-Bankdrücken Schrägbank',equip: 'bank+kh', eicon: '🪑🏋️', info: 'Bank ~30°, toller Bruststretch' },
+    { name: 'Liegestütze im Defizit',   equip: 'kh',      eicon: '🏋️',  info: 'Hände auf KH, tiefer Stretch' },
+    { name: 'Liegestütze',              equip: 'kw',      eicon: '🤸',   info: 'Körpergewicht, Standardvariante' },
+    { name: 'Liegestütze mit Band',     equip: 'band',    eicon: '🔗',   info: 'Band über den Rücken gespannt' },
+  ],
+  'pull_horizontal': [
+    { name: 'KH-Rudern einarmig',        equip: 'bank+kh', eicon: '🪑🏋️', info: 'Auf Bank abgestützt, volle ROM' },
+    { name: 'KH-Rudern vorgebeugt',      equip: 'kh',      eicon: '🏋️',  info: 'Oberkörper ~45°, beide Arme' },
+    { name: 'Rudern vorgebeugt mit Band',equip: 'band',    eicon: '🔗',   info: 'Band unter Füßen fixieren' },
+  ],
+  'push_vertikal': [
+    { name: 'KH-Schulterdrücken sitzend', equip: 'bank+kh', eicon: '🪑🏋️', info: 'Bank aufrecht, Ellbogen 90°' },
+    { name: 'KH-Schulterdrücken stehend', equip: 'kh',      eicon: '🏋️',  info: 'Stehend, Core aktiv halten' },
+    { name: 'Schulterdrücken mit Band',   equip: 'band',    eicon: '🔗',   info: 'Band unter Füßen, sitzend' },
+  ],
+  'pull_vertikal': [
+    { name: 'KH-Pullover auf Bank',        equip: 'bank+kh', eicon: '🪑🏋️', info: 'Quer auf Bank, 1 KH beidarmig' },
+    { name: 'Latzug mit Band',             equip: 'band',    eicon: '🔗',   info: 'Band oben fixiert (Türrahmen)' },
+    { name: 'Latzug einarmig mit Band',    equip: 'band',    eicon: '🔗',   info: 'Abwechselnd, mehr Fokus' },
+  ],
+  'schulter_seite': [
+    { name: 'KH-Seitheben',           equip: 'kh',   eicon: '🏋️', info: 'Leichte KH, sauber ausführen' },
+    { name: 'Seitheben mit Band',      equip: 'band', eicon: '🔗',  info: 'Band unter dem Fuß' },
+    { name: 'V-Raises mit Band',       equip: 'band', eicon: '🔗',  info: 'Y-Form, nach vorne-oben heben' },
+  ],
+  'brust_isoliert': [
+    { name: 'KH-Fliegende flach',      equip: 'bank+kh', eicon: '🪑🏋️', info: 'Flache Bank, weiter Bogen' },
+    { name: 'KH-Fliegende Schrägbank', equip: 'bank+kh', eicon: '🪑🏋️', info: 'Bank 30°, obere Brust' },
+    { name: 'Fliegende mit Band',      equip: 'band',    eicon: '🔗',   info: 'Band beidseitig fixiert (Türrahmen)' },
+  ],
+  'beine_quad': [
+    { name: 'Goblet Squat mit KH',            equip: 'kh',      eicon: '🏋️',  info: 'KH vor der Brust, tief gehen' },
+    { name: 'Bulgarian Split Squat mit KH',   equip: 'bank+kh', eicon: '🪑🏋️', info: 'Hinterer Fuß auf Bank, KH halten' },
+    { name: 'Ausfallschritte mit KH',         equip: 'kh',      eicon: '🏋️',  info: 'KH in jeder Hand, alternierend' },
+    { name: 'Ausfallschritte mit Band',       equip: 'band',    eicon: '🔗',   info: 'Band über Schultern gespannt' },
+  ],
+  'beine_hintere_kette': [
+    { name: 'Rumänisches KH-Kreuzheben',         equip: 'kh',   eicon: '🏋️', info: 'Knie leicht gebeugt, KH nah am Körper' },
+    { name: 'Einbeiniges rum. KH-Kreuzheben',    equip: 'kh',   eicon: '🏋️', info: 'Balance + Kraft, 1 KH' },
+    { name: 'Rum. Kreuzheben mit Band',           equip: 'band', eicon: '🔗',  info: 'Band unter Füßen, Spannung oben halten' },
+    { name: 'Good Mornings mit Band',             equip: 'band', eicon: '🔗',  info: 'Band über Schultern, vorgebeugt' },
+  ],
+  'beine_glute': [
+    { name: 'Hip Thrust auf Bank mit KH',    equip: 'bank+kh', eicon: '🪑🏋️', info: 'Schultern auf Bank, KH auf Hüfte' },
+    { name: 'Hip Thrust mit Booty-Band',     equip: 'booty',   eicon: '💜',   info: 'Band über Knie, höhere Reps' },
+    { name: 'Einbeinige Hip Thrust auf Bank',equip: 'bank',    eicon: '🪑',   info: 'Intensiver, einbeinig' },
+    { name: 'Po Brücke mit Booty-Band',      equip: 'booty',   eicon: '💜',   info: 'Liegend auf Matte, Band über Knie' },
+    { name: 'Bulgarian Split Squat tief',    equip: 'bank+kh', eicon: '🪑🏋️', info: 'Tiefer als normal, maximaler Stretch' },
+  ],
+  'beinbeuger': [
+    { name: 'Nordic Curl',            equip: 'matte', eicon: '🧘', info: 'Füße fixieren, langsam ablassen (negativ)' },
+    { name: 'Beinbeuger mit Band',    equip: 'band',  eicon: '🔗',  info: 'Liegend auf Matte, Band am Knöchel' },
+    { name: 'Medizinball Leg Curl',   equip: 'mb',    eicon: '⚽',  info: '6kg Ball zwischen Knöcheln klemmen, liegend' },
+  ],
+  'beinstrecker': [
+    { name: 'Beinstrecker mit Band',         equip: 'band', eicon: '🔗', info: 'Sitzend, Band am Knöchel fixiert' },
+    { name: 'Reverse Nordic Curl mit Band',  equip: 'band', eicon: '🔗', info: 'Knie auf Matte, Band als Hilfe zurücklehnen' },
+    { name: 'Einbeinige Kniebeuge (Negativ)',equip: 'kw',   eicon: '🤸', info: 'Körpergewicht, langsam runter' },
+  ],
+  'waden': [
+    { name: 'KH-Wadenheben einbeinig',    equip: 'kh',   eicon: '🏋️', info: 'KH in einer Hand, auf Zehenspitzen' },
+    { name: 'Wadenheben mit Band stehend',equip: 'band',  eicon: '🔗',  info: 'Band unter Füßen, Spannung konstant' },
+    { name: 'Wadenheben auf Stufe',       equip: 'kw',   eicon: '🤸',  info: 'Stufe für mehr ROM, langsam und kontrolliert' },
+  ],
+};
+
+// ── State ────────────────────────────────────────────────────────
+let currentWeek = 1;
+let selectedDay = 0;  // index 0-3
+let activeSession = null;  // { id, tag_id, datum }
+let sessionSets = {};  // { muster_id: { gewicht, wdh, done } }
+let prData = {};  // { uebung: gewicht_kg }
+let userId = null;
+
+// LocalStorage keys
+const LS_SELECTIONS = 'tc_exercise_sel';  // { muster_id: uebungName }
+let exerciseSelections = {};
+
+// ── Helpers ──────────────────────────────────────────────────────
+function calcWeek(startdatum) {
+  const start = new Date(startdatum);
+  const now = new Date();
+  const diffDays = Math.floor((now - start) / (1000 * 60 * 60 * 24));
+  return Math.min(12, Math.max(1, Math.floor(diffDays / 7) + 1));
+}
+
+function getSätze(weekNr, movIdx) {
+  if (weekNr === 7) return 3;
+  if (weekNr > 12) weekNr = 12;
+  const phase = weekNr <= 6 ? weekNr - 1 : weekNr - 7;
+  return movIdx < phase ? 4 : 3;
+}
+
+function getWeekName(w) {
+  if (w === 7) return 'Woche 7 — Deload';
+  if (w <= 6)  return `Woche ${w} — Phase 1`;
+  return `Woche ${w} — Phase 2`;
+}
+function getWeekSub(w) {
+  if (w === 7) return 'Regenerationswoche — halbes Volumen, gleiches Gewicht';
+  if (w === 1) return 'Einführungswoche · Alle 3 Sätze · RIR 0';
+  if (w <= 6)  return `Volumen steigt progressiv · bis zu ${Math.min(w-1+1,4)} Sätze · RIR 0`;
+  return `Zweite Phase · Sätze steigen wieder an · RIR 0`;
+}
+
+function getToday() {
+  return new Date().toISOString().split('T')[0];
+}
+
+// ── Init ─────────────────────────────────────────────────────────
+async function init() {
+  const ctx = await requireProfile();
+  if (!ctx) return;
+  const { user, profile } = ctx;
+  userId = user.id;
+
+  exerciseSelections = JSON.parse(localStorage.getItem(LS_SELECTIONS) || '{}');
+  currentWeek = calcWeek(profile.startdatum);
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('main').style.display = 'block';
+
+  // Week badge
+  document.getElementById('week-badge').textContent = 'W' + currentWeek;
+  document.getElementById('week-title').textContent = getWeekName(currentWeek);
+  document.getElementById('week-sub').textContent = getWeekSub(currentWeek);
+  if (currentWeek === 7) {
+    document.getElementById('deload-pill').style.display = 'block';
+    document.getElementById('deload-banner').style.display = 'flex';
+  }
+
+  // Week dots
+  const dotsEl = document.getElementById('week-dots');
+  for (let w = 1; w <= 12; w++) {
+    const dot = document.createElement('div');
+    dot.className = 'week-dot';
+    if (w === 7) dot.classList.add('deload');
+    if (w < currentWeek) dot.classList.add('done');
+    if (w === currentWeek) dot.classList.add('current');
+    dot.textContent = w === 7 ? 'D' : w;
+    dotsEl.appendChild(dot);
+  }
+
+  // Load PRs from Supabase
+  await loadPRs();
+
+  // Check active session today
+  await checkTodaySession();
+
+  // Render day tabs
+  renderDayTabs();
+
+  // Auto-select today's training day (Montag=GK-A, Di=OK, Mi=UK, Do=GK-B, Fr=GK-A, etc.)
+  const dow = new Date().getDay(); // 0=Sun, 1=Mon...
+  const dayMap = { 1:0, 2:1, 3:2, 4:3, 5:0, 6:1, 0:2 };
+  selectedDay = dayMap[dow] ?? 0;
+  renderDayTabs();
+  renderWorkout();
+}
+
+async function loadPRs() {
+  try {
+    const { data } = await supabase
+      .from('personal_records')
+      .select('uebung, gewicht_kg')
+      .eq('user_id', userId);
+    if (data) data.forEach(r => prData[r.uebung] = r.gewicht_kg);
+  } catch(e) {}
+}
+
+async function checkTodaySession() {
+  try {
+    const { data } = await supabase
+      .from('training_sessions')
+      .select('id, plan_name')
+      .eq('user_id', userId)
+      .eq('datum', getToday())
+      .limit(1);
+    if (data && data.length) {
+      activeSession = { id: data[0].id, tag_id: data[0].plan_name };
+    }
+  } catch(e) {}
+}
+
+// ── Day Tabs ─────────────────────────────────────────────────────
+function renderDayTabs() {
+  const el = document.getElementById('day-tabs');
+  el.innerHTML = '';
+  TAGE.forEach((tag, i) => {
+    const div = document.createElement('div');
+    div.className = 'day-card' + (i === selectedDay ? ' active' : '');
+    div.innerHTML = `<div class="day-card-nr">${tag.label}</div>
+      <div class="day-card-icon">${tag.icon}</div>
+      <div class="day-card-type">${tag.kurz}</div>
+      <div class="day-card-sub">${tag.typ}</div>`;
+    div.onclick = () => { selectedDay = i; renderDayTabs(); renderWorkout(); };
+    el.appendChild(div);
+  });
+}
+
+// ── Workout Content ───────────────────────────────────────────────
+function renderWorkout() {
+  const el = document.getElementById('workout-content');
+  const tag = TAGE[selectedDay];
+  const todayTag = activeSession?.tag_id;
+  const isThisDayActive = activeSession && todayTag === tag.id;
+  const isDone = isThisDayActive && sessionSets._completed;
+
+  let html = '';
+
+  // Done state
+  if (isDone) {
+    html += `<div class="session-done-card">
+      <div class="session-done-icon">🎉</div>
+      <div class="session-done-title">Training abgeschlossen!</div>
+      <div style="font-size:13px;color:var(--text2);margin-top:4px">Gut gemacht — alle Sätze erledigt</div>
+    </div>`;
+  }
+
+  // Start button if no active session today
+  if (!activeSession && !isDone) {
+    html += `<div class="card glass" style="text-align:center;padding:20px;margin-bottom:16px">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:4px">Bereit für heute?</div>
+      <div style="font-size:16px;font-weight:800;margin-bottom:4px">${tag.typ}</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:16px">${tag.muster.length} Bewegungsmuster · ${currentWeek === 7 ? 'Deload' : 'RIR 0'}</div>
+      <button class="start-workout-btn" onclick="startSession('${tag.id}')">Training starten 🚀</button>
+    </div>`;
+  } else if (activeSession && todayTag !== tag.id && !isDone) {
+    // Different day was done
+    html += `<div class="card" style="border-color:var(--gold-dim);background:var(--gold-dim);margin-bottom:16px;display:flex;align-items:center;gap:12px">
+      <span style="font-size:24px">⚡</span>
+      <div>
+        <div style="font-weight:700">Heute schon trainiert</div>
+        <div style="font-size:12px;color:var(--text2)">Eine Session wurde bereits für heute gespeichert</div>
+      </div>
+    </div>`;
+  }
+
+  // RIR info
+  html += `<div class="info-hint" style="margin-bottom:12px">
+    <strong>Alle Übungen: 10–25 Wdh. · RIR 0</strong> (bis kurz vor Muskelversagen)<br>
+    Verbundübungen: 2–5 Min. Pause · Isolationsübungen: 1–3 Min.
+  </div>`;
+
+  // Movement cards
+  tag.muster.forEach((musterId, movIdx) => {
+    const sets = getSätze(currentWeek, movIdx);
+    const meta = MUSTER_META[musterId];
+    const uebungen = UEBUNGEN[musterId] || [];
+    const selectedUebung = exerciseSelections[musterId] || null;
+    const isTraining = isThisDayActive && !isDone;
+
+    html += renderMovementCard(musterId, meta, uebungen, sets, selectedUebung, isTraining, movIdx);
+  });
+
+  // End training button
+  if (isThisDayActive && !isDone) {
+    html += `<button class="end-workout-btn" onclick="endSession()">✅ Training beenden &amp; speichern</button>`;
+  }
+
+  el.innerHTML = html;
+
+  // Attach set checkbox events
+  el.querySelectorAll('.set-done-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const setKey = this.dataset.key;
+      const isNowDone = !this.classList.contains('done');
+      this.classList.toggle('done', isNowDone);
+      this.textContent = isNowDone ? '✓' : '○';
+      // Save to state
+      if (!sessionSets[this.dataset.muster]) sessionSets[this.dataset.muster] = {};
+      if (!sessionSets[this.dataset.muster][this.dataset.satz]) sessionSets[this.dataset.muster][this.dataset.satz] = {};
+      sessionSets[this.dataset.muster][this.dataset.satz].done = isNowDone;
+    });
+  });
+
+  // Collapse/expand movement cards
+  el.querySelectorAll('.movement-header').forEach(h => {
+    h.addEventListener('click', function() {
+      const body = this.nextElementSibling;
+      const chev = this.querySelector('.movement-chevron');
+      if (!body || !body.classList.contains('movement-body')) return;
+      const isOpen = body.style.display !== 'none';
+      body.style.display = isOpen ? 'none' : 'block';
+      chev?.classList.toggle('open', !isOpen);
+    });
+  });
+}
+
+function renderMovementCard(musterId, meta, uebungen, sets, selectedUebung, isTraining, movIdx) {
+  const setLabel = `${sets} × 10–25 · RIR 0`;
+
+  let body = '';
+
+  if (!selectedUebung) {
+    // Exercise selection
+    body += `<div class="exercise-select-label">Wähle deine Übung (bleibt für 90 Tage):</div>`;
+    uebungen.forEach(u => {
+      body += `<div class="exercise-btn" onclick="selectExercise('${musterId}', '${escStr(u.name)}')">
+        <span class="exercise-equip">${u.eicon}</span>
+        <div style="flex:1">
+          <div class="exercise-btn-name">${u.name}</div>
+          <div class="exercise-btn-info">${u.info}</div>
+        </div>
+      </div>`;
+    });
+    body += `<div class="info-hint">💡 Laut Sjard: Wähle deine Übung und bleib die ganze Challenge dabei!</div>`;
+  } else {
+    // Selected exercise with PR info
+    const prWeight = prData[selectedUebung];
+    const prHtml = prWeight ? `<div class="pr-badge">🏆 PR: ${prWeight} kg</div>` : '';
+    body += `<div style="margin-bottom:8px">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:4px">Ausgewählte Übung:</div>
+      <div style="font-size:14px;font-weight:700;color:var(--accent)">${selectedUebung}</div>
+      ${prHtml}
+    </div>`;
+    body += `<button onclick="changeExercise('${musterId}')" style="background:transparent;border:1px solid var(--border);color:var(--text2);padding:4px 10px;border-radius:8px;font-size:12px;cursor:pointer;margin-bottom:10px">Übung ändern</button>`;
+
+    if (isTraining) {
+      // Set logger
+      body += `<div class="set-table">
+        <div class="set-row">
+          <div class="set-col-header">Satz</div>
+          <div class="set-col-header">Gewicht (kg)</div>
+          <div class="set-col-header">Wdh.</div>
+          <div class="set-col-header">✓</div>
+        </div>`;
+      for (let s = 1; s <= sets; s++) {
+        const stateGew = sessionSets[musterId]?.[s]?.gewicht || '';
+        const stateWdh = sessionSets[musterId]?.[s]?.wdh || '';
+        const stateDone = sessionSets[musterId]?.[s]?.done || false;
+        const prevGew = prData[selectedUebung] || '';
+        body += `<div class="set-row">
+          <div class="set-nr">${s}</div>
+          <input class="set-input" type="number" step="0.5" min="0" max="100"
+            placeholder="${prevGew || '—'}"
+            value="${stateGew}"
+            data-muster="${musterId}" data-satz="${s}" data-field="gewicht"
+            onchange="saveSetData(this)">
+          <input class="set-input" type="number" min="1" max="50"
+            placeholder="—"
+            value="${stateWdh}"
+            data-muster="${musterId}" data-satz="${s}" data-field="wdh"
+            onchange="saveSetData(this)">
+          <button class="set-done-btn ${stateDone ? 'done' : ''}"
+            data-key="${musterId}_${s}" data-muster="${musterId}" data-satz="${s}">
+            ${stateDone ? '✓' : '○'}
+          </button>
+        </div>`;
+      }
+      body += `</div>`;
+    }
+
+    body += `<div class="rest-hint">${meta.pause}</div>`;
+  }
+
+  return `<div class="movement-card">
+    <div class="movement-header">
+      <span class="movement-icon">${meta.icon}</span>
+      <span class="movement-name">${meta.name}</span>
+      <span class="movement-prescription">${setLabel}</span>
+      <span class="movement-chevron open">▾</span>
+    </div>
+    <div class="movement-body">${body}</div>
+  </div>`;
+}
+
+function escStr(s) { return s.replace(/'/g, "\\'"); }
+
+function selectExercise(musterId, uebungName) {
+  exerciseSelections[musterId] = uebungName;
+  localStorage.setItem(LS_SELECTIONS, JSON.stringify(exerciseSelections));
+  renderWorkout();
+}
+
+function changeExercise(musterId) {
+  if (!confirm('Übung wirklich wechseln? Sjard empfiehlt, die Übung für die gesamte Challenge beizubehalten.')) return;
+  delete exerciseSelections[musterId];
+  localStorage.setItem(LS_SELECTIONS, JSON.stringify(exerciseSelections));
+  renderWorkout();
+}
+
+function saveSetData(input) {
+  const { muster, satz, field } = input.dataset;
+  if (!sessionSets[muster]) sessionSets[muster] = {};
+  if (!sessionSets[muster][satz]) sessionSets[muster][satz] = {};
+  sessionSets[muster][satz][field] = parseFloat(input.value) || 0;
+}
+
+// ── Session Speichern ─────────────────────────────────────────────
+async function startSession(tagId) {
+  const tag = TAGE.find(t => t.id === tagId);
+  if (!tag) return;
+
+  try {
+    const { data, error } = await supabase
+      .from('training_sessions')
+      .insert({
+        user_id: userId,
+        datum: getToday(),
+        plan_name: tagId,
+        notizen: `Woche ${currentWeek} · ${tag.typ}`
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    activeSession = { id: data.id, tag_id: tagId };
+    sessionSets = {};
+    renderDayTabs();
+    renderWorkout();
+    showToast('Training gestartet! 💪', 'success');
+  } catch(e) {
+    showToast('Fehler beim Starten', 'error');
+  }
+}
+
+async function endSession() {
+  if (!activeSession) return;
+
+  const tag = TAGE[selectedDay];
+  const allSets = [];
+  let newPRs = [];
+
+  // Collect all sets
+  for (const musterId of tag.muster) {
+    const uebung = exerciseSelections[musterId];
+    if (!uebung || !sessionSets[musterId]) continue;
+    const musterSets = sessionSets[musterId];
+    for (const [satzNr, setData] of Object.entries(musterSets)) {
+      if (!setData.done) continue;
+      const gewicht = setData.gewicht || 0;
+      const wdh = setData.wdh || 0;
+      const istPR = gewicht > 0 && gewicht > (prData[uebung] || 0);
+
+      allSets.push({
+        session_id: activeSession.id,
+        uebung,
+        satz_nr: parseInt(satzNr),
+        wiederholungen: wdh,
+        gewicht_kg: gewicht,
+        ist_pr: istPR
+      });
+
+      if (istPR) {
+        newPRs.push({ uebung, gewicht });
+        prData[uebung] = gewicht;
+      }
+    }
+  }
+
+  try {
+    // Save sets
+    if (allSets.length > 0) {
+      await supabase.from('training_sets').insert(allSets);
+    }
+
+    // Update PRs
+    for (const pr of newPRs) {
+      await supabase.from('personal_records').upsert({
+        user_id: userId,
+        uebung: pr.uebung,
+        gewicht_kg: pr.gewicht,
+        datum: getToday()
+      }, { onConflict: 'user_id,uebung' });
+    }
+
+    // Mark session completed in state
+    sessionSets._completed = true;
+
+    // XP award (+50 XP für Training)
+    await awardTrainingXP();
+
+    renderWorkout();
+
+    if (newPRs.length > 0) {
+      showToast(`🏆 ${newPRs.length} neuer PR! +50 XP`, 'success');
+    } else {
+      showToast('Training gespeichert! +50 XP 💪', 'success');
+    }
+  } catch(e) {
+    showToast('Fehler beim Speichern', 'error');
+  }
+}
+
+async function awardTrainingXP() {
+  try {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('xp_gesamt')
+      .eq('id', userId)
+      .single();
+    if (profile) {
+      await supabase.from('profiles')
+        .update({ xp_gesamt: (profile.xp_gesamt || 0) + 50 })
+        .eq('id', userId);
+    }
+  } catch(e) {}
+}
+
+init();
+</script>
+</body>
+</html>

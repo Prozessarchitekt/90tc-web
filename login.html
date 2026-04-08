@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>90TC — Login</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ff6b35">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="90TC">
+  <link rel="apple-touch-icon" href="icon.svg">
+</head>
+<body>
+<div id="app">
+  <div class="page-centered">
+    <div class="auth-logo">🔥</div>
+    <h1 class="auth-title gradient-text">90 Tage Challenge</h1>
+    <p class="auth-sub">Dein persönliches Fitness-Tagebuch</p>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Login</button>
+      <button class="auth-tab" id="tab-register" onclick="switchTab('register')">Registrieren</button>
+    </div>
+
+    <form class="auth-form" id="auth-form" onsubmit="handleSubmit(event)">
+      <div class="input-group">
+        <label class="input-label">E-Mail</label>
+        <input type="email" id="email" placeholder="deine@email.de" required autocomplete="email">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Passwort</label>
+        <input type="password" id="password" placeholder="Mindestens 6 Zeichen" required autocomplete="current-password">
+      </div>
+      <div id="msg"></div>
+      <button class="btn btn-primary" type="submit" id="submit-btn">
+        <span id="btn-text">Einloggen</span>
+      </button>
+    </form>
+
+    <p style="margin-top:20px; font-size:13px; color:var(--muted); text-align:center;">
+      Dein persönliches Projekt. Kein Bullshit. Nur Ergebnisse.
+    </p>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script>
+  let currentTab = 'login'
+
+  // Redirect if already logged in
+  sb.auth.getSession().then(({ data: { session } }) => {
+    if (session) window.location.href = 'index.html'
+  })
+
+  function switchTab(tab) {
+    currentTab = tab
+    document.getElementById('tab-login').classList.toggle('active', tab === 'login')
+    document.getElementById('tab-register').classList.toggle('active', tab === 'register')
+    document.getElementById('btn-text').textContent = tab === 'login' ? 'Einloggen' : 'Account erstellen'
+    document.getElementById('password').autocomplete = tab === 'login' ? 'current-password' : 'new-password'
+    document.getElementById('msg').innerHTML = ''
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    const email    = document.getElementById('email').value
+    const password = document.getElementById('password').value
+    const btn      = document.getElementById('submit-btn')
+    const msg      = document.getElementById('msg')
+
+    btn.disabled = true
+    btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border-width:2px;margin:0 auto"></div>'
+    msg.innerHTML = ''
+
+    if (currentTab === 'login') {
+      const { error } = await sb.auth.signInWithPassword({ email, password })
+      if (error) {
+        msg.innerHTML = `<div class="msg-error">${error.message}</div>`
+      } else {
+        window.location.href = 'index.html'
+      }
+    } else {
+      const { error } = await sb.auth.signUp({ email, password })
+      if (error) {
+        msg.innerHTML = `<div class="msg-error">${error.message}</div>`
+      } else {
+        msg.innerHTML = `<div class="msg-success">✓ Account erstellt! Du kannst dich jetzt einloggen.</div>`
+        switchTab('login')
+      }
+    }
+
+    btn.disabled = false
+    btn.innerHTML = `<span id="btn-text">${currentTab === 'login' ? 'Einloggen' : 'Account erstellen'}</span>`
+  }
+</script>
+</body>
+</html>

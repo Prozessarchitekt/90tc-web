@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>90TC — Dashboard</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ff6b35">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="90TC">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <style>
+    body { background: #07070e; }
+
+    /* ── Atmospheric background ── */
+    .dash-bg {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 90% 45% at 50% 0%, rgba(255,107,53,.18) 0%, transparent 65%),
+        radial-gradient(ellipse 70% 50% at 10% 80%, rgba(20,25,60,.6) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 40% at 90% 70%, rgba(30,20,50,.4) 0%, transparent 50%),
+        linear-gradient(170deg, #0d0d1c 0%, #07070e 45%, #0b0d1a 100%);
+    }
+
+    /* ── Page ── */
+    .dash-page {
+      position: relative; z-index: 1;
+      max-width: 430px; width: 100%; margin: 0 auto;
+      padding-bottom: 100px;
+    }
+
+    /* ── Hero ── */
+    .dash-hero {
+      text-align: center;
+      padding: 52px 20px 20px;
+    }
+    .dash-flame {
+      font-size: 52px; display: block; margin-bottom: 10px;
+      filter: drop-shadow(0 0 24px rgba(255,107,53,.6));
+    }
+    .dash-title {
+      font-size: 30px; font-weight: 900; color: #fff;
+      letter-spacing: -.5px; margin-bottom: 36px;
+      text-shadow: 0 2px 20px rgba(0,0,0,.5);
+    }
+
+    /* ── Double Ring ── */
+    .ring-wrap {
+      position: relative; width: 210px; height: 210px;
+      margin: 0 auto 14px;
+      filter: drop-shadow(0 0 30px rgba(255,107,53,.3));
+    }
+    .ring-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .ring-bg-outer { fill: none; stroke: rgba(255,255,255,.07); stroke-width: 14; }
+    .ring-bg-inner { fill: none; stroke: rgba(255,255,255,.04); stroke-width: 9; }
+    .ring-fill-inner {
+      fill: none; stroke: rgba(255,107,53,.3); stroke-width: 9;
+      stroke-linecap: round;
+    }
+    .ring-fill-outer {
+      fill: none; stroke: url(#grad); stroke-width: 14;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1);
+    }
+    .ring-glass {
+      position: absolute; inset: 14px;
+      border-radius: 50%;
+      background: radial-gradient(ellipse at 40% 35%, rgba(255,255,255,.06) 0%, rgba(0,0,0,.3) 100%);
+      backdrop-filter: blur(2px);
+    }
+    .ring-center {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .ring-num { font-size: 48px; font-weight: 900; color: #fff; line-height: 1; letter-spacing: -2px; }
+    .ring-of { font-size: 14px; color: rgba(255,255,255,.55); margin-top: 2px; font-weight: 500; }
+    .ring-label {
+      font-size: 12px; color: rgba(255,255,255,.4); letter-spacing: .08em;
+      text-transform: uppercase; font-weight: 600;
+    }
+
+    /* ── Stat Cards ── */
+    .stat-row {
+      display: grid; grid-template-columns: repeat(3,1fr);
+      gap: 10px; padding: 0 16px; margin-bottom: 16px;
+    }
+    .stat-c {
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 18px; padding: 16px 8px 14px;
+      text-align: center;
+      backdrop-filter: blur(12px);
+    }
+    .stat-c-icon { font-size: 26px; margin-bottom: 7px; line-height: 1; }
+    .stat-c-lbl { font-size: 10px; color: rgba(255,255,255,.45); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 7px; }
+    .stat-c-val { font-size: 20px; font-weight: 900; color: #fff; line-height: 1; }
+    .stat-c-unit { font-size: 10px; color: rgba(255,255,255,.35); margin-top: 3px; }
+
+    /* ── CTA Button ── */
+    .cta-wrap { padding: 4px 16px 14px; }
+    .btn-cta {
+      display: block; width: 100%; text-align: center;
+      background: linear-gradient(135deg, #ff6b35 0%, #f97316 100%);
+      color: #fff; font-size: 17px; font-weight: 800;
+      border: none; border-radius: 50px; padding: 19px 24px;
+      cursor: pointer; text-decoration: none;
+      box-shadow: 0 6px 28px rgba(255,107,53,.45), 0 0 0 1px rgba(255,107,53,.2);
+      letter-spacing: .01em; transition: transform .15s, box-shadow .15s;
+    }
+    .btn-cta:active { transform: scale(.97); box-shadow: 0 2px 12px rgba(255,107,53,.35); }
+
+    /* ── Check-in pills ── */
+    .pill-row { display: flex; gap: 10px; padding: 0 16px; margin-bottom: 14px; }
+    .pill {
+      flex: 1; display: flex; align-items: center; gap: 10px;
+      background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.09);
+      border-radius: 14px; padding: 11px 14px; text-decoration: none; color: #fff;
+      transition: border-color .2s;
+    }
+    .pill.done { border-color: rgba(74,222,128,.3); background: rgba(74,222,128,.06); }
+    .pill-icon { font-size: 20px; }
+    .pill-lbl { font-size: 13px; font-weight: 700; line-height: 1.2; }
+    .pill-sub { font-size: 11px; color: rgba(255,255,255,.4); margin-top: 1px; }
+    .pill.done .pill-sub { color: rgba(74,222,128,.7); }
+
+    /* ── Weekly reminder ── */
+    .weekly-rem {
+      margin: 0 16px 14px;
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.25);
+      border-radius: 14px; padding: 13px 16px;
+      text-decoration: none; color: #fff;
+    }
+    .weekly-rem-txt { flex: 1; }
+    .weekly-rem-ttl { font-size: 14px; font-weight: 800; }
+    .weekly-rem-sub { font-size: 12px; color: rgba(255,255,255,.45); margin-top: 2px; }
+
+    /* ── Bottom Nav ── */
+    .bnav {
+      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 100%; max-width: 430px;
+      background: rgba(10,10,20,.92); backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255,255,255,.08);
+      display: flex; align-items: stretch;
+      padding-bottom: env(safe-area-inset-bottom);
+      z-index: 100;
+    }
+    .bnav-item {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 4px; padding: 10px 0 8px;
+      text-decoration: none; color: rgba(255,255,255,.38);
+      font-size: 10px; font-weight: 600; letter-spacing: .02em;
+      transition: color .2s;
+    }
+    .bnav-item svg { width: 22px; height: 22px; }
+    .bnav-item.active { color: #ff6b35; }
+    .bnav-item.active svg { filter: drop-shadow(0 0 6px rgba(255,107,53,.5)); }
+  </style>
+</head>
+<body>
+<div class="dash-bg"></div>
+<div id="app">
+  <div class="splash" id="loading"><div class="spinner"></div></div>
+
+  <div id="main" style="display:none">
+    <div class="dash-page">
+
+      <!-- Hero -->
+      <div class="dash-hero">
+        <span class="dash-flame">🔥</span>
+        <div class="dash-title">90 Tage Challenge</div>
+
+        <!-- Double Ring -->
+        <div class="ring-wrap">
+          <svg class="ring-svg" viewBox="0 0 210 210">
+            <defs>
+              <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#ff6b35"/>
+                <stop offset="100%" stop-color="#fbbf24"/>
+              </linearGradient>
+            </defs>
+            <!-- Outer track (r=91, C≈571.8) -->
+            <circle class="ring-bg-outer" cx="105" cy="105" r="91"/>
+            <!-- Inner track (r=74, C≈464.9) -->
+            <circle class="ring-bg-inner" cx="105" cy="105" r="74"/>
+            <!-- Inner decorative arc (always ~60% filled) -->
+            <circle class="ring-fill-inner" cx="105" cy="105" r="74"
+              stroke-dasharray="464.9" stroke-dashoffset="139"/>
+            <!-- Outer progress arc -->
+            <circle class="ring-fill-outer" cx="105" cy="105" r="91"
+              id="ring-arc" stroke-dasharray="571.8" stroke-dashoffset="571.8"/>
+          </svg>
+          <div class="ring-glass"></div>
+          <div class="ring-center">
+            <div class="ring-num" id="ring-day">—</div>
+            <div class="ring-of">von 90</div>
+          </div>
+        </div>
+        <div class="ring-label">Dein Fortschritt</div>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="stat-row">
+        <div class="stat-c">
+          <div class="stat-c-icon">🔥</div>
+          <div class="stat-c-lbl">Kalorien</div>
+          <div class="stat-c-val" id="s-kcal">—</div>
+          <div class="stat-c-unit">kcal</div>
+        </div>
+        <div class="stat-c">
+          <div class="stat-c-icon">👟</div>
+          <div class="stat-c-lbl">Schritte</div>
+          <div class="stat-c-val" id="s-steps">—</div>
+          <div class="stat-c-unit">Heute</div>
+        </div>
+        <div class="stat-c">
+          <div class="stat-c-icon">⚡</div>
+          <div class="stat-c-lbl">Streak</div>
+          <div class="stat-c-val" id="s-streak">0</div>
+          <div class="stat-c-unit">Tage</div>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="cta-wrap">
+        <a href="training.html" class="btn-cta" id="cta-btn">Heutiges Training starten</a>
+      </div>
+
+      <!-- Check-in pills -->
+      <div class="pill-row">
+        <a href="checkin.html" class="pill" id="pill-m">
+          <span class="pill-icon">☀️</span>
+          <div>
+            <div class="pill-lbl">Morgen</div>
+            <div class="pill-sub" id="pill-m-sub">Ausstehend</div>
+          </div>
+        </a>
+        <a href="checkin.html" class="pill" id="pill-a">
+          <span class="pill-icon">🌙</span>
+          <div>
+            <div class="pill-lbl">Abend</div>
+            <div class="pill-sub" id="pill-a-sub">Ausstehend</div>
+          </div>
+        </a>
+      </div>
+
+      <!-- Weekly reminder -->
+      <a href="maße.html" class="weekly-rem" id="weekly-rem" style="display:none">
+        <span style="font-size:26px">📏</span>
+        <div class="weekly-rem-txt">
+          <div class="weekly-rem-ttl">Zeit zum Messen!</div>
+          <div class="weekly-rem-sub">Wöchentlicher Check — Maße eintragen</div>
+        </div>
+        <span style="color:#fbbf24;font-weight:800;font-size:14px">→</span>
+      </a>
+
+    </div>
+  </div>
+</div>
+
+<!-- Bottom Nav -->
+<nav class="bnav">
+  <a href="dashboard.html" class="bnav-item active">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    Start
+  </a>
+  <a href="training.html" class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="8" width="4" height="8" rx="1"/><rect x="18" y="8" width="4" height="8" rx="1"/><line x1="6" y1="12" x2="10" y2="12"/><line x1="14" y1="12" x2="18" y2="12"/><rect x="10" y="9" width="4" height="6" rx="1"/></svg>
+    Training
+  </a>
+  <a href="fortschritt.html" class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    Statistik
+  </a>
+  <a href="profil.html" class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Profil
+  </a>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/gamification.js"></script>
+<script src="js/quotes.js"></script>
+<script src="js/auth.js"></script>
+<script>
+async function init() {
+  const ctx = await requireProfile()
+  if (!ctx) return
+  const { user, profile } = ctx
+
+  document.getElementById('loading').style.display = 'none'
+  document.getElementById('main').style.display = 'block'
+
+  const dayNr   = calcDayNr(profile.startdatum)
+  const pct     = Math.min(Math.round((dayNr / 90) * 100), 100)
+
+  // Ring
+  document.getElementById('ring-day').textContent = dayNr
+  const C = 571.8
+  const arc = document.getElementById('ring-arc')
+  arc.style.strokeDasharray = C
+  arc.style.strokeDashoffset = C
+  setTimeout(() => { arc.style.strokeDashoffset = C - (C * pct / 100) }, 200)
+
+  // Streak
+  document.getElementById('s-streak').textContent = profile.streak_aktuell || 0
+
+  // Weekly reminder
+  if (dayNr > 1 && dayNr % 7 === 0) {
+    const { data: wc } = await sb.from('weekly_checks')
+      .select('id').eq('user_id', user.id)
+      .eq('woche_nr', Math.floor((dayNr-1)/7) + 1).maybeSingle()
+    if (!wc) document.getElementById('weekly-rem').style.display = 'flex'
+  }
+
+  // Today entry
+  const { data: entry } = await sb.from('daily_entries')
+    .select('*').eq('user_id', user.id).eq('datum', getToday()).maybeSingle()
+
+  if (entry) {
+    if (entry.kalorien_ist) document.getElementById('s-kcal').textContent = entry.kalorien_ist.toLocaleString('de-DE')
+    if (entry.schritte_ist) document.getElementById('s-steps').textContent = entry.schritte_ist.toLocaleString('de-DE')
+    if (entry.checkin_morgen) {
+      const pm = document.getElementById('pill-m')
+      pm.classList.add('done')
+      document.getElementById('pill-m-sub').textContent = 'Erledigt ✓'
+    }
+    if (entry.checkin_abend) {
+      const pa = document.getElementById('pill-a')
+      pa.classList.add('done')
+      document.getElementById('pill-a-sub').textContent = entry.score_von_7 != null ? `Score: ${entry.score_von_7}/7` : 'Erledigt ✓'
+    }
+  }
+
+  // CTA: wenn beide Check-ins done → zeige Check-in öffnen, sonst Training
+  if (entry?.checkin_morgen && entry?.checkin_abend) {
+    document.getElementById('cta-btn').textContent = '✓ Heutiger Tag abgehakt!'
+    document.getElementById('cta-btn').style.background = 'linear-gradient(135deg, #22c55e, #16a34a)'
+    document.getElementById('cta-btn').style.boxShadow = '0 6px 28px rgba(34,197,94,.35)'
+  } else if (!entry?.checkin_morgen) {
+    document.getElementById('cta-btn').textContent = '☀️ Morgen-Check-in starten'
+    document.getElementById('cta-btn').href = 'checkin.html'
+  }
+}
+
+init()
+</script>
+</body>
+</html>

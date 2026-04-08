@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>90TC — Check-in</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ff6b35">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="90TC">
+  <link rel="apple-touch-icon" href="icon.svg">
+</head>
+<body>
+<div id="app">
+  <div class="splash" id="loading"><div class="spinner"></div></div>
+  <div id="main" style="display:none">
+    <div class="page">
+
+      <!-- Header -->
+      <div class="page-header">
+        <a href="dashboard.html" class="page-back">←</a>
+        <div>
+          <div class="page-title" id="page-title">Check-in</div>
+          <div class="page-subtitle" id="page-sub">Tag ? von 90</div>
+        </div>
+        <div style="width:40px"></div>
+      </div>
+
+      <!-- Already done banner -->
+      <div id="done-banner" class="msg-success mb-12" style="display:none">
+        ✓ Heute bereits eingecheckt — du kannst anpassen & neu speichern.
+      </div>
+
+      <!-- ☀️ MORGEN SECTION -->
+      <div class="checkin-section" id="morgen-section">
+        <div class="checkin-section-header">
+          <span class="checkin-section-icon">☀️</span>
+          <div>
+            <div class="checkin-section-title">Morgen-Check-in</div>
+            <div class="checkin-section-sub">Körper · Energie · Tagesziele</div>
+          </div>
+        </div>
+
+        <!-- Gewicht & Schlaf -->
+        <div class="field-group">
+          <div class="input-row">
+            <div class="input-group">
+              <label class="input-label">Gewicht</label>
+              <div class="input-with-unit">
+                <input type="number" id="gewicht" placeholder="80.5" step="0.1" min="30" max="300">
+                <span class="input-unit">kg</span>
+              </div>
+            </div>
+            <div class="input-group">
+              <label class="input-label">Schlaf</label>
+              <div class="input-with-unit">
+                <input type="number" id="schlaf" placeholder="7.5" step="0.5" min="0" max="24">
+                <span class="input-unit">h</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Energie -->
+        <div class="field-group">
+          <label class="field-label">Energielevel heute</label>
+          <div class="energie-grid">
+            <button class="energie-btn" onclick="setEnergie(1,this)">
+              <span class="energie-emoji">😴</span>
+              <span class="energie-label">Müde</span>
+            </button>
+            <button class="energie-btn" onclick="setEnergie(2,this)">
+              <span class="energie-emoji">😐</span>
+              <span class="energie-label">Ok</span>
+            </button>
+            <button class="energie-btn" onclick="setEnergie(3,this)">
+              <span class="energie-emoji">⚡</span>
+              <span class="energie-label">Gut</span>
+            </button>
+            <button class="energie-btn" onclick="setEnergie(4,this)">
+              <span class="energie-emoji">🚀</span>
+              <span class="energie-label">Top!</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3 Tagesziele -->
+        <div class="field-group">
+          <label class="field-label">3 Dinge, die ich heute umsetze</label>
+          <div class="ziele-list">
+            <div class="ziel-row"><div class="ziel-nr">1</div><input type="text" id="z1" placeholder="Ziel 1..."></div>
+            <div class="ziel-row"><div class="ziel-nr">2</div><input type="text" id="z2" placeholder="Ziel 2..."></div>
+            <div class="ziel-row"><div class="ziel-nr">3</div><input type="text" id="z3" placeholder="Ziel 3..."></div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="saveMorgen()" id="btn-morgen">
+          ☀️ Morgen-Check-in speichern (+20 XP)
+        </button>
+      </div>
+
+      <!-- 🌙 ABEND SECTION -->
+      <div class="checkin-section" id="abend-section">
+        <div class="checkin-section-header">
+          <span class="checkin-section-icon">🌙</span>
+          <div>
+            <div class="checkin-section-title">Abend-Check-in</div>
+            <div class="checkin-section-sub">Ernährung · Training · Reflexion</div>
+          </div>
+        </div>
+
+        <!-- Kalorien & Makros -->
+        <div class="field-group">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <label class="field-label" style="margin-bottom:0">Ernährung heute</label>
+            <a href="essen.html" style="font-size:12px;color:var(--accent);text-decoration:none;background:rgba(255,107,53,0.12);padding:4px 10px;border-radius:20px;font-weight:600">🍽️ Tracker öffnen</a>
+          </div>
+          <div class="input-row">
+            <div class="input-group">
+              <label class="input-label">Kalorien</label>
+              <div class="input-with-unit">
+                <input type="number" id="kalorien" placeholder="2500" min="0" max="15000">
+                <span class="input-unit">kcal</span>
+              </div>
+            </div>
+            <div class="input-group">
+              <label class="input-label">Protein</label>
+              <div class="input-with-unit">
+                <input type="number" id="protein" placeholder="160" min="0" max="999">
+                <span class="input-unit">g</span>
+              </div>
+            </div>
+          </div>
+          <div class="input-row" style="margin-top:10px">
+            <div class="input-group">
+              <label class="input-label">Fett</label>
+              <div class="input-with-unit">
+                <input type="number" id="fett" placeholder="70" min="0" max="999">
+                <span class="input-unit">g</span>
+              </div>
+            </div>
+            <div class="input-group">
+              <label class="input-label">Carbs</label>
+              <div class="input-with-unit">
+                <input type="number" id="carbs" placeholder="280" min="0" max="999">
+                <span class="input-unit">g</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Wasser & Schritte -->
+        <div class="field-group">
+          <div class="input-row">
+            <div class="input-group">
+              <label class="input-label">Wasser</label>
+              <div class="input-with-unit">
+                <input type="number" id="wasser" placeholder="3.5" step="0.1" min="0" max="20">
+                <span class="input-unit">L</span>
+              </div>
+            </div>
+            <div class="input-group">
+              <label class="input-label">Schritte</label>
+              <input type="number" id="schritte" placeholder="10000" min="0" max="100000">
+            </div>
+          </div>
+        </div>
+
+        <!-- Training -->
+        <div class="field-group">
+          <label class="field-label">Training heute?</label>
+          <div class="ja-nein-row">
+            <button class="ja-btn" id="training-ja" onclick="setTraining(true)">✓ Ja</button>
+            <button class="nein-btn" id="training-nein" onclick="setTraining(false)">✗ Nein</button>
+          </div>
+        </div>
+
+        <!-- Progression (zeigt nur wenn Training = Ja) -->
+        <div class="field-group" id="prog-group" style="display:none">
+          <label class="field-label">Progression erzielt? (PR, mehr Gewicht, mehr Wdh.)</label>
+          <div class="ja-nein-row">
+            <button class="ja-btn" id="prog-ja" onclick="setProgression(true)">📈 Ja!</button>
+            <button class="nein-btn" id="prog-nein" onclick="setProgression(false)">Nicht heute</button>
+          </div>
+        </div>
+
+        <!-- Stimmung -->
+        <div class="field-group">
+          <label class="field-label">Stimmung heute</label>
+          <div class="stimmung-row">
+            <button class="stimmung-btn" onclick="setStimmung(1,this)">😞</button>
+            <button class="stimmung-btn" onclick="setStimmung(2,this)">😕</button>
+            <button class="stimmung-btn" onclick="setStimmung(3,this)">😐</button>
+            <button class="stimmung-btn" onclick="setStimmung(4,this)">🙂</button>
+            <button class="stimmung-btn" onclick="setStimmung(5,this)">😄</button>
+          </div>
+        </div>
+
+        <!-- 3 gute Dinge -->
+        <div class="field-group">
+          <label class="field-label">3 Dinge, die heute gut liefen</label>
+          <div class="ziele-list">
+            <div class="ziel-row"><div class="ziel-nr" style="background:var(--green)">1</div><input type="text" id="g1" placeholder="Was lief gut?"></div>
+            <div class="ziel-row"><div class="ziel-nr" style="background:var(--green)">2</div><input type="text" id="g2" placeholder="Was lief gut?"></div>
+            <div class="ziel-row"><div class="ziel-nr" style="background:var(--green)">3</div><input type="text" id="g3" placeholder="Was lief gut?"></div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="saveAbend()" id="btn-abend">
+          🌙 Abend-Check-in speichern (+30 XP)
+        </button>
+      </div>
+
+      <div style="height:32px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Score Overlay -->
+<div class="overlay" id="score-overlay" style="display:none" onclick="closeScore()">
+  <div class="score-popup" onclick="event.stopPropagation()">
+    <span class="score-emoji" id="score-emoji">🏆</span>
+    <div class="score-title" id="score-title">Tag abgehakt!</div>
+    <div class="score-msg" id="score-msg">Richtig stark!</div>
+    <div class="score-ring-wrap">
+      <div>
+        <div class="score-nr" id="score-nr" style="color:var(--accent)">0</div>
+        <div class="score-of">von 7 Faktoren</div>
+      </div>
+    </div>
+    <div class="score-xp" id="score-xp">+50 XP 🪙+50</div>
+    <div class="score-factors" id="score-factors"></div>
+    <button class="btn btn-primary" onclick="closeScore()">Weiter 🔥</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/gamification.js"></script>
+<script src="js/auth.js"></script>
+<script>
+let currentProfile = null
+let energie = 0, training = null, progression = null, stimmung = 0
+let alreadyMorgen = false, alreadyAbend = false
+
+function setEnergie(val, btn) {
+  energie = val
+  document.querySelectorAll('.energie-btn').forEach(b => b.classList.remove('active'))
+  btn.classList.add('active')
+}
+function setTraining(val) {
+  training = val
+  document.getElementById('training-ja').classList.toggle('active', val === true)
+  document.getElementById('training-nein').classList.toggle('active', val === false)
+  document.getElementById('prog-group').style.display = val ? 'block' : 'none'
+  if (!val) { progression = null; document.getElementById('prog-ja').classList.remove('active'); document.getElementById('prog-nein').classList.remove('active') }
+}
+function setProgression(val) {
+  progression = val
+  document.getElementById('prog-ja').classList.toggle('active', val === true)
+  document.getElementById('prog-nein').classList.toggle('active', val === false)
+}
+function setStimmung(val, btn) {
+  stimmung = val
+  document.querySelectorAll('.stimmung-btn').forEach(b => b.classList.remove('active'))
+  btn.classList.add('active')
+}
+
+async function saveMorgen() {
+  const btn = document.getElementById('btn-morgen')
+  btn.disabled = true; btn.textContent = 'Speichern...'
+  const profile = currentProfile
+  const today = getToday()
+  const dayNr = calcDayNr(profile.startdatum)
+
+  const { error } = await sb.from('daily_entries').upsert({
+    user_id: profile.id, datum: today, tag_nr: dayNr,
+    gewicht_kg:    v('gewicht') ? parseFloat(v('gewicht')) : null,
+    schlaf_ist_h:  v('schlaf')  ? parseFloat(v('schlaf'))  : null,
+    energie_level: energie || null,
+    ziel_heute_1:  v('z1') || null, ziel_heute_2: v('z2') || null, ziel_heute_3: v('z3') || null,
+    checkin_morgen: true,
+  }, {onConflict:'user_id,datum'})
+
+  if (error) { showToast(error.message, 'error'); btn.disabled=false; btn.textContent='☀️ Morgen-Check-in speichern (+20 XP)'; return }
+
+  if (!alreadyMorgen) {
+    await updateStreak(profile, XP.MORGEN)
+    alreadyMorgen = true
+    showToast('+20 XP — Morgen-Check-in erledigt! ☀️')
+  } else {
+    showToast('Aktualisiert ✓')
+  }
+
+  document.getElementById('morgen-section').style.borderColor = 'var(--green2)'
+  btn.textContent = '✓ Gespeichert'
+  setTimeout(() => { btn.disabled = false; btn.textContent = '☀️ Morgen-Check-in speichern (+20 XP)' }, 2000)
+}
+
+async function saveAbend() {
+  const btn = document.getElementById('btn-abend')
+  btn.disabled = true; btn.textContent = 'Speichern...'
+  const profile = currentProfile
+  const today = getToday()
+  const dayNr = calcDayNr(profile.startdatum)
+
+  const entry = {
+    kalorien_ist: v('kalorien') ? parseInt(v('kalorien')) : null,
+    protein_ist_g: v('protein') ? parseInt(v('protein')) : null,
+    fett_ist_g: v('fett') ? parseInt(v('fett')) : null,
+    carbs_ist_g: v('carbs') ? parseInt(v('carbs')) : null,
+    wasser_ist_l: v('wasser') ? parseFloat(v('wasser')) : null,
+    schritte_ist: v('schritte') ? parseInt(v('schritte')) : null,
+    training_gemacht: training, progression, stimmung: stimmung || null,
+    gut_gelaufen_1: v('g1') || null, gut_gelaufen_2: v('g2') || null, gut_gelaufen_3: v('g3') || null,
+    checkin_abend: true,
+  }
+
+  // Get schlaf from morgen (needed for score)
+  const { data: existing } = await sb.from('daily_entries')
+    .select('schlaf_ist_h').eq('user_id', profile.id).eq('datum', today).maybeSingle()
+  const fullEntry = { ...entry, schlaf_ist_h: existing?.schlaf_ist_h || (v('schlaf') ? parseFloat(v('schlaf')) : null) }
+
+  const score = berechneScore(fullEntry, profile)
+  entry.score_von_7 = score
+
+  const { error } = await sb.from('daily_entries').upsert({
+    user_id: profile.id, datum: today, tag_nr: dayNr, ...entry
+  }, {onConflict:'user_id,datum'})
+
+  if (error) { showToast(error.message, 'error'); btn.disabled=false; btn.textContent='🌙 Abend-Check-in speichern (+30 XP)'; return }
+
+  let xpEarned = XP.ABEND
+  if (score >= 7) xpEarned += XP.ALLE_7
+  if (training) xpEarned += XP.TRAINING
+
+  if (!alreadyAbend) {
+    await updateStreak(profile, xpEarned)
+    alreadyAbend = true
+  }
+
+  showScoreOverlay(score, xpEarned, fullEntry, profile)
+  document.getElementById('abend-section').style.borderColor = 'var(--green2)'
+  btn.disabled = false
+  btn.textContent = '✓ Gespeichert'
+}
+
+function showScoreOverlay(score, xpEarned, entry, profile) {
+  const emojis = ['😔','😐','😐','🙂','💪','💪','🔥','🏆']
+  const msgs = [
+    'Morgen wieder angreifen!',
+    'Morgen wieder angreifen!',
+    'Solider Start. Morgen mehr!',
+    'Guter Tag — weiter so!',
+    'Starker Tag! 💪',
+    'Fast perfekt — richtig gut!',
+    'Nahezu perfekt — Klasse!',
+    '🏆 PERFEKTER TAG! Absolut Weltklasse!'
+  ]
+  document.getElementById('score-emoji').textContent = emojis[score]
+  document.getElementById('score-title').textContent = `Tag abgehakt! (${score}/7)`
+  document.getElementById('score-msg').textContent = msgs[score]
+  document.getElementById('score-nr').textContent = score
+  document.getElementById('score-nr').style.color = score >= 7 ? 'var(--green2)' : score >= 5 ? 'var(--accent)' : score >= 3 ? 'var(--gold2)' : 'var(--text2)'
+  document.getElementById('score-xp').textContent = `+${xpEarned} XP 🪙+${xpEarned}`
+
+  const factors = [
+    { label: 'Kalorien ±10%',    ok: entry.kalorien_ist && profile.kalorien_ziel && Math.abs(entry.kalorien_ist - profile.kalorien_ziel) <= profile.kalorien_ziel * 0.10 },
+    { label: 'Protein erreicht', ok: entry.protein_ist_g && profile.protein_ziel_g && entry.protein_ist_g >= profile.protein_ziel_g },
+    { label: 'Schlaf 7–8,5h',    ok: entry.schlaf_ist_h && entry.schlaf_ist_h >= 7 },
+    { label: 'Wasser ≥ Ziel',    ok: entry.wasser_ist_l && profile.wasser_ziel_l && entry.wasser_ist_l >= profile.wasser_ziel_l },
+    { label: 'Training',         ok: entry.training_gemacht },
+    { label: 'Progression',      ok: entry.progression },
+    { label: 'Schritte',         ok: entry.schritte_ist && profile.schritte_ziel && entry.schritte_ist >= profile.schritte_ziel },
+  ]
+  document.getElementById('score-factors').innerHTML = factors.map(f =>
+    `<div class="factor-item"><span class="factor-icon">${f.ok ? '✅' : '⬜'}</span>${f.label}</div>`
+  ).join('')
+
+  document.getElementById('score-overlay').style.display = 'flex'
+  if (score >= 7) {
+    setTimeout(() => confetti({ particleCount:150, spread:80, origin:{y:0.6}, colors:['#ff6b35','#fbbf24','#4ade80','#fff'] }), 300)
+  }
+}
+
+function closeScore() {
+  document.getElementById('score-overlay').style.display = 'none'
+}
+
+function v(id) { return document.getElementById(id)?.value }
+
+async function init() {
+  const ctx = await requireProfile()
+  if (!ctx) return
+  const { user, profile } = ctx
+  currentProfile = profile
+
+  const dayNr = calcDayNr(profile.startdatum)
+  document.getElementById('page-title').textContent = 'Check-in'
+  document.getElementById('page-sub').textContent = `Tag ${dayNr} von 90 · ${new Date().toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'})}`
+
+  // Load existing entry
+  const { data: entry } = await sb.from('daily_entries')
+    .select('*').eq('user_id', user.id).eq('datum', getToday()).maybeSingle()
+
+  if (entry) {
+    if (entry.checkin_morgen) {
+      alreadyMorgen = true
+      document.getElementById('done-banner').style.display = 'block'
+      if (entry.gewicht_kg) document.getElementById('gewicht').value = entry.gewicht_kg
+      if (entry.schlaf_ist_h) document.getElementById('schlaf').value = entry.schlaf_ist_h
+      if (entry.ziel_heute_1) document.getElementById('z1').value = entry.ziel_heute_1
+      if (entry.ziel_heute_2) document.getElementById('z2').value = entry.ziel_heute_2
+      if (entry.ziel_heute_3) document.getElementById('z3').value = entry.ziel_heute_3
+      if (entry.energie_level) {
+        energie = entry.energie_level
+        document.querySelectorAll('.energie-btn')[energie-1]?.classList.add('active')
+      }
+    }
+    if (entry.checkin_abend) {
+      alreadyAbend = true
+      if (entry.kalorien_ist) document.getElementById('kalorien').value = entry.kalorien_ist
+      if (entry.protein_ist_g) document.getElementById('protein').value = entry.protein_ist_g
+      if (entry.fett_ist_g) document.getElementById('fett').value = entry.fett_ist_g
+      if (entry.carbs_ist_g) document.getElementById('carbs').value = entry.carbs_ist_g
+      if (entry.wasser_ist_l) document.getElementById('wasser').value = entry.wasser_ist_l
+      if (entry.schritte_ist) document.getElementById('schritte').value = entry.schritte_ist
+      if (entry.gut_gelaufen_1) document.getElementById('g1').value = entry.gut_gelaufen_1
+      if (entry.gut_gelaufen_2) document.getElementById('g2').value = entry.gut_gelaufen_2
+      if (entry.gut_gelaufen_3) document.getElementById('g3').value = entry.gut_gelaufen_3
+      if (entry.training_gemacht !== null) setTraining(entry.training_gemacht)
+      if (entry.progression !== null) setProgression(entry.progression)
+      if (entry.stimmung) { stimmung = entry.stimmung; document.querySelectorAll('.stimmung-btn')[stimmung-1]?.classList.add('active') }
+    }
+  }
+
+  // Placeholder hints from profile
+  if (profile.kalorien_ziel) document.getElementById('kalorien').placeholder = profile.kalorien_ziel
+  if (profile.protein_ziel_g) document.getElementById('protein').placeholder = profile.protein_ziel_g
+  if (profile.fett_ziel_g) document.getElementById('fett').placeholder = profile.fett_ziel_g
+  if (profile.carbs_ziel_g) document.getElementById('carbs').placeholder = profile.carbs_ziel_g
+
+  document.getElementById('loading').style.display = 'none'
+  document.getElementById('main').style.display = 'block'
+}
+
+init()
+</script>
+</body>
+</html>

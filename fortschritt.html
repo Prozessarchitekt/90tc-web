@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>90TC — Fortschritt</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ff6b35">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="90TC">
+  <link rel="apple-touch-icon" href="icon.svg">
+</head>
+<body>
+<div id="app">
+  <div class="splash" id="loading"><div class="spinner"></div></div>
+  <div id="main" style="display:none">
+    <div class="page">
+      <div class="page-header">
+        <a href="dashboard.html" class="page-back">←</a>
+        <div><div class="page-title">📊 Fortschritt</div></div>
+        <a href="maße.html" class="btn btn-ghost btn-sm" style="width:auto;padding:8px 14px">📏 Messen</a>
+      </div>
+
+      <!-- Key Stats -->
+      <div class="stat-grid">
+        <div class="stat-box">
+          <div class="stat-box-val" id="s-streak" style="color:var(--accent)">0</div>
+          <div class="stat-box-label">🔥 Aktueller Streak</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-box-val" id="s-rec" style="color:var(--gold2)">0</div>
+          <div class="stat-box-label">🏆 Streak-Rekord</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-box-val" id="s-training" style="color:var(--green2)">0</div>
+          <div class="stat-box-label">🏋️ Trainingseinheiten</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-box-val" id="s-perfect" style="color:var(--purple)">0</div>
+          <div class="stat-box-label">⭐ Perfekte Tage (7/7)</div>
+        </div>
+      </div>
+
+      <!-- Gewichts-Chart -->
+      <div class="card chart-card">
+        <div class="section-header">
+          <span class="section-title">GEWICHTSVERLAUF</span>
+          <span class="text-muted fs-12" id="weight-range">letzte 30 Tage</span>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="weight-chart"></canvas>
+        </div>
+        <div style="display:flex;gap:16px;margin-top:12px;font-size:12px">
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:20px;height:2px;background:var(--accent);display:inline-block"></span>Täglich</span>
+          <span style="display:flex;align-items:center;gap:5px"><span style="width:20px;height:3px;background:var(--gold2);display:inline-block"></span>7-Tage-Schnitt</span>
+        </div>
+      </div>
+
+      <!-- Score Heatmap -->
+      <div class="card">
+        <div class="section-header">
+          <span class="section-title">TAGES-SCORES</span>
+          <span class="text-muted fs-12">Letzte 30 Tage</span>
+        </div>
+        <div id="heatmap" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px"></div>
+        <div style="display:flex;gap:12px;margin-top:10px;font-size:11px;color:var(--text2)">
+          <span>⬜ Kein Eintrag</span>
+          <span style="color:var(--gold2)">■ 1-3/7</span>
+          <span style="color:var(--accent)">■ 4-6/7</span>
+          <span style="color:var(--green2)">■ 7/7</span>
+        </div>
+      </div>
+
+      <!-- Körpermaße Vergleich -->
+      <div class="card" id="maß-compare-card" style="display:none">
+        <div class="section-header">
+          <span class="section-title">KÖRPERMASSE</span>
+          <span class="text-muted fs-12">Start vs. Jetzt</span>
+        </div>
+        <div id="maß-compare"></div>
+      </div>
+
+      <!-- Wöchentlicher Score Verlauf -->
+      <div class="card chart-card">
+        <div class="section-header">
+          <span class="section-title">WOCHENSCHNITT (Score/7)</span>
+        </div>
+        <div class="chart-wrap" style="height:160px">
+          <canvas id="score-chart"></canvas>
+        </div>
+      </div>
+
+      <!-- Badges -->
+      <div class="card">
+        <div class="section-header">
+          <span class="section-title">BADGES</span>
+          <span class="text-muted fs-12" id="badge-count">0 von 15</span>
+        </div>
+        <div class="badge-grid" id="badge-grid"></div>
+      </div>
+
+      <div style="height:88px"></div>
+    </div>
+  </div>
+</div>
+
+<nav class="bnav">
+  <a href="dashboard.html" class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    Start
+  </a>
+  <a href="training.html" class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="8" width="4" height="8" rx="1"/><rect x="18" y="8" width="4" height="8" rx="1"/><line x1="6" y1="12" x2="10" y2="12"/><line x1="14" y1="12" x2="18" y2="12"/><rect x="10" y="9" width="4" height="6" rx="1"/></svg>
+    Training
+  </a>
+  <a href="fortschritt.html" class="bnav-item active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    Statistik
+  </a>
+  <a href="profil.html" class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Profil
+  </a>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="js/config.js"></script>
+<script src="js/gamification.js"></script>
+<script src="js/auth.js"></script>
+<script>
+const ALL_BADGES = [
+  { id:'erster_schritt',   emoji:'🌱', name:'Erster Schritt',   desc:'Tag 1 abgeschlossen' },
+  { id:'eine_woche',       emoji:'💪', name:'Eine Woche',       desc:'7 Tage Streak' },
+  { id:'halbzeit',         emoji:'🏃', name:'Halbzeit-Held',    desc:'Tag 45 erreicht' },
+  { id:'streak_30',        emoji:'🔥', name:'Unaufhaltsam',     desc:'30 Tage Streak' },
+  { id:'die_letzten_10',   emoji:'⭐', name:'Die letzten 10',   desc:'Tag 80 erreicht' },
+  { id:'champion',         emoji:'🏆', name:'90TC Champion',    desc:'90 Tage abgeschlossen' },
+  { id:'proteinmaschine',  emoji:'🥩', name:'Proteinmaschine',  desc:'7× Proteinziel getroffen' },
+  { id:'wasserheld',       emoji:'💧', name:'Wasserheld',       desc:'7× Wasserziel getroffen' },
+  { id:'steps_club',       emoji:'👟', name:'10.000 Steps Club',desc:'10× Schritte erreicht' },
+  { id:'schlafkoenig',     emoji:'😴', name:'Schlafkönig',      desc:'5× ≥ 7h Schlaf' },
+  { id:'progressive',      emoji:'📈', name:'Progressive Overload',desc:'5× Progression' },
+  { id:'fruehaufsteher',   emoji:'🌅', name:'Frühaufsteher',    desc:'7× vor 7:00 Uhr' },
+  { id:'nachtaktiv',       emoji:'🌙', name:'Nachtaktiv',       desc:'3× nach 23:00 Uhr' },
+  { id:'perfekter_tag',    emoji:'⚡', name:'Perfekter Tag',    desc:'Alle 7 + Training + PR' },
+  { id:'perfekte_woche',   emoji:'💯', name:'Perfekte Woche',   desc:'7/7 Tage alle Faktoren' },
+]
+
+Chart.defaults.color = '#9090b0'
+Chart.defaults.borderColor = 'rgba(255,255,255,0.06)'
+
+async function init() {
+  const ctx = await requireProfile()
+  if (!ctx) return
+  const { user, profile } = ctx
+
+  // Load data
+  const { data: entries } = await sb.from('daily_entries')
+    .select('*').eq('user_id', user.id).order('datum', { ascending: true })
+
+  const { data: badges } = await sb.from('user_badges')
+    .select('badge_id').eq('user_id', user.id)
+
+  const { data: wcs } = await sb.from('weekly_checks')
+    .select('*').eq('user_id', user.id).order('woche_nr', { ascending: true })
+
+  document.getElementById('loading').style.display = 'none'
+  document.getElementById('main').style.display = 'block'
+
+  const earnedIds = new Set((badges || []).map(b => b.badge_id))
+
+  // Check + award badges
+  await checkBadges(user, profile, entries, earnedIds)
+
+  // Stats
+  const trainDays  = (entries||[]).filter(e => e.training_gemacht).length
+  const perfectDays = (entries||[]).filter(e => e.score_von_7 === 7).length
+  document.getElementById('s-streak').textContent  = profile.streak_aktuell || 0
+  document.getElementById('s-rec').textContent     = profile.streak_rekord || 0
+  document.getElementById('s-training').textContent = trainDays
+  document.getElementById('s-perfect').textContent  = perfectDays
+
+  // Weight Chart
+  const weightData = (entries||[]).filter(e => e.gewicht_kg)
+  if (weightData.length > 1) {
+    const labels = weightData.map(e => {
+      const d = new Date(e.datum+'T00:00:00')
+      return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})
+    })
+    const weights = weightData.map(e => e.gewicht_kg)
+    // 7-day moving average
+    const avg = weights.map((_, i) => {
+      const slice = weights.slice(Math.max(0, i-6), i+1)
+      return parseFloat((slice.reduce((s,v)=>s+v,0)/slice.length).toFixed(1))
+    })
+    new Chart(document.getElementById('weight-chart'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Gewicht', data: weights, borderColor: '#ff6b35', borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: '#ff6b35', tension: 0.3, fill: false },
+          { label: '7-Tage-Schnitt', data: avg, borderColor: '#fbbf24', borderWidth: 2.5, pointRadius: 0, tension: 0.4, fill: false },
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { maxTicksLimit: 6, font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+          y: { ticks: { font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } }
+        }
+      }
+    })
+  }
+
+  // Score Heatmap (last 30 days)
+  const last30 = (entries||[]).slice(-30)
+  const heatmap = document.getElementById('heatmap')
+  heatmap.innerHTML = last30.map(e => {
+    const s = e.score_von_7
+    let bg = '#1a1a2e'
+    if (s >= 7) bg = '#22c55e'
+    else if (s >= 4) bg = '#ff6b35'
+    else if (s >= 1) bg = '#f59e0b'
+    return `<div title="Tag ${e.tag_nr}: ${s != null ? s+'/7' : 'Kein Score'}" style="width:28px;height:28px;border-radius:4px;background:${bg};display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.5)">${e.tag_nr}</div>`
+  }).join('')
+
+  // Weekly Score Chart
+  if (entries?.length > 6) {
+    const weeks = {}
+    entries.forEach(e => {
+      const w = Math.ceil(e.tag_nr / 7)
+      if (!weeks[w]) weeks[w] = []
+      if (e.score_von_7 != null) weeks[w].push(e.score_von_7)
+    })
+    const wLabels = Object.keys(weeks).map(w => 'W'+w)
+    const wScores = Object.values(weeks).map(arr => arr.length ? parseFloat((arr.reduce((s,v)=>s+v,0)/arr.length).toFixed(1)) : null)
+
+    new Chart(document.getElementById('score-chart'), {
+      type: 'bar',
+      data: {
+        labels: wLabels,
+        datasets: [{
+          data: wScores,
+          backgroundColor: wScores.map(s => s >= 6 ? 'rgba(34,197,94,0.7)' : s >= 4 ? 'rgba(255,107,53,0.7)' : 'rgba(245,158,11,0.5)'),
+          borderRadius: 4,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { min: 0, max: 7, ticks: { font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+          x: { ticks: { font: { size: 11 } }, grid: { display: false } }
+        }
+      }
+    })
+  }
+
+  // Körpermaße comparison
+  if (wcs?.length > 1) {
+    const first = wcs[0]; const last = wcs[wcs.length-1]
+    const FELDER = ['schulter','brust','arm_rechts','arm_links','bauch_oben','bauch_mitte','bauch_unten','huefte','bein_rechts','bein_links']
+    const LABELS = ['Schulter','Brust','Arm rechts','Arm links','Bauch oben','Bauch mitte','Bauch unten','Hüfte','Bein rechts','Bein links']
+    document.getElementById('maß-compare-card').style.display = 'block'
+    document.getElementById('maß-compare').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 60px 60px 60px;gap:4px;font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding-bottom:8px">
+        <span>Maß</span><span style="text-align:center">Start</span><span style="text-align:center">Jetzt</span><span style="text-align:center">Δ</span>
+      </div>` +
+      FELDER.map((f,i) => {
+        if (!first[f]) return ''
+        const d = last[f] ? parseFloat((last[f] - first[f]).toFixed(1)) : null
+        return `<div class="compare-row">
+          <span class="compare-label">${LABELS[i]}</span>
+          <span class="compare-prev">${first[f]}</span>
+          <span class="compare-curr">${last[f] ?? '—'}</span>
+          <span class="compare-delta">${d != null ? `<span class="${d<0?'delta-neg':d>0?'delta-pos':'delta-zero'}">${d>0?'+':''}${d}</span>` : '—'}</span>
+        </div>`
+      }).join('')
+  }
+
+  // Badges
+  document.getElementById('badge-count').textContent = `${earnedIds.size} von ${ALL_BADGES.length}`
+  document.getElementById('badge-grid').innerHTML = ALL_BADGES.map(b => `
+    <div class="badge-box ${earnedIds.has(b.id)?'earned':'locked'}" title="${b.desc}">
+      <div class="badge-emoji">${b.emoji}</div>
+      <div class="badge-name">${b.name}</div>
+    </div>
+  `).join('')
+}
+
+async function checkBadges(user, profile, entries, earnedIds) {
+  const dayNr = calcDayNr(profile.startdatum)
+  const toAward = []
+
+  const check = (id, cond) => { if (cond && !earnedIds.has(id)) { toAward.push({ user_id: user.id, badge_id: id }); earnedIds.add(id) } }
+
+  check('erster_schritt', dayNr >= 1)
+  check('eine_woche', (profile.streak_aktuell||0) >= 7 || (profile.streak_rekord||0) >= 7)
+  check('halbzeit', dayNr >= 45)
+  check('streak_30', (profile.streak_rekord||0) >= 30)
+  check('die_letzten_10', dayNr >= 80)
+  check('champion', dayNr >= 90)
+
+  if (entries?.length) {
+    const trainDays = entries.filter(e => e.training_gemacht).length
+    const progDays  = entries.filter(e => e.progression).length
+    const proteinHits = entries.filter(e => e.protein_ist_g && profile.protein_ziel_g && e.protein_ist_g >= profile.protein_ziel_g).length
+    const waterHits   = entries.filter(e => e.wasser_ist_l && profile.wasser_ziel_l && e.wasser_ist_l >= profile.wasser_ziel_l).length
+    const stepHits    = entries.filter(e => e.schritte_ist && profile.schritte_ziel && e.schritte_ist >= profile.schritte_ziel).length
+    const sleepHits   = entries.filter(e => e.schlaf_ist_h && e.schlaf_ist_h >= 7).length
+    const perfectDays = entries.filter(e => e.score_von_7 === 7).length
+
+    check('proteinmaschine', proteinHits >= 7)
+    check('wasserheld', waterHits >= 7)
+    check('steps_club', stepHits >= 10)
+    check('schlafkoenig', sleepHits >= 5)
+    check('progressive', progDays >= 5)
+    check('perfekter_tag', entries.some(e => e.score_von_7 === 7 && e.training_gemacht && e.progression))
+  }
+
+  if (toAward.length) {
+    await sb.from('user_badges').upsert(toAward, {onConflict:'user_id,badge_id',ignoreDuplicates:true})
+  }
+}
+
+init()
+</script>
+</body>
+</html>

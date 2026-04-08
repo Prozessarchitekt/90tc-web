@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#ff6b35"/>
+  <defs>
+    <linearGradient id="flame" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="60%" stop-color="#ff6b35"/>
+      <stop offset="100%" stop-color="#c2410c"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="#1a0805"/>
+  <path d="M256 100
+    C256 100 316 165 338 228
+    C360 291 326 324 314 346
+    C348 312 354 278 336 244
+    C370 298 368 372 314 416
+    C352 380 360 336 338 302
+    C350 346 338 400 282 442
+    C318 398 330 354 298 320
+    C310 362 278 404 256 452
+    C234 404 202 362 214 320
+    C182 354 194 398 230 442
+    C174 400 162 346 174 302
+    C152 336 160 380 198 416
+    C144 372 142 298 176 244
+    C158 278 164 312 198 346
+    C186 324 152 291 174 228
+    C196 165 256 100 256 100Z"
+    fill="white" opacity="0.9"/>
+</svg>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>90TC — Tagebuch</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ff6b35">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="90TC">
+  <link rel="apple-touch-icon" href="icon.svg">
+</head>
+<body>
+<div id="app">
+  <div class="splash" id="loading"><div class="spinner"></div></div>
+  <div id="main" style="display:none">
+    <div class="page">
+      <div class="page-header">
+        <a href="dashboard.html" class="page-back">←</a>
+        <div><div class="page-title">📖 Tagebuch</div><div class="page-subtitle" id="sub">Alle Einträge</div></div>
+        <div style="width:40px"></div>
+      </div>
+
+      <div id="entries"></div>
+      <div style="height:88px"></div>
+    </div>
+  </div>
+</div>
+
+<nav class="bnav">
+  <a href="dashboard.html" class="bnav-item active">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    Start
+  </a>
+  <a href="training.html" class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="8" width="4" height="8" rx="1"/><rect x="18" y="8" width="4" height="8" rx="1"/><line x1="6" y1="12" x2="10" y2="12"/><line x1="14" y1="12" x2="18" y2="12"/><rect x="10" y="9" width="4" height="6" rx="1"/></svg>
+    Training
+  </a>
+  <a href="fortschritt.html" class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    Statistik
+  </a>
+  <a href="profil.html" class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Profil
+  </a>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script>
+function scoreClass(s) {
+  if (s == null) return ''
+  if (s >= 7) return 'score-7'
+  if (s >= 5) return 'score-56'
+  if (s >= 3) return 'score-34'
+  return 'score-12'
+}
+
+function metaText(e) {
+  const parts = []
+  if (e.gewicht_kg) parts.push(`${e.gewicht_kg} kg`)
+  if (e.energie_level) parts.push(['😴','😐','⚡','🚀'][e.energie_level-1])
+  if (e.training_gemacht) parts.push('🏋️ Training')
+  if (e.kalorien_ist) parts.push(`${e.kalorien_ist} kcal`)
+  if (!parts.length) {
+    if (e.checkin_morgen) parts.push('☀️ Morgen')
+    if (e.checkin_abend) parts.push('🌙 Abend')
+  }
+  return parts.join(' · ') || '—'
+}
+
+async function init() {
+  const ctx = await requireProfile()
+  if (!ctx) return
+  const { user, profile } = ctx
+
+  const { data: entries } = await sb.from('daily_entries')
+    .select('*').eq('user_id', user.id)
+    .order('datum', { ascending: false })
+
+  document.getElementById('sub').textContent = (entries?.length || 0) + ' Einträge'
+  document.getElementById('loading').style.display = 'none'
+  document.getElementById('main').style.display = 'block'
+
+  const el = document.getElementById('entries')
+
+  if (!entries?.length) {
+    el.innerHTML = `
+      <div class="empty-state">
+        <span class="empty-emoji">📭</span>
+        <div class="empty-title">Noch keine Einträge</div>
+        <div class="empty-text">Mach deinen ersten Check-in<br>und schreib Geschichte!</div>
+        <br><a href="checkin.html" class="btn btn-primary" style="max-width:200px">Erster Check-in →</a>
+      </div>`
+    return
+  }
+
+  el.innerHTML = `<div class="entry-list">` + entries.map(e => {
+    const d = new Date(e.datum + 'T00:00:00')
+    const dateStr = d.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit',year:'2-digit'})
+    const scoreHtml = e.score_von_7 != null
+      ? `<span class="${scoreClass(e.score_von_7)}">${e.score_von_7}/7</span>`
+      : e.checkin_morgen ? '<span style="color:var(--text2)">☀️</span>' : '<span style="color:var(--muted)">—</span>'
+    return `
+      <a href="eintrag.html?datum=${e.datum}" class="entry-card">
+        <div class="entry-day-badge">
+          <div class="entry-day-nr">T${e.tag_nr}</div>
+          <div class="entry-day-label">TAG</div>
+        </div>
+        <div class="entry-info">
+          <div class="entry-date">${dateStr}</div>
+          <div class="entry-meta">${metaText(e)}</div>
+        </div>
+        <div class="entry-score">${scoreHtml}</div>
+      </a>`
+  }).join('') + `</div>`
+}
+
+init()
+</script>
+</body>
+</html>

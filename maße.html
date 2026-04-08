@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>90TC — Körpermaße</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ff6b35">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="90TC">
+  <link rel="apple-touch-icon" href="icon.svg">
+</head>
+<body>
+<div id="app">
+  <div class="splash" id="loading"><div class="spinner"></div></div>
+  <div id="main" style="display:none">
+    <div class="page">
+      <div class="page-header">
+        <a href="dashboard.html" class="page-back">←</a>
+        <div>
+          <div class="page-title">📏 Körpermaße</div>
+          <div class="page-subtitle" id="page-sub">Woche ? von 13</div>
+        </div>
+        <div style="width:40px"></div>
+      </div>
+
+      <!-- Info Card -->
+      <div class="card" style="background:var(--accent-dim);border-color:var(--accent-border);margin-bottom:16px">
+        <div style="font-size:14px;line-height:1.6;color:var(--text2)">
+          📌 <strong style="color:var(--text)">Messung immer morgens</strong>, nüchtern, vor dem Essen.<br>
+          Maßband eng anliegen — nicht einschneiden.
+        </div>
+      </div>
+
+      <!-- Gewicht -->
+      <div class="card mb-12">
+        <div class="card-title">Körpergewicht (gleitender Schnitt)</div>
+        <div class="input-row">
+          <div class="input-group">
+            <label class="input-label">Gewicht diese Woche</label>
+            <div class="input-with-unit">
+              <input type="number" id="gewicht" placeholder="80.0" step="0.1" min="30" max="300">
+              <span class="input-unit">kg</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Vorwoche (auto)</label>
+            <div class="input-with-unit">
+              <input type="number" id="gewicht-prev" placeholder="—" readonly style="opacity:0.5">
+              <span class="input-unit">kg</span>
+            </div>
+          </div>
+        </div>
+        <div id="gewicht-delta" style="font-size:13px;color:var(--text2);margin-top:8px"></div>
+      </div>
+
+      <!-- Körpermaße -->
+      <div class="card mb-12">
+        <div class="card-title">Umfänge in cm</div>
+        <div class="maße-grid">
+
+          <div class="maß-input-wrap">
+            <label class="maß-label">Schulter</label>
+            <input type="number" class="maß-input" id="schulter" placeholder="—" step="0.1">
+            <span class="maß-unit">cm</span>
+          </div>
+
+          <div class="maß-input-wrap">
+            <label class="maß-label">Brust</label>
+            <input type="number" class="maß-input" id="brust" placeholder="—" step="0.1">
+            <span class="maß-unit">cm</span>
+          </div>
+
+          <div class="maß-input-wrap">
+            <label class="maß-label">Arm rechts</label>
+            <input type="number" class="maß-input" id="arm_rechts" placeholder="—" step="0.1">
+            <span class="maß-unit">cm</span>
+          </div>
+
+          <div class="maß-input-wrap">
+            <label class="maß-label">Arm links</label>
+            <input type="number" class="maß-input" id="arm_links" placeholder="—" step="0.1">
+            <span class="maß-unit">cm</span>
+          </div>
+
+          <div class="maß-input-wrap">
+            <label class="maß-label">Bauch oben</label>
+            <label class="maß-label-hint">5 cm über Nabel</label>
+            <input type="number" class="maß-input" id="bauch_oben" placeholder="—" step="0.1">
+            <span class="maß-unit">cm</span>
+          </div>
+
+          <div class="maß-input-wrap">
+            <label class="maß-label">Bauch Mitte</label>
+            <label class="maß-label-hint">Am Nabel</label>
+            <input type="number" class="maß-input" id="bauch_mitte" placeholder="—" step="0.1">
+            <span class="maß-unit">cm</span>
+          </div>
+
+          <div class="maß-input-wrap">
+            <label class="maß-label">Bauch unten</label>
+            <label class="maß-label-hint">5 cm unter Nabel</label>
+            <input type="number" class="maß-input" id="bauch_unten" placeholder="—" step="0.1">
+            <span class="maß-unit">cm</span>
+          </div>
+
+          <div class="maß-input-wrap">
+            <label class="maß-label">Hüfte</label>
+            <label class="maß-label-hint">Breiteste Stelle</label>
+            <input type="number" class="maß-input" id="huefte" placeholder="—" step="0.1">
+            <span class="maß-unit">cm</span>
+          </div>
+
+          <div class="maß-input-wrap">
+            <label class="maß-label">Bein rechts</label>
+            <input type="number" class="maß-input" id="bein_rechts" placeholder="—" step="0.1">
+            <span class="maß-unit">cm</span>
+          </div>
+
+          <div class="maß-input-wrap">
+            <label class="maß-label">Bein links</label>
+            <input type="number" class="maß-input" id="bein_links" placeholder="—" step="0.1">
+            <span class="maß-unit">cm</span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Vergleich zur Vorwoche -->
+      <div class="card mb-12" id="compare-card" style="display:none">
+        <div class="card-title">Vergleich zur Vorwoche</div>
+        <div style="display:grid;grid-template-columns:1fr 60px 60px 60px;gap:4px;font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.06em;padding:0 0 8px">
+          <span>Maß</span><span style="text-align:center">Vorher</span><span style="text-align:center">Jetzt</span><span style="text-align:center">Δ</span>
+        </div>
+        <div id="compare-rows"></div>
+      </div>
+
+      <div id="save-error" class="msg-error mb-12" style="display:none"></div>
+
+      <button class="btn btn-primary" onclick="save()" id="btn-save">
+        📏 Maße speichern (+60 XP)
+      </button>
+
+      <div style="height:88px"></div>
+    </div>
+  </div>
+</div>
+
+<nav class="bnav">
+  <a href="dashboard.html" class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    Start
+  </a>
+  <a href="training.html" class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="8" width="4" height="8" rx="1"/><rect x="18" y="8" width="4" height="8" rx="1"/><line x1="6" y1="12" x2="10" y2="12"/><line x1="14" y1="12" x2="18" y2="12"/><rect x="10" y="9" width="4" height="6" rx="1"/></svg>
+    Training
+  </a>
+  <a href="fortschritt.html" class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    Statistik
+  </a>
+  <a href="profil.html" class="bnav-item active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Profil
+  </a>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/gamification.js"></script>
+<script src="js/auth.js"></script>
+<script>
+let currentProfile = null
+let prevCheck = null
+let currentWoche = 1
+let alreadySaved = false
+
+const FELDER = ['schulter','brust','arm_rechts','arm_links','bauch_oben','bauch_mitte','bauch_unten','huefte','bein_rechts','bein_links']
+const LABELS = ['Schulter','Brust','Arm rechts','Arm links','Bauch oben','Bauch mitte','Bauch unten','Hüfte','Bein rechts','Bein links']
+
+function gv(id) { const v = document.getElementById(id)?.value; return v ? parseFloat(v) : null }
+
+async function save() {
+  const btn = document.getElementById('btn-save')
+  btn.disabled = true; btn.textContent = 'Speichern...'
+  const errEl = document.getElementById('save-error')
+  errEl.style.display = 'none'
+
+  const profile = currentProfile
+  const data = {
+    user_id: profile.id,
+    woche_nr: currentWoche,
+    datum: getToday(),
+    gewicht_gleitend: gv('gewicht'),
+  }
+  FELDER.forEach(f => { data[f] = gv(f) })
+
+  const { error } = await sb.from('weekly_checks').upsert(data, {onConflict:'user_id,woche_nr'})
+
+  if (error) {
+    errEl.textContent = error.message; errEl.style.display = 'block'
+    btn.disabled = false; btn.textContent = '📏 Maße speichern (+60 XP)'
+    return
+  }
+
+  const profileUpdates = {}
+  if (!alreadySaved) {
+    profileUpdates.xp_gesamt = (profile.xp_gesamt||0) + 60
+    profileUpdates.coins = (profile.coins||0) + 60
+    alreadySaved = true
+  }
+
+  // Auto-Makro-Update wenn neues Gewicht + PAL gespeichert
+  const newWeight = gv('gewicht')
+  let macroToast = ''
+  if (newWeight && profile.pal_stunden) {
+    const stunden = typeof profile.pal_stunden === 'string'
+      ? JSON.parse(profile.pal_stunden)
+      : profile.pal_stunden
+    const anpassung = profile.kalorienanpassung || 300
+    const m = calculateMacros(newWeight, profile.geschlecht, stunden, profile.ziel, anpassung)
+    profileUpdates.gewicht_kg      = newWeight
+    profileUpdates.kalorien_ziel   = m.kalorien
+    profileUpdates.protein_ziel_g  = m.protein
+    profileUpdates.fett_ziel_g     = m.fett
+    profileUpdates.carbs_ziel_g    = m.carbs
+    macroToast = ` · Makros: ${m.kalorien} kcal / ${m.protein}g P`
+  }
+
+  if (Object.keys(profileUpdates).length) {
+    await sb.from('profiles').update(profileUpdates).eq('id', profile.id)
+  }
+
+  showToast('+60 XP — Gespeichert! 📏' + macroToast)
+  btn.textContent = '✓ Gespeichert'
+  setTimeout(() => { btn.disabled = false; btn.textContent = '📏 Maße speichern (+60 XP)' }, 2000)
+}
+
+async function init() {
+  const ctx = await requireProfile()
+  if (!ctx) return
+  const { user, profile } = ctx
+  currentProfile = profile
+
+  const dayNr = calcDayNr(profile.startdatum)
+  currentWoche = Math.ceil(dayNr / 7)
+  document.getElementById('page-sub').textContent = `Woche ${currentWoche} von 13 · Tag ${dayNr}`
+
+  // Load current week
+  const { data: curr } = await sb.from('weekly_checks')
+    .select('*').eq('user_id', user.id).eq('woche_nr', currentWoche).maybeSingle()
+
+  if (curr) {
+    alreadySaved = true
+    if (curr.gewicht_gleitend) document.getElementById('gewicht').value = curr.gewicht_gleitend
+    FELDER.forEach(f => { if (curr[f]) document.getElementById(f).value = curr[f] })
+  }
+
+  // Load previous week
+  if (currentWoche > 1) {
+    const { data: prev } = await sb.from('weekly_checks')
+      .select('*').eq('user_id', user.id).eq('woche_nr', currentWoche - 1).maybeSingle()
+    prevCheck = prev
+
+    if (prev?.gewicht_gleitend) {
+      document.getElementById('gewicht-prev').value = prev.gewicht_gleitend
+      const delta = (curr?.gewicht_gleitend || 0) - prev.gewicht_gleitend
+      if (curr?.gewicht_gleitend) {
+        const deltaEl = document.getElementById('gewicht-delta')
+        const sign = delta > 0 ? '+' : ''
+        deltaEl.textContent = `Veränderung: ${sign}${delta.toFixed(1)} kg`
+        deltaEl.style.color = delta < 0 ? 'var(--green2)' : delta > 0 ? 'var(--danger)' : 'var(--text2)'
+      }
+    }
+
+    if (prev) {
+      document.getElementById('compare-card').style.display = 'block'
+      document.getElementById('compare-rows').innerHTML = FELDER.map((f, i) => {
+        const prevVal = prev[f]
+        const currVal = curr?.[f]
+        if (!prevVal) return ''
+        const delta = currVal ? currVal - prevVal : null
+        const deltaHtml = delta != null
+          ? `<span class="${delta < 0 ? 'delta-neg' : delta > 0 ? 'delta-pos' : 'delta-zero'}">${delta > 0 ? '+' : ''}${delta.toFixed(1)}</span>`
+          : '<span class="delta-zero">—</span>'
+        return `
+          <div class="compare-row">
+            <span class="compare-label">${LABELS[i]}</span>
+            <span class="compare-prev">${prevVal}</span>
+            <span class="compare-curr">${currVal ?? '—'}</span>
+            <span class="compare-delta">${deltaHtml}</span>
+          </div>`
+      }).join('')
+    }
+  }
+
+  document.getElementById('loading').style.display = 'none'
+  document.getElementById('main').style.display = 'block'
+}
+
+init()
+</script>
+</body>
+</html>

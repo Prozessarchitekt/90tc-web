@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>90TC — Tageseintrag</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ff6b35">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="90TC">
+  <link rel="apple-touch-icon" href="icon.svg">
+</head>
+<body>
+<div id="app">
+  <div class="splash" id="loading"><div class="spinner"></div></div>
+  <div id="main" style="display:none">
+    <div class="page">
+      <div class="page-header">
+        <a href="tagebuch.html" class="page-back">←</a>
+        <div>
+          <div class="page-title" id="page-title">Tag ?</div>
+          <div class="page-subtitle" id="page-sub">—</div>
+        </div>
+        <div style="width:40px"></div>
+      </div>
+
+      <!-- Score Hero -->
+      <div class="card mb-12" id="score-card" style="display:none">
+        <div style="display:flex;align-items:center;gap:16px">
+          <div id="score-ring-wrap" style="flex-shrink:0">
+            <svg width="72" height="72" viewBox="0 0 72 72">
+              <circle cx="36" cy="36" r="28" fill="none" stroke="var(--surface)" stroke-width="7"/>
+              <circle id="score-arc" cx="36" cy="36" r="28" fill="none" stroke="var(--accent)" stroke-width="7"
+                stroke-linecap="round" stroke-dasharray="175.93" stroke-dashoffset="175.93"
+                transform="rotate(-90 36 36)" style="transition:stroke-dashoffset 1s ease"/>
+              <text x="36" y="41" text-anchor="middle" font-size="18" font-weight="900" fill="var(--text)" id="score-text">—</text>
+            </svg>
+          </div>
+          <div style="flex:1">
+            <div style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Tagesscore</div>
+            <div style="font-size:22px;font-weight:900" id="score-label">—</div>
+            <div style="font-size:13px;color:var(--text2);margin-top:4px" id="score-detail">—</div>
+          </div>
+        </div>
+        <!-- 7 Faktoren -->
+        <div id="score-faktoren" style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:6px"></div>
+      </div>
+
+      <!-- Morgen-Check-in -->
+      <div class="card mb-12" id="morgen-card" style="display:none">
+        <div class="card-title">☀️ MORGEN-CHECK-IN</div>
+        <div class="detail-grid" id="morgen-grid"></div>
+      </div>
+
+      <!-- Abend-Check-in -->
+      <div class="card mb-12" id="abend-card" style="display:none">
+        <div class="card-title">🌙 ABEND-CHECK-IN</div>
+        <div class="detail-grid" id="abend-grid"></div>
+        <!-- Makros -->
+        <div id="macro-section" style="display:none;margin-top:16px">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px">Makros</div>
+          <div class="macro-track-grid" id="macro-bars"></div>
+        </div>
+      </div>
+
+      <!-- Gute Dinge -->
+      <div class="card mb-12" id="gut-card" style="display:none">
+        <div class="card-title">✨ 3 GUTE DINGE</div>
+        <div id="gut-list" style="line-height:2;font-size:15px"></div>
+      </div>
+
+      <!-- Tagesziele -->
+      <div class="card mb-12" id="ziele-card" style="display:none">
+        <div class="card-title">🎯 TAGESZIELE</div>
+        <div id="ziele-list" style="line-height:2;font-size:15px"></div>
+      </div>
+
+      <!-- Notiz -->
+      <div class="card mb-12" id="notiz-card" style="display:none">
+        <div class="card-title">📝 NOTIZ</div>
+        <div style="font-size:15px;line-height:1.7;font-style:italic;color:var(--text2)" id="notiz-text"></div>
+      </div>
+
+      <div style="height:88px"></div>
+    </div>
+  </div>
+</div>
+
+<nav class="bnav">
+  <a href="dashboard.html" class="bnav-item active">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    Start
+  </a>
+  <a href="training.html" class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="8" width="4" height="8" rx="1"/><rect x="18" y="8" width="4" height="8" rx="1"/><line x1="6" y1="12" x2="10" y2="12"/><line x1="14" y1="12" x2="18" y2="12"/><rect x="10" y="9" width="4" height="6" rx="1"/></svg>
+    Training
+  </a>
+  <a href="fortschritt.html" class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    Statistik
+  </a>
+  <a href="profil.html" class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Profil
+  </a>
+</nav>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/gamification.js"></script>
+<script src="js/auth.js"></script>
+<script>
+const ENERGIE_LABEL = ['😴 Sehr müde','😐 Ok','⚡ Gut','🚀 Top-Energie']
+const STIMMUNG_LABEL = ['😞 Schlecht','😕 Nicht so gut','😐 Neutral','😊 Gut','🤩 Großartig']
+const FAKTOR_LABELS = ['Kalorien','Protein','Schlaf','Wasser','Training','Progression','Schritte']
+const FAKTOR_ICONS  = ['🍽️','💪','😴','💧','🏋️','📈','👟']
+
+function row(label, value, color) {
+  return `<div class="detail-row"><span class="detail-label">${label}</span><span class="detail-val" style="${color?'color:'+color:''}">${value}</span></div>`
+}
+
+function macroBar(label, ist, ziel, color) {
+  if (!ist && !ziel) return ''
+  const pct = ziel ? Math.min(100, Math.round((ist||0)/ziel*100)) : null
+  const barHtml = pct !== null ? `<div class="macro-bar-wrap"><div class="macro-bar-fill" style="width:${pct}%;background:${color}"></div></div><span style="font-size:11px;color:var(--muted)">${pct}%</span>` : ''
+  return `<div class="macro-track-item">
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+      <span style="font-size:12px;color:var(--text2)">${label}</span>
+      <span style="font-size:12px;font-weight:700;color:${color}">${ist||0}${label==='kcal'?'':' g'}${ziel?' / '+ziel+(label==='kcal'?'':' g'):''}</span>
+    </div>
+    ${barHtml}
+  </div>`
+}
+
+async function init() {
+  const ctx = await requireProfile()
+  if (!ctx) return
+  const { user, profile } = ctx
+
+  const params = new URLSearchParams(location.search)
+  const datum = params.get('datum')
+  if (!datum) { location.href = 'tagebuch.html'; return }
+
+  const { data: e } = await sb.from('daily_entries')
+    .select('*').eq('user_id', user.id).eq('datum', datum).maybeSingle()
+
+  if (!e) { location.href = 'tagebuch.html'; return }
+
+  const d = new Date(datum + 'T00:00:00')
+  const dateStr = d.toLocaleDateString('de-DE', {weekday:'long', day:'2-digit', month:'long', year:'numeric'})
+  document.getElementById('page-title').textContent = `Tag ${e.tag_nr}`
+  document.getElementById('page-sub').textContent = dateStr
+
+  // Score
+  if (e.score_von_7 != null) {
+    document.getElementById('score-card').style.display = 'block'
+    const pct = e.score_von_7 / 7
+    const circ = 175.93
+    document.getElementById('score-arc').style.strokeDashoffset = circ * (1 - pct)
+    const scoreColors = ['var(--danger)','var(--danger)','var(--orange)','var(--orange)','var(--gold2)','var(--gold2)','var(--green2)']
+    document.getElementById('score-arc').style.stroke = scoreColors[e.score_von_7 - 1] || 'var(--accent)'
+    document.getElementById('score-text').textContent = e.score_von_7 + '/7'
+    const labels = ['','Harter Kampf','Harter Kampf','Am Durchbeißen','Am Durchbeißen','Guter Tag','Starker Tag','Perfekter Tag! 🔥']
+    document.getElementById('score-label').textContent = labels[e.score_von_7] || ''
+
+    // Faktoren breakdown
+    const faktoren = e.score_faktoren ? JSON.parse(e.score_faktoren) : null
+    if (faktoren) {
+      const scoreDetail = `${e.score_von_7} von 7 Erfolgsfaktoren erreicht`
+      document.getElementById('score-detail').textContent = scoreDetail
+      document.getElementById('score-faktoren').innerHTML = FAKTOR_LABELS.map((lbl, i) => {
+        const ok = faktoren[i]
+        return `<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--surface);border-radius:var(--r-sm)">
+          <span>${FAKTOR_ICONS[i]}</span>
+          <span style="font-size:13px;flex:1;color:${ok?'var(--text)':'var(--muted)'}">${lbl}</span>
+          <span>${ok ? '✅' : '❌'}</span>
+        </div>`
+      }).join('')
+    } else {
+      document.getElementById('score-detail').textContent = `${e.score_von_7} von 7 Erfolgsfaktoren`
+    }
+  }
+
+  // Morgen
+  if (e.checkin_morgen) {
+    document.getElementById('morgen-card').style.display = 'block'
+    let html = ''
+    if (e.gewicht_kg) html += row('Gewicht', e.gewicht_kg + ' kg', 'var(--text)')
+    if (e.schlaf_h) {
+      const c = e.schlaf_h >= 7 && e.schlaf_h <= 8.5 ? 'var(--green2)' : e.schlaf_h < 6 ? 'var(--danger)' : 'var(--gold2)'
+      html += row('Schlaf', e.schlaf_h + ' h', c)
+    }
+    if (e.energie_level) html += row('Energie', ENERGIE_LABEL[e.energie_level - 1] || '—', 'var(--text)')
+    if (!html) html = row('—', 'Keine Details', '')
+    document.getElementById('morgen-grid').innerHTML = html
+  }
+
+  // Abend
+  if (e.checkin_abend) {
+    document.getElementById('abend-card').style.display = 'block'
+    let html = ''
+    if (e.wasser_l) {
+      const c = e.wasser_l >= (profile.wasser_ziel_l || 3.5) ? 'var(--green2)' : 'var(--text2)'
+      html += row('Wasser', e.wasser_l + ' L', c)
+    }
+    if (e.schritte) {
+      const c = e.schritte >= (profile.schritte_ziel || 10000) ? 'var(--green2)' : 'var(--text2)'
+      html += row('Schritte', e.schritte.toLocaleString('de-DE'), c)
+    }
+    if (e.training_gemacht != null) html += row('Training', e.training_gemacht ? '✅ Ja' : '❌ Nein', '')
+    if (e.progression != null) html += row('Progression', e.progression ? '📈 Ja' : '—', '')
+    if (e.stimmung != null) html += row('Stimmung', STIMMUNG_LABEL[e.stimmung - 1] || '—', '')
+    if (!html) html = row('—', 'Keine Details', '')
+    document.getElementById('abend-grid').innerHTML = html
+
+    // Makros
+    if (e.kalorien_ist || e.protein_ist || e.fett_ist || e.carbs_ist) {
+      document.getElementById('macro-section').style.display = 'block'
+      document.getElementById('macro-bars').innerHTML =
+        macroBar('kcal', e.kalorien_ist, profile.kalorien_ziel, 'var(--gold2)') +
+        macroBar('Protein', e.protein_ist, profile.protein_ziel_g, 'var(--accent)') +
+        macroBar('Fett', e.fett_ist, profile.fett_ziel_g, 'var(--purple)') +
+        macroBar('Carbs', e.carbs_ist, profile.carbs_ziel_g, 'var(--green2)')
+    }
+  }
+
+  // 3 gute Dinge
+  const gut = [e.gut_1, e.gut_2, e.gut_3].filter(Boolean)
+  if (gut.length) {
+    document.getElementById('gut-card').style.display = 'block'
+    document.getElementById('gut-list').innerHTML = gut.map((t,i) =>
+      `<div style="display:flex;gap:10px;align-items:flex-start;padding:6px 0">
+        <span style="color:var(--gold2);font-weight:900;font-size:16px">${i+1}.</span>
+        <span>${t}</span>
+      </div>`).join('')
+  }
+
+  // Tagesziele
+  const ziele = [e.ziel_1, e.ziel_2, e.ziel_3].filter(Boolean)
+  if (ziele.length) {
+    document.getElementById('ziele-card').style.display = 'block'
+    document.getElementById('ziele-list').innerHTML = ziele.map(t =>
+      `<div style="display:flex;gap:10px;align-items:flex-start;padding:6px 0">
+        <span style="color:var(--accent)">›</span>
+        <span>${t}</span>
+      </div>`).join('')
+  }
+
+  // Notiz
+  if (e.notiz) {
+    document.getElementById('notiz-card').style.display = 'block'
+    document.getElementById('notiz-text').textContent = '„' + e.notiz + '"'
+  }
+
+  document.getElementById('loading').style.display = 'none'
+  document.getElementById('main').style.display = 'block'
+
+  // Animate ring after render
+  setTimeout(() => {
+    if (e.score_von_7 != null) {
+      const pct = e.score_von_7 / 7
+      document.getElementById('score-arc').style.strokeDashoffset = 175.93 * (1 - pct)
+    }
+  }, 100)
+}
+
+init()
+</script>
+</body>
+</html>

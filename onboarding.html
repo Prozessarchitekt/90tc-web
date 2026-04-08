@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>90TC — Setup</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ff6b35">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="90TC">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <style>
+    .ob-page { min-height:100vh; padding:24px 20px; display:flex; flex-direction:column; max-width:430px; margin:0 auto; }
+    .ob-content { flex:1; display:flex; flex-direction:column; gap:14px; }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="ob-page" id="ob">
+    <!-- Progress -->
+    <div class="onboarding-progress" id="ob-progress"></div>
+
+    <!-- Steps rendered by JS -->
+    <div id="ob-content" class="ob-content"></div>
+
+    <!-- Footer -->
+    <div class="ob-footer" id="ob-footer">
+      <button class="btn btn-ghost" id="btn-back" onclick="prevStep()" style="flex:1;display:none">← Zurück</button>
+      <button class="btn btn-primary" id="btn-next" onclick="nextStep()" style="flex:2">Weiter →</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/gamification.js"></script>
+<script src="js/auth.js"></script>
+<script>
+const TOTAL = 6
+let step = 0
+let user = null
+let obFotoFile = null
+const form = {
+  name: '', mein_warum: '', ziel: '',
+  geschlecht: 'maennlich', gewicht_kg: '',
+  stunden: {...DEFAULT_STUNDEN}, anpassung: 300,
+  startdatum: new Date().toISOString().split('T')[0]
+}
+
+// Auth check
+requireAuth().then(u => { if (u) user = u })
+
+function renderProgress() {
+  const el = document.getElementById('ob-progress')
+  el.innerHTML = Array.from({length:TOTAL}).map((_,i) =>
+    `<div class="ob-dot ${i<=step?'active':''}"></div>`
+  ).join('')
+}
+
+function renderStep() {
+  // Persist any typed values before re-rendering
+  const fn = document.getElementById('f-name'); if (fn) form.name = fn.value
+  const fg = document.getElementById('f-gewicht'); if (fg) form.gewicht_kg = fg.value
+  const fs = document.getElementById('f-start'); if (fs) form.startdatum = fs.value
+
+  renderProgress()
+  const back = document.getElementById('btn-back')
+  const next = document.getElementById('btn-next')
+  back.style.display = step > 0 ? 'block' : 'none'
+
+  const el = document.getElementById('ob-content')
+
+  if (step === 0) {
+    next.textContent = 'Weiter →'
+    el.innerHTML = `
+      <div>
+        <h1 class="ob-title">Hey, wer bist du? 👋</h1>
+        <p class="ob-sub">Lass uns loslegen. Die 90 Tage beginnen mit deinem Namen.</p>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Dein Name</label>
+        <input type="text" id="f-name" placeholder="z.B. Chris" value="${form.name}" oninput="form.name=this.value">
+      </div>
+      <div class="input-group">
+        <label class="input-label">💭 Warum machst du die 90TC?</label>
+        <textarea id="f-warum" placeholder="Dieser Satz erscheint, wenn du schwach wirst. Mach ihn stark..." oninput="form.mein_warum=this.value">${form.mein_warum}</textarea>
+      </div>
+    `
+    setTimeout(() => document.getElementById('f-name')?.focus(), 100)
+  }
+
+  else if (step === 1) {
+    next.textContent = 'Weiter →'
+    el.innerHTML = `
+      <div>
+        <h1 class="ob-title">Dein Ziel 🎯</h1>
+        <p class="ob-sub">Was willst du in diesen 90 Tagen erreichen?</p>
+      </div>
+      ${[
+        {val:'definieren', icon:'🔥', title:'Definieren', desc:'Fett verlieren & Muskeln sichtbar machen — Kaloriendefizit'},
+        {val:'aufbauen',   icon:'💪', title:'Aufbauen',   desc:'Muskelmasse aufbauen & stärker werden — Kalorienüberschuss'},
+        {val:'recomp',     icon:'⚡', title:'Body Recomp', desc:'Fett & Muskeln gleichzeitig verbessern — Erhaltungskalorien'},
+      ].map(g => `
+        <div class="goal-card ${form.ziel===g.val?'selected':''}" onclick="selectZiel('${g.val}')">
+          <div class="goal-card-icon">${g.icon}</div>
+          <div class="goal-card-title">${g.title}</div>
+          <div class="goal-card-desc">${g.desc}</div>
+        </div>
+      `).join('')}
+    `
+  }
+
+  else if (step === 2) {
+    next.textContent = 'Weiter →'
+    el.innerHTML = `
+      <div>
+        <h1 class="ob-title">Körperdaten 📊</h1>
+        <p class="ob-sub">Für die Makroberechnung nach Sjard Roschers Methode.</p>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Geschlecht</label>
+        <div class="toggle-group">
+          <button class="toggle-btn ${form.geschlecht==='maennlich'?'active':''}" onclick="form.geschlecht='maennlich';renderStep()">♂ Männlich</button>
+          <button class="toggle-btn ${form.geschlecht==='weiblich'?'active':''}" onclick="form.geschlecht='weiblich';renderStep()">♀ Weiblich</button>
+        </div>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Körpergewicht</label>
+        <div class="input-with-unit">
+          <input type="number" id="f-gewicht" placeholder="80" value="${form.gewicht_kg}" oninput="form.gewicht_kg=this.value" step="0.1" min="30" max="300">
+          <span class="input-unit">kg</span>
+        </div>
+      </div>
+    `
+  }
+
+  else if (step === 3) {
+    const gesamt = Object.values(form.stunden).reduce((s,h)=>s+h,0)
+    next.textContent = 'Weiter →'
+    next.disabled = gesamt !== 24
+    el.innerHTML = `
+      <div>
+        <h1 class="ob-title">Aktivität ⚡</h1>
+        <p class="ob-sub">Wie viele Stunden pro Tag verbringst du mit jeder Aktivität? Muss 24h ergeben.</p>
+      </div>
+      <div class="activity-total ${gesamt===24?'ok':'notok'}">
+        ${gesamt === 24 ? '✓ Perfekt! 24 Stunden' : `${gesamt}/24 Stunden — noch ${24-gesamt > 0 ? (24-gesamt)+' übrig' : Math.abs(24-gesamt)+' zu viel'}`}
+      </div>
+      ${PAL_KAT.map(k => `
+        <div class="activity-item">
+          <div class="activity-label">${k.label}</div>
+          <div class="activity-controls">
+            <button class="activity-btn" onclick="changeStunde('${k.key}',-1)">−</button>
+            <span class="activity-val">${form.stunden[k.key]}</span>
+            <button class="activity-btn" onclick="changeStunde('${k.key}',1)">+</button>
+          </div>
+        </div>
+      `).join('')}
+    `
+  }
+
+  else if (step === 4) {
+    const kg = parseFloat(form.gewicht_kg) || 80
+    const m = calculateMacros(kg, form.geschlecht, form.stunden, form.ziel, form.anpassung)
+    next.textContent = 'Weiter →'
+    next.disabled = false
+    el.innerHTML = `
+      <div>
+        <h1 class="ob-title">Deine Makros 🍽️</h1>
+        <p class="ob-sub">Berechnet nach Sjard Roschers Methode. Grundumsatz: <strong>${m.tdee} kcal/Tag</strong></p>
+      </div>
+      ${form.ziel !== 'recomp' ? `
+        <div class="input-group">
+          <label class="input-label">${form.ziel==='aufbauen'?'Kalorienüberschuss':'Kaloriendefizit'}</label>
+          <div class="anpassung-row">
+            ${[100,200,300,400,500].map(a => `
+              <button class="anpassung-btn ${form.anpassung===a?'active':''}" onclick="setAnpassung(${a})">±${a}</button>
+            `).join('')}
+          </div>
+        </div>
+      ` : ''}
+      <div class="macro-preview">
+        <div class="macro-preview-title">Täglich empfohlen</div>
+        <div class="macro-grid4">
+          <div class="macro-box"><div class="macro-val" style="color:var(--gold2)">${m.kalorien}</div><div class="macro-lbl">kcal</div></div>
+          <div class="macro-box"><div class="macro-val" style="color:var(--accent)">${m.protein}g</div><div class="macro-lbl">Protein</div></div>
+          <div class="macro-box"><div class="macro-val" style="color:var(--purple)">${m.fett}g</div><div class="macro-lbl">Fett</div></div>
+          <div class="macro-box"><div class="macro-val" style="color:var(--green2)">${m.carbs}g</div><div class="macro-lbl">Carbs</div></div>
+        </div>
+      </div>
+      <div class="input-group" style="margin-top:8px">
+        <label class="input-label">🗓️ Geplanter Challenge-Start</label>
+        <input type="date" id="f-start" value="${form.startdatum}" oninput="form.startdatum=this.value"
+          style="background:var(--card);border:1.5px solid var(--border2);border-radius:var(--r-sm);padding:12px 14px;color:var(--text);font-size:15px;width:100%;box-sizing:border-box">
+        <div style="font-size:12px;color:var(--muted);margin-top:6px">Standard: heute. Kannst du auch rückwirkend setzen.</div>
+      </div>
+    `
+  }
+
+  else if (step === 5) {
+    next.textContent = '🚀 Challenge starten!'
+    next.disabled = false
+    const preview = obFotoFile
+      ? `<img src="${URL.createObjectURL(obFotoFile)}" style="width:100%;height:220px;object-fit:cover;border-radius:12px">`
+      : `<div style="font-size:56px;margin-bottom:10px">📷</div><div style="color:var(--text2);font-size:14px">Tippen zum Foto machen</div>`
+    el.innerHTML = `
+      <div>
+        <h1 class="ob-title">Vorher-Foto 📸</h1>
+        <p class="ob-sub">Dokumentiere deinen Start. Du wirst am Ende froh sein, es zu haben.</p>
+      </div>
+      <div onclick="document.getElementById('ob-foto-input').click()"
+        style="border:2px dashed var(--border2);border-radius:12px;padding:${obFotoFile?'0':'40px 20px'};text-align:center;cursor:pointer;background:var(--surface);overflow:hidden">
+        ${preview}
+      </div>
+      <input type="file" id="ob-foto-input" accept="image/*" capture="environment" style="display:none" onchange="handleFotoUpload(this)">
+      <div style="text-align:center;margin-top:6px;font-size:12px;color:var(--muted)">
+        ${obFotoFile ? '✓ Foto ausgewählt — jetzt Challenge starten!' : 'Optional — kannst du auch später in der App machen'}
+      </div>
+      <div id="ob-error"></div>
+    `
+  }
+}
+
+function handleFotoUpload(input) {
+  obFotoFile = input.files[0] || null
+  renderStep()
+}
+
+function selectZiel(val) { form.ziel = val; renderStep() }
+function setAnpassung(a) { form.anpassung = a; renderStep() }
+function changeStunde(key, delta) {
+  form.stunden[key] = Math.max(0, (form.stunden[key]||0) + delta)
+  renderStep()
+}
+
+function canProceed() {
+  if (step === 0) {
+    const el = document.getElementById('f-name')
+    if (el) form.name = el.value
+    return form.name.trim().length > 0
+  }
+  if (step === 1) return form.ziel !== ''
+  if (step === 2) {
+    const el = document.getElementById('f-gewicht')
+    if (el) form.gewicht_kg = el.value
+    return !!form.gewicht_kg && parseFloat(form.gewicht_kg) > 0
+  }
+  if (step === 3) return Object.values(form.stunden).reduce((s,h)=>s+h,0) === 24
+  return true // step 4 + 5 always ok
+}
+
+function nextStep() {
+  if (!canProceed()) {
+    const msgs = ['Name eingeben', 'Ziel auswählen', 'Gewicht eingeben', 'Stunden müssen 24 ergeben', '', '']
+    if (msgs[step]) alert(msgs[step])
+    return
+  }
+  if (step < TOTAL - 1) { step++; renderStep() }
+  else finish()
+}
+
+function prevStep() { if (step > 0) { step--; renderStep() } }
+
+async function finish() {
+  const btn = document.getElementById('btn-next')
+  btn.disabled = true
+  btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border-width:2px;margin:0 auto"></div>'
+
+  const m = calculateMacros(parseFloat(form.gewicht_kg), form.geschlecht, form.stunden, form.ziel, form.anpassung)
+
+  // upsert statt insert — verhindert "duplicate key" beim Challenge-Reset
+  const { error } = await sb.from('profiles').upsert({
+    id: user.id,
+    name: form.name.trim(),
+    mein_warum: form.mein_warum.trim() || null,
+    ziel: form.ziel,
+    geschlecht: form.geschlecht,
+    gewicht_kg: parseFloat(form.gewicht_kg),
+    kalorien_ziel: m.kalorien,
+    protein_ziel_g: m.protein,
+    fett_ziel_g: m.fett,
+    carbs_ziel_g: m.carbs,
+    pal_stunden: form.stunden,
+    kalorienanpassung: form.ziel === 'recomp' ? 0 : (form.anpassung || 300),
+    startdatum: form.startdatum || new Date().toISOString().split('T')[0],
+    wasser_ziel_l: 3.5,
+    schlaf_ziel_h: 8.0,
+    schritte_ziel: 10000,
+    xp_gesamt: 0,
+    coins: 0,
+    streak_aktuell: 0,
+    streak_rekord: 0,
+    letzter_checkin: null,
+  }, { onConflict: 'id' })
+
+  if (error) {
+    const errEl = document.getElementById('ob-error')
+    if (errEl) errEl.innerHTML = `<div class="msg-error">${error.message}</div>`
+    btn.disabled = false
+    btn.textContent = '🚀 Challenge starten!'
+    return
+  }
+
+  // Vorher-Foto hochladen falls ausgewählt
+  if (obFotoFile) {
+    try {
+      const ext = obFotoFile.name.split('.').pop() || 'jpg'
+      const path = `${user.id}/woche_1_vorne.${ext}`
+      const { error: upErr } = await sb.storage.from('photos').upload(path, obFotoFile, { upsert: true })
+      if (!upErr) {
+        const { data: urlData } = sb.storage.from('photos').getPublicUrl(path)
+        await sb.from('photos').insert({
+          user_id: user.id,
+          datum: new Date().toISOString().split('T')[0],
+          woche_nr: 1,
+          winkel: 'vorne',
+          typ: 'woche',
+          url: urlData.publicUrl,
+        })
+      }
+    } catch(e) { /* Foto-Upload nicht kritisch */ }
+  }
+
+  window.location.href = 'dashboard.html'
+}
+
+renderStep()
+</script>
+</body>
+</html>
