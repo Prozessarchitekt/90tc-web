@@ -81,10 +81,29 @@
       text-transform: uppercase; font-weight: 600;
     }
 
+    /* ── XP Bar ── */
+    .xp-bar-wrap {
+      padding: 0 16px; margin-bottom: 16px;
+    }
+    .xp-bar-head {
+      display: flex; justify-content: space-between;
+      font-size: 11px; color: rgba(255,255,255,.4); font-weight: 600;
+      margin-bottom: 5px;
+    }
+    .xp-track {
+      height: 5px; background: rgba(255,255,255,.07); border-radius: 99px; overflow: hidden;
+    }
+    .xp-fill {
+      height: 100%; border-radius: 99px;
+      background: linear-gradient(90deg, #00d166, #39f08a);
+      box-shadow: 0 0 8px rgba(0,209,102,.4);
+      transition: width 1.2s cubic-bezier(.4,0,.2,1);
+    }
+
     /* ── Stat Cards ── */
     .stat-row {
-      display: grid; grid-template-columns: repeat(3,1fr);
-      gap: 10px; padding: 0 16px; margin-bottom: 16px;
+      display: grid; grid-template-columns: repeat(4,1fr);
+      gap: 8px; padding: 0 16px; margin-bottom: 16px;
     }
     .stat-c {
       background: rgba(255,255,255,.06);
@@ -93,10 +112,11 @@
       text-align: center;
       backdrop-filter: blur(12px);
     }
-    .stat-c-icon { font-size: 26px; margin-bottom: 7px; line-height: 1; }
-    .stat-c-lbl { font-size: 10px; color: rgba(255,255,255,.45); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 7px; }
-    .stat-c-val { font-size: 20px; font-weight: 900; color: #fff; line-height: 1; }
-    .stat-c-unit { font-size: 10px; color: rgba(255,255,255,.35); margin-top: 3px; }
+    .stat-c-icon { font-size: 22px; margin-bottom: 5px; line-height: 1; }
+    .stat-c-lbl { font-size: 9px; color: rgba(255,255,255,.45); font-weight: 700; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 5px; }
+    .stat-c-val { font-size: 18px; font-weight: 900; color: #fff; line-height: 1; }
+    .stat-c-unit { font-size: 9px; color: rgba(255,255,255,.35); margin-top: 3px; }
+    .stat-c { padding: 14px 6px 12px; }
 
     /* ── CTA Button ── */
     .cta-wrap { padding: 4px 16px 14px; }
@@ -211,8 +231,23 @@
         <div class="ring-label">Dein Fortschritt</div>
       </div>
 
+      <!-- XP Bar -->
+      <div class="xp-bar-wrap" id="xp-bar-wrap" style="display:none">
+        <div class="xp-bar-head">
+          <span id="xp-level-lbl">Level —</span>
+          <span id="xp-val-lbl">0 XP</span>
+        </div>
+        <div class="xp-track"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+      </div>
+
       <!-- Stat Cards -->
       <div class="stat-row">
+        <div class="stat-c">
+          <div class="stat-c-icon">⚡</div>
+          <div class="stat-c-lbl">Streak</div>
+          <div class="stat-c-val" id="s-streak">0</div>
+          <div class="stat-c-unit">Tage</div>
+        </div>
         <div class="stat-c">
           <div class="stat-c-icon">🔥</div>
           <div class="stat-c-lbl">Kalorien</div>
@@ -220,16 +255,16 @@
           <div class="stat-c-unit">kcal</div>
         </div>
         <div class="stat-c">
-          <div class="stat-c-icon">👟</div>
-          <div class="stat-c-lbl">Schritte</div>
-          <div class="stat-c-val" id="s-steps">—</div>
-          <div class="stat-c-unit">Heute</div>
+          <div class="stat-c-icon">💪</div>
+          <div class="stat-c-lbl">Protein</div>
+          <div class="stat-c-val" id="s-prot">—</div>
+          <div class="stat-c-unit">g</div>
         </div>
-        <div class="stat-c">
-          <div class="stat-c-icon">⚡</div>
-          <div class="stat-c-lbl">Streak</div>
-          <div class="stat-c-val" id="s-streak">0</div>
-          <div class="stat-c-unit">Tage</div>
+        <div class="stat-c" id="stat-training">
+          <div class="stat-c-icon">🏋️</div>
+          <div class="stat-c-lbl">Training</div>
+          <div class="stat-c-val" id="s-train">—</div>
+          <div class="stat-c-unit" id="s-train-sub">Heute</div>
         </div>
       </div>
 
@@ -320,8 +355,16 @@ async function init() {
   document.getElementById('loading').style.display = 'none'
   document.getElementById('main').style.display = 'block'
 
-  const dayNr   = calcDayNr(profile.startdatum)
-  const pct     = Math.min(Math.round((dayNr / 90) * 100), 100)
+  const dayNr = calcDayNr(profile.startdatum)
+  const pct   = Math.min(Math.round((dayNr / 90) * 100), 100)
+
+  // Personalisierter Gruß
+  const hour = new Date().getHours()
+  const greetWord = hour < 11 ? 'Guten Morgen' : hour < 17 ? 'Hey' : 'Guten Abend'
+  const name = profile.vorname || profile.name || ''
+  document.getElementById('dash-greeting').textContent = name
+    ? `${greetWord}, ${name}! 👋`
+    : `${greetWord}! 👋`
 
   // Motto
   if (profile.motto) {
@@ -330,7 +373,7 @@ async function init() {
     el.style.display = 'block'
   }
 
-  // Personalisiertes Zitat nach Tag-Phase
+  // Zitat
   const quotes = typeof QUOTES !== 'undefined' ? QUOTES : []
   if (quotes.length) {
     let pool
@@ -346,16 +389,12 @@ async function init() {
     }
   }
 
-  // Boss-Woche Banner (Woche 4, 8, 12 = Tage 22-28, 50-56, 78-84)
+  // Boss-Woche
   const bossWeeks = [[22,28],[50,56],[78,84]]
   const bossNr = bossWeeks.findIndex(([a,b]) => dayNr >= a && dayNr <= b)
   if (bossNr >= 0) {
     const titles = ['BOSS-WOCHE 1 💀','BOSS-WOCHE 2 ⚡','FINALBOSS 🏆']
-    const subs = [
-      'Woche 4 — Push beyond your limits!',
-      'Woche 8 — Du bist halb durch. Alles geben!',
-      'Letzte Woche — 90 Tage sind zum Greifen nah!'
-    ]
+    const subs = ['Woche 4 — Push beyond your limits!','Woche 8 — Du bist halb durch. Alles geben!','Letzte Woche — 90 Tage sind zum Greifen nah!']
     document.getElementById('boss-title').textContent = titles[bossNr]
     document.getElementById('boss-sub').textContent = subs[bossNr]
     document.getElementById('boss-banner').style.display = 'flex'
@@ -372,41 +411,69 @@ async function init() {
   // Streak
   document.getElementById('s-streak').textContent = profile.streak_aktuell || 0
 
-  // Weekly reminder
-  if (dayNr > 1 && dayNr % 7 === 0) {
+  // XP Bar
+  const xp = profile.xp_gesamt || 0
+  const level = Math.floor(xp / 500) + 1
+  const xpInLevel = xp % 500
+  document.getElementById('xp-level-lbl').textContent = `Level ${level}`
+  document.getElementById('xp-val-lbl').textContent = `${xp} XP`
+  document.getElementById('xp-bar-wrap').style.display = 'block'
+  setTimeout(() => { document.getElementById('xp-fill').style.width = Math.round(xpInLevel / 5) + '%' }, 300)
+
+  // Weekly reminder (montags oder wenn tag % 7 === 0 und noch nicht gemessen)
+  const wocheNr = Math.ceil(dayNr / 7)
+  if (wocheNr > 1) {
     const { data: wc } = await sb.from('weekly_checks')
-      .select('id').eq('user_id', user.id)
-      .eq('woche_nr', Math.floor((dayNr-1)/7) + 1).maybeSingle()
+      .select('id').eq('user_id', user.id).eq('woche_nr', wocheNr).maybeSingle()
     if (!wc) document.getElementById('weekly-rem').style.display = 'flex'
   }
 
-  // Today entry
-  const { data: entry } = await sb.from('daily_entries')
-    .select('*').eq('user_id', user.id).eq('datum', getToday()).maybeSingle()
+  // Load today entry + training session in parallel
+  const [{ data: entry }, { data: trainSessions }] = await Promise.all([
+    sb.from('daily_entries').select('*').eq('user_id', user.id).eq('datum', getToday()).maybeSingle(),
+    sb.from('training_sessions').select('id').eq('user_id', user.id).eq('datum', getToday()).limit(1)
+  ])
 
-  if (entry) {
-    if (entry.kalorien_ist) document.getElementById('s-kcal').textContent = entry.kalorien_ist.toLocaleString('de-DE')
-    if (entry.schritte_ist) document.getElementById('s-steps').textContent = entry.schritte_ist.toLocaleString('de-DE')
-    if (entry.checkin_morgen) {
-      const pm = document.getElementById('pill-m')
-      pm.classList.add('done')
-      document.getElementById('pill-m-sub').textContent = 'Erledigt ✓'
-    }
-    if (entry.checkin_abend) {
-      const pa = document.getElementById('pill-a')
-      pa.classList.add('done')
-      document.getElementById('pill-a-sub').textContent = entry.score_von_7 != null ? `Score: ${entry.score_von_7}/7` : 'Erledigt ✓'
-    }
+  // Macro stats
+  if (entry?.kalorien_ist) document.getElementById('s-kcal').textContent = entry.kalorien_ist.toLocaleString('de-DE')
+  if (entry?.protein_ist_g) document.getElementById('s-prot').textContent = Math.round(entry.protein_ist_g) + 'g'
+
+  // Training stat
+  const trainedToday = trainSessions && trainSessions.length > 0
+  document.getElementById('s-train').textContent = trainedToday ? '✓' : '–'
+  document.getElementById('s-train-sub').textContent = trainedToday ? 'Erledigt' : 'Ausstehend'
+  if (trainedToday) {
+    document.getElementById('stat-training').style.borderColor = 'rgba(0,209,102,.3)'
+    document.getElementById('stat-training').style.background = 'rgba(0,209,102,.06)'
   }
 
-  // CTA: wenn beide Check-ins done → zeige Check-in öffnen, sonst Training
-  if (entry?.checkin_morgen && entry?.checkin_abend) {
-    document.getElementById('cta-btn').textContent = '✓ Heutiger Tag abgehakt!'
-    document.getElementById('cta-btn').style.background = 'linear-gradient(135deg, #22c55e, #16a34a)'
-    document.getElementById('cta-btn').style.boxShadow = '0 6px 28px rgba(34,197,94,.35)'
+  // Check-in pills
+  if (entry?.checkin_morgen) {
+    document.getElementById('pill-m').classList.add('done')
+    document.getElementById('pill-m-sub').textContent = 'Erledigt ✓'
+  }
+  if (entry?.checkin_abend) {
+    document.getElementById('pill-a').classList.add('done')
+    document.getElementById('pill-a-sub').textContent = entry.score_von_7 != null ? `Score: ${entry.score_von_7}/7` : 'Erledigt ✓'
+  }
+
+  // CTA logic
+  const cta = document.getElementById('cta-btn')
+  if (entry?.checkin_morgen && entry?.checkin_abend && trainedToday) {
+    cta.textContent = '✓ Perfekter Tag — so weiter!'
+    cta.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)'
+    cta.style.boxShadow = '0 6px 28px rgba(34,197,94,.35)'
+    cta.removeAttribute('href')
+    cta.style.cursor = 'default'
   } else if (!entry?.checkin_morgen) {
-    document.getElementById('cta-btn').textContent = '☀️ Morgen-Check-in starten'
-    document.getElementById('cta-btn').href = 'checkin.html'
+    cta.textContent = '☀️ Morgen-Check-in starten'
+    cta.href = 'checkin.html'
+  } else if (!trainedToday) {
+    cta.textContent = '🏋️ Heutiges Training starten'
+    cta.href = 'training.html'
+  } else {
+    cta.textContent = '🌙 Abend-Check-in'
+    cta.href = 'checkin.html'
   }
 }
 

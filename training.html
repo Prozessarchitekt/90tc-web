@@ -414,8 +414,10 @@
     <h2 class="ob-h">Dein Plan ist bereit!</h2>
     <p class="ob-sub">Basierend auf deinen Angaben empfehlen wir:</p>
     <div class="plan-result" id="plan-result">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(0,209,102,.7);margin-bottom:8px">Empfohlener Plan</div>
       <div class="plan-result-name" id="plan-result-name">—</div>
       <div class="plan-result-sub" id="plan-result-sub">—</div>
+      <div id="plan-result-days" style="display:flex;gap:6px;margin-top:12px"></div>
     </div>
     <button class="ob-btn-next" style="width:100%" onclick="confirmPlan()">Plan starten 🚀</button>
     <div class="ob-nav" style="margin-top:12px">
@@ -752,6 +754,7 @@ let selectedDay = 0;  // index 0-3
 let activeSession = null;  // { id, tag_id, datum }
 let sessionSets = {};  // { muster_id: { gewicht, wdh, done } }
 let prData = {};  // { uebung: gewicht_kg }
+let lastSessionData = {};  // { uebung: { gewicht_kg, wiederholungen } }
 let userId = null;
 
 // LocalStorage keys
@@ -778,6 +781,18 @@ function showOnboarding() {
     const box = el.querySelector('.ob-check-box');
     if (box) box.textContent = isKw ? '✓' : '';
   });
+
+  // Pre-select gender from profile
+  if (obState.gender) {
+    const genderEl = document.querySelector(`.ob-option[data-val="${obState.gender}"]`);
+    if (genderEl) {
+      genderEl.closest('.ob-options')?.querySelectorAll('.ob-option').forEach(o => o.classList.remove('selected'));
+      genderEl.classList.add('selected');
+      const nextBtn = document.getElementById('ob-next-1');
+      if (nextBtn) nextBtn.disabled = false;
+    }
+  }
+
   document.getElementById('ob-overlay').classList.remove('hidden');
   obGoStep(1);
 }
@@ -911,6 +926,18 @@ function showPlanResult(plan) {
   document.getElementById('plan-result-name').textContent = plan.name;
   document.getElementById('plan-result-sub').textContent =
     `${plan.tage}×/Woche · ${plan.split} · ${plan.ort === 'gym' ? 'Fitnessstudio' : 'Homefit'}`;
+
+  // Show training days overview
+  const daysEl = document.getElementById('plan-result-days');
+  if (daysEl && plan.tagKonfig) {
+    daysEl.innerHTML = plan.tagKonfig.map((konfigId, i) => {
+      const k = ALLE_TAGE_KONFIGS[konfigId];
+      return k ? `<div style="flex:1;text-align:center;background:rgba(0,209,102,.1);border:1px solid rgba(0,209,102,.25);border-radius:10px;padding:8px 4px">
+        <div style="font-size:18px">${k.icon}</div>
+        <div style="font-size:10px;font-weight:700;margin-top:3px">${k.kurz}</div>
+      </div>` : '';
+    }).join('');
+  }
 }
 
 function confirmPlan() {
@@ -964,10 +991,40 @@ function calcWeek(startdatum) {
 }
 
 function getSätze(weekNr, movIdx) {
-  if (weekNr === 7) return 3;
+  if (weekNr === 7) return 2;  // Deload: echtes halbes Volumen (Peak 4 → Deload 2)
   if (weekNr > 12) weekNr = 12;
   const phase = weekNr <= 6 ? weekNr - 1 : weekNr - 7;
   return movIdx < phase ? 4 : 3;
+}
+
+// RIR progressiv: Einsteiger lernen Technik, dann steigend bis zum Peak
+function getRIR(weekNr) {
+  if (weekNr === 7) return 4;   // Deload — leicht, regenerativ
+  if (weekNr <= 2)  return 3;   // Einführung — Technik fokussieren
+  if (weekNr <= 4)  return 2;   // Aufbau — 2 Wdh. Reserve
+  if (weekNr <= 6)  return 1;   // Intensivierung — 1 Wdh. Reserve
+  if (weekNr <= 9)  return 2;   // Phase 2 Einführung — wieder aufbauen
+  if (weekNr <= 11) return 1;   // Phase 2 Intensivierung
+  return 0;                      // Woche 12 — Peak, alles geben
+}
+
+// Rep-Ranges nach Übungstyp
+const COMPOUND_MUSTER   = ['push_horizontal','pull_horizontal','push_vertikal','pull_vertikal','beine_quad','beine_hintere_kette'];
+const MEDIUM_MUSTER     = ['beine_glute','beinbeuger','beinstrecker'];
+// isolation: schulter_seite, brust_isoliert, waden
+
+function getRepRange(musterId) {
+  if (COMPOUND_MUSTER.includes(musterId)) return '6–12';
+  if (MEDIUM_MUSTER.includes(musterId))   return '8–15';
+  return '12–20';
+}
+
+function getRIRLabel(rir) {
+  if (rir === 0) return 'RIR 0 — bis zum Muskelversagen';
+  if (rir === 1) return 'RIR 1 — 1 Wdh. vor Versagen';
+  if (rir === 2) return 'RIR 2 — 2 Wdh. vor Versagen';
+  if (rir === 3) return 'RIR 3 — Technik & Gewöhnung';
+  return 'RIR 4 — regenerativ, leicht';
 }
 
 function getWeekName(w) {
@@ -976,10 +1033,12 @@ function getWeekName(w) {
   return `Woche ${w} — Phase 2`;
 }
 function getWeekSub(w) {
-  if (w === 7) return 'Regenerationswoche — halbes Volumen, gleiches Gewicht';
-  if (w === 1) return 'Einführungswoche · Alle 3 Sätze · RIR 0';
-  if (w <= 6)  return `Volumen steigt progressiv · bis zu ${Math.min(w-1+1,4)} Sätze · RIR 0`;
-  return `Zweite Phase · Sätze steigen wieder an · RIR 0`;
+  const rir = getRIR(w);
+  if (w === 7) return 'Regenerationswoche — 2 Sätze, gleiches Gewicht, RIR 4';
+  if (w === 1) return `Einführungswoche · 3 Sätze · ${getRIRLabel(rir)}`;
+  if (w <= 6)  return `Volumen steigt progressiv · bis zu 4 Sätze · ${getRIRLabel(rir)}`;
+  if (w === 12) return `Woche 12 — Peak · ${getRIRLabel(rir)}`;
+  return `Phase 2 · Sätze steigen an · ${getRIRLabel(rir)}`;
 }
 
 function getToday() {
@@ -1071,8 +1130,8 @@ async function init() {
     dotsEl.appendChild(dot);
   }
 
-  // Load PRs from Supabase
-  await loadPRs();
+  // Load PRs + last session data in parallel
+  await Promise.all([loadPRs(), loadLastSessionData()]);
 
   // Check active session today
   await checkTodaySession();
@@ -1099,6 +1158,37 @@ async function loadPRs() {
       .select('uebung, gewicht_kg')
       .eq('user_id', userId);
     if (data) data.forEach(r => prData[r.uebung] = r.gewicht_kg);
+  } catch(e) {}
+}
+
+async function loadLastSessionData() {
+  try {
+    const { data: sessions } = await sb
+      .from('training_sessions')
+      .select('id, datum')
+      .eq('user_id', userId)
+      .lt('datum', getToday())
+      .order('datum', { ascending: false })
+      .limit(8);
+    if (!sessions?.length) return;
+
+    const { data: sets } = await sb
+      .from('training_sets')
+      .select('session_id, uebung, gewicht_kg, wiederholungen')
+      .in('session_id', sessions.map(s => s.id));
+    if (!sets?.length) return;
+
+    // Map session_id → date for sorting
+    const dateMap = {};
+    sessions.forEach(s => { dateMap[s.id] = s.datum; });
+    // Sort by date desc, take first occurrence per exercise
+    const sorted = [...sets].sort((a, b) =>
+      (dateMap[b.session_id] || '').localeCompare(dateMap[a.session_id] || ''));
+    sorted.forEach(s => {
+      if (!lastSessionData[s.uebung] && s.gewicht_kg > 0) {
+        lastSessionData[s.uebung] = { gewicht_kg: s.gewicht_kg, wiederholungen: s.wiederholungen };
+      }
+    });
   } catch(e) {}
 }
 
@@ -1156,7 +1246,7 @@ function renderWorkout() {
     html += `<div class="card glass" style="text-align:center;padding:20px;margin-bottom:16px">
       <div style="font-size:13px;color:var(--text2);margin-bottom:4px">Bereit für heute?</div>
       <div style="font-size:16px;font-weight:800;margin-bottom:4px">${tag.typ}</div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:16px">${tag.muster.length} Bewegungsmuster · ${currentWeek === 7 ? 'Deload' : 'RIR 0'}</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:16px">${tag.muster.length} Bewegungsmuster · ${getRIRLabel(getRIR(currentWeek))}</div>
       <button class="start-workout-btn" onclick="startSession('${tag.id}')">Training starten 🚀</button>
     </div>`;
   } else if (activeSession && todayTag !== tag.id && !isDone) {
@@ -1170,10 +1260,17 @@ function renderWorkout() {
     </div>`;
   }
 
-  // RIR info
+  // RIR info — dynamisch nach Woche
+  const rir = getRIR(currentWeek);
+  const rirDesc = rir === 0 ? 'bis zum Muskelversagen'
+    : rir === 1 ? '1 Wiederholung vor dem Versagen'
+    : rir === 2 ? '2 Wiederholungen vor dem Versagen'
+    : rir === 3 ? 'Technik fokussieren — 3 Wdh. Reserve'
+    : 'leicht und regenerativ — 4 Wdh. Reserve';
   html += `<div class="info-hint" style="margin-bottom:12px">
-    <strong>Alle Übungen: 10–25 Wdh. · RIR 0</strong> (bis kurz vor Muskelversagen)<br>
-    Verbundübungen: 2–5 Min. Pause · Isolationsübungen: 1–3 Min.
+    <strong>${getRIRLabel(rir)}</strong> — ${rirDesc}<br>
+    <span style="color:var(--text2)">Verbund: 6–12 Wdh. · Semi-Verbund: 8–15 · Isolation: 12–20</span><br>
+    <span style="color:var(--text2)">Verbundpause: 2–3 Min. · Isolation: 1–2 Min.</span>
   </div>`;
 
   // Movement cards
@@ -1227,7 +1324,9 @@ function renderWorkout() {
 }
 
 function renderMovementCard(musterId, meta, uebungen, sets, selectedUebung, isTraining, movIdx) {
-  const setLabel = `${sets} × 10–25 · RIR 0`;
+  const repRange = getRepRange(musterId);
+  const rir = getRIR(currentWeek);
+  const setLabel = `${sets} × ${repRange} · RIR ${rir}`;
 
   let body = '';
 
@@ -1256,6 +1355,24 @@ function renderMovementCard(musterId, meta, uebungen, sets, selectedUebung, isTr
     body += `<button onclick="changeExercise('${musterId}')" style="background:transparent;border:1px solid var(--border);color:var(--text2);padding:4px 10px;border-radius:8px;font-size:12px;cursor:pointer;margin-bottom:10px">Übung ändern</button>`;
 
     if (isTraining) {
+      // Progressive overload: last session hint
+      const last = lastSessionData[selectedUebung];
+      if (last) {
+        const pr = prData[selectedUebung];
+        const isNewPR = pr && last.gewicht_kg >= pr;
+        const suggest = parseFloat((last.gewicht_kg + 2.5).toFixed(1));
+        body += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 10px;background:rgba(0,209,102,.08);border:1px solid rgba(0,209,102,.2);border-radius:10px">
+          <span style="font-size:16px">📊</span>
+          <div style="flex:1;font-size:12px">
+            <span style="color:var(--text2)">Letzte Einheit:</span>
+            <strong style="color:var(--text);margin-left:4px">${last.gewicht_kg} kg × ${last.wiederholungen || '?'} Wdh.</strong>
+          </div>
+          <div onclick="prefillLastWeight('${musterId}',${suggest})" style="font-size:11px;font-weight:700;color:var(--accent);cursor:pointer;white-space:nowrap;background:rgba(0,209,102,.15);padding:4px 8px;border-radius:8px">
+            +2.5 → ${suggest}
+          </div>
+        </div>`;
+      }
+
       // Set logger
       body += `<div class="set-table">
         <div class="set-row">
@@ -1268,11 +1385,11 @@ function renderMovementCard(musterId, meta, uebungen, sets, selectedUebung, isTr
         const stateGew = sessionSets[musterId]?.[s]?.gewicht || '';
         const stateWdh = sessionSets[musterId]?.[s]?.wdh || '';
         const stateDone = sessionSets[musterId]?.[s]?.done || false;
-        const prevGew = prData[selectedUebung] || '';
+        const lastGew = lastSessionData[selectedUebung]?.gewicht_kg || prData[selectedUebung] || '';
         body += `<div class="set-row">
           <div class="set-nr">${s}</div>
-          <input class="set-input" type="number" step="0.5" min="0" max="100"
-            placeholder="${prevGew || '—'}"
+          <input class="set-input" type="number" step="0.5" min="0" max="500"
+            placeholder="${lastGew || '—'}"
             value="${stateGew}"
             data-muster="${musterId}" data-satz="${s}" data-field="gewicht"
             onchange="saveSetData(this)">
@@ -1324,6 +1441,16 @@ function saveSetData(input) {
   if (!sessionSets[muster]) sessionSets[muster] = {};
   if (!sessionSets[muster][satz]) sessionSets[muster][satz] = {};
   sessionSets[muster][satz][field] = parseFloat(input.value) || 0;
+}
+
+function prefillLastWeight(musterId, weight) {
+  // Fill all weight inputs for this muster with the suggested weight
+  document.querySelectorAll(`.set-input[data-muster="${musterId}"][data-field="gewicht"]`).forEach(inp => {
+    if (!inp.value) {
+      inp.value = weight;
+      saveSetData(inp);
+    }
+  });
 }
 
 // ── Session Speichern ─────────────────────────────────────────────

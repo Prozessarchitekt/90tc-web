@@ -101,6 +101,15 @@
         <div id="energie-insights"></div>
       </div>
 
+      <!-- Persönliche Rekorde -->
+      <div class="card" id="pr-card" style="display:none">
+        <div class="section-header">
+          <span class="section-title">PERSÖNLICHE REKORDE</span>
+          <span class="text-muted fs-12" id="pr-count">0</span>
+        </div>
+        <div id="pr-list"></div>
+      </div>
+
       <!-- Wöchentliche Missionen -->
       <div class="card">
         <div class="section-header">
@@ -188,6 +197,9 @@ async function init() {
 
   const { data: wcs } = await sb.from('weekly_checks')
     .select('*').eq('user_id', user.id).order('woche_nr', { ascending: true })
+
+  const { data: prs } = await sb.from('personal_records')
+    .select('*').eq('user_id', user.id).order('datum', { ascending: false })
 
   document.getElementById('loading').style.display = 'none'
   document.getElementById('main').style.display = 'block'
@@ -302,6 +314,20 @@ async function init() {
           <span class="compare-delta">${d != null ? `<span class="${d<0?'delta-neg':d>0?'delta-pos':'delta-zero'}">${d>0?'+':''}${d}</span>` : '—'}</span>
         </div>`
       }).join('')
+  }
+
+  // Persönliche Rekorde
+  if (prs?.length) {
+    document.getElementById('pr-card').style.display = 'block'
+    document.getElementById('pr-count').textContent = `${prs.length} PR${prs.length !== 1 ? 's' : ''}`
+    document.getElementById('pr-list').innerHTML = prs.map(pr => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--text)">${pr.uebung}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">${new Date(pr.datum+'T00:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'})}</div>
+        </div>
+        <div style="font-size:20px;font-weight:900;color:var(--accent)">${pr.gewicht_kg} <span style="font-size:13px;font-weight:500;color:var(--muted)">kg</span></div>
+      </div>`).join('')
   }
 
   // Badges
