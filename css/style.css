@@ -10,18 +10,18 @@
   --border:       rgba(255,255,255,0.06);
   --border2:      rgba(255,255,255,0.12);
 
-  --accent:       #ff6b35;
-  --accent2:      #ff8c5a;
-  --accent-dim:   rgba(255,107,53,0.08);
-  --accent-glow:  rgba(255,107,53,0.25);
-  --accent-border:rgba(255,107,53,0.3);
+  --accent:       #00d166;
+  --accent2:      #39f08a;
+  --accent-dim:   rgba(0,209,102,0.09);
+  --accent-glow:  rgba(0,209,102,0.28);
+  --accent-border:rgba(0,209,102,0.35);
 
   --gold:         #f59e0b;
   --gold2:        #fbbf24;
   --gold-dim:     rgba(245,158,11,0.08);
 
-  --green:        #22c55e;
-  --green2:       #4ade80;
+  --green:        #16a34a;
+  --green2:       #22c55e;
   --green-dim:    rgba(34,197,94,0.08);
 
   --blue:         #3b82f6;
@@ -44,7 +44,7 @@
 
   --shadow:       0 8px 32px rgba(0,0,0,0.5);
   --shadow-sm:    0 2px 12px rgba(0,0,0,0.4);
-  --shadow-accent:0 0 40px rgba(255,107,53,0.2);
+  --shadow-accent:0 0 40px rgba(0,209,102,0.2);
   --glass:        rgba(255,255,255,0.03);
   --glass-border: 1px solid rgba(255,255,255,0.07);
 }
@@ -70,7 +70,7 @@ body::before {
   position: fixed;
   top: -200px; right: -200px;
   width: 600px; height: 600px;
-  background: radial-gradient(circle, rgba(255,107,53,0.06) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(0,209,102,0.07) 0%, transparent 70%);
   pointer-events: none; z-index: 0;
 }
 
@@ -211,18 +211,17 @@ body::before {
 
 input[type="text"], input[type="email"], input[type="password"],
 input[type="number"], textarea, select {
-  background: rgba(255,255,255,.06);
-  border: 1.5px solid rgba(255,255,255,.1);
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.09);
   border-radius: 14px;
   color: var(--text); font-size: 16px;
   padding: 14px 16px; width: 100%;
-  outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none; transition: border-color 0.2s;
   font-family: inherit;
   -webkit-appearance: none; appearance: none;
 }
 input:focus, textarea:focus, select:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-dim);
 }
 input::placeholder, textarea::placeholder { color: var(--muted); }
 textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
@@ -251,10 +250,10 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent) 0%, #f97316 100%);
-  color: #fff; box-shadow: 0 6px 24px rgba(255,107,53,.4);
+  background: linear-gradient(135deg, var(--accent) 0%, #00a653 100%);
+  color: #000; font-weight: 800; box-shadow: 0 6px 24px rgba(0,209,102,.35);
 }
-.btn-primary:hover:not(:disabled) { box-shadow: 0 8px 32px rgba(255,107,53,.5); transform: translateY(-1px); }
+.btn-primary:hover:not(:disabled) { box-shadow: 0 8px 32px rgba(0,209,102,.5); transform: translateY(-1px); }
 
 .btn-gold {
   background: linear-gradient(135deg, var(--gold), var(--gold2));
@@ -300,13 +299,11 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
 
 /* ── Cards ───────────────────────────────────── */
 .card {
-  background: rgba(255,255,255,.045);
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 20px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 18px;
   padding: 18px 20px;
   margin-bottom: 12px;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
 }
 .card-title { font-size: 11px; font-weight: 800; color: rgba(255,255,255,.45); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; }
 
@@ -414,7 +411,7 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
   stroke-linecap: round; stroke-dasharray: 408.4;
   transform: rotate(-90deg); transform-origin: 80px 80px;
   transition: stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1);
-  filter: drop-shadow(0 0 8px rgba(255,107,53,0.5));
+  filter: drop-shadow(0 0 10px rgba(0,209,102,0.6));
 }
 .ring-inner {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -432,7 +429,7 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
 .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
 .stat-card { padding: 18px 16px; }
 .stat-fire  { font-size: 32px; line-height: 1; margin-bottom: 4px; animation: fireGlow 2s infinite; }
-@keyframes fireGlow { 0%,100% { filter: drop-shadow(0 0 4px rgba(255,107,53,0.6)); } 50% { filter: drop-shadow(0 0 12px rgba(255,107,53,1)); } }
+@keyframes fireGlow { 0%,100% { filter: drop-shadow(0 0 4px rgba(0,209,102,0.6)); } 50% { filter: drop-shadow(0 0 12px rgba(0,209,102,1)); } }
 .stat-number { font-size: 32px; font-weight: 900; line-height: 1; }
 .stat-label  { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
 .stat-record { font-size: 11px; color: var(--muted); margin-top: 4px; }
@@ -488,8 +485,8 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
 
 /* ── Check-in Page ───────────────────────────── */
 .checkin-section {
-  background: var(--card); border: var(--glass-border);
-  border-radius: var(--r-lg); padding: 22px 20px; margin-bottom: 16px;
+  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07);
+  border-radius: 20px; padding: 22px 20px; margin-bottom: 14px;
 }
 .checkin-section-header {
   display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
@@ -788,7 +785,7 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
 }
 .bnav-item svg { width: 22px; height: 22px; }
 .bnav-item.active { color: var(--accent); }
-.bnav-item.active svg { filter: drop-shadow(0 0 6px rgba(255,107,53,.5)); }
+.bnav-item.active svg { filter: drop-shadow(0 0 6px rgba(0,209,102,.6)); }
 
 /* ── Responsive ──────────────────────────────── */
 @media (min-width: 431px) {
@@ -907,10 +904,10 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
   --accent-border: rgba(56,189,248,.3);
 }
 [data-theme="nature"] {
-  --accent: #22c55e; --accent2: #4ade80;
-  --accent-dim: rgba(34,197,94,.08);
-  --accent-glow: rgba(34,197,94,.25);
-  --accent-border: rgba(34,197,94,.3);
+  --accent: #f59e0b; --accent2: #fbbf24;
+  --accent-dim: rgba(245,158,11,.08);
+  --accent-glow: rgba(245,158,11,.25);
+  --accent-border: rgba(245,158,11,.3);
 }
 [data-theme="night"] {
   --accent: #8b5cf6; --accent2: #a78bfa;

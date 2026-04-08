@@ -60,7 +60,7 @@ function calcDayNr(startdatum) {
   return Math.min(90, Math.max(1, diff + 1))
 }
 
-// ── Sjard Roscher Macro Formula ──────────────────────
+// ── Makro-Formel ─────────────────────────────────────
 const PAL_KAT = [
   { key: 'schlaf',   label: '😴 Schlafen',                        pal: 0.95 },
   { key: 'liegend',  label: '🛋️ Nur sitzend / liegend',           pal: 1.2  },

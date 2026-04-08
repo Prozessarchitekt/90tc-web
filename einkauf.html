@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>90TC — Einkaufsliste</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#00d166">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+<div id="app">
+  <div class="page">
+
+    <div class="page-header">
+      <a href="profil.html" class="page-back">←</a>
+      <div>
+        <div class="page-title">Einkaufsliste</div>
+        <div class="page-subtitle" id="progress-text">Lade...</div>
+      </div>
+      <button onclick="resetList()" style="background:none;border:none;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;padding:4px 8px">Reset</button>
+    </div>
+
+    <div id="main" style="display:none">
+
+      <!-- Progress Bar -->
+      <div class="card" style="margin-bottom:12px;padding:16px 20px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <span style="font-size:13px;font-weight:700;color:var(--text2)">ERLEDIGT</span>
+          <span id="progress-label" style="font-size:13px;font-weight:800;color:var(--accent)">0 / 0</span>
+        </div>
+        <div style="height:6px;background:var(--surface);border-radius:99px;overflow:hidden">
+          <div id="progress-bar" style="height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px;transition:width .4s ease;width:0%"></div>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <a href="90TC_Einkaufsliste.pdf" target="_blank" download style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:10px;font-size:13px;font-weight:700;color:var(--text2);text-decoration:none">
+            📄 PDF herunterladen
+          </a>
+        </div>
+      </div>
+
+      <div id="list-container"></div>
+
+    </div>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script>
+const EINKAUF = [
+  {
+    cat: '🥩 Eiweiß',
+    color: '#00d166',
+    items: [
+      'Hähnchenbrust (500–1000 g)',
+      'Rinderhack (mager, 400 g)',
+      'Thunfisch (Dose, natur, 3×185 g)',
+      'Lachs (400 g)',
+      'Eier (10 Stück)',
+      'Magerquark (500 g)',
+      'Skyr (500 g)',
+      'Mozzarella light (125 g)',
+      'Whey Protein (optional)',
+    ]
+  },
+  {
+    cat: '🌾 Kohlenhydrate',
+    color: '#fbbf24',
+    items: [
+      'Haferflocken (500 g)',
+      'Vollkornreis (1 kg)',
+      'Süßkartoffeln (1 kg)',
+      'Vollkornnudeln (500 g)',
+      'Vollkornbrot (1 Packung)',
+      'Kartoffeln (1 kg)',
+      'Bananen (5–7 Stück)',
+    ]
+  },
+  {
+    cat: '🥦 Gemüse',
+    color: '#22c55e',
+    items: [
+      'Brokkoli (500 g)',
+      'Spinat (200 g, frisch oder TK)',
+      'Paprika (3–4 Stück)',
+      'Zucchini (2 Stück)',
+      'Gurke (2 Stück)',
+      'Tomaten (500 g)',
+      'Salat (Romana / Feldsalat)',
+      'Karotten (500 g)',
+      'Blumenkohl (1 Kopf)',
+      'Zwiebeln (1 kg)',
+      'Knoblauch (1 Knolle)',
+    ]
+  },
+  {
+    cat: '🫐 Obst',
+    color: '#8b5cf6',
+    items: [
+      'Heidelbeeren (200 g)',
+      'Erdbeeren (250 g)',
+      'Äpfel (4 Stück)',
+      'Orangen (4 Stück)',
+    ]
+  },
+  {
+    cat: '🥑 Gesunde Fette',
+    color: '#a78bfa',
+    items: [
+      'Avocados (3 Stück)',
+      'Olivenöl extra vergine (500 ml)',
+      'Mandeln (200 g)',
+      'Walnüsse (150 g)',
+      'Erdnussbutter (natürlich, 250 g)',
+      'Leinsamen / Chiasamen (250 g)',
+    ]
+  },
+  {
+    cat: '🥛 Milchprodukte',
+    color: '#38bdf8',
+    items: [
+      'Milch (1,5 % Fett, 1 L)',
+      'Naturjoghurt (500 g)',
+      'Hüttenkäse (250 g)',
+    ]
+  },
+  {
+    cat: '🧂 Küche & Basics',
+    color: '#94a3b8',
+    items: [
+      'Mineralwasser (6×1,5 L)',
+      'Kokosmilch (400 ml Dose)',
+      'Apfelessig',
+      'Sojasauce light',
+      'Tomaten (Dose, 400 g)',
+      'Kichererbsen (Dose)',
+      'Gewürze: Salz, Pfeffer, Kurkuma, Paprika, Oregano, Zimt',
+      'Ingwer (frisch)',
+      'Zitrone (2 Stück)',
+    ]
+  },
+]
+
+let checked = {}
+
+function load() {
+  checked = JSON.parse(localStorage.getItem('einkauf_checked') || '{}')
+  render()
+}
+
+function render() {
+  const container = document.getElementById('list-container')
+  let total = 0, done = 0
+
+  container.innerHTML = EINKAUF.map((cat, ci) => {
+    const catItems = cat.items.map((item, ii) => {
+      const key = `${ci}-${ii}`
+      const isChecked = !!checked[key]
+      total++
+      if (isChecked) done++
+      return `
+        <div class="einkauf-row ${isChecked ? 'done' : ''}" onclick="toggle('${key}', this)">
+          <div class="einkauf-check" style="border-color:${isChecked ? cat.color : 'rgba(255,255,255,.2)'};background:${isChecked ? cat.color : 'transparent'}">
+            ${isChecked ? '<span style="color:#000;font-size:12px;font-weight:900">✓</span>' : ''}
+          </div>
+          <span class="einkauf-text" style="${isChecked ? 'text-decoration:line-through;opacity:.4' : ''}">${item}</span>
+        </div>`
+    }).join('')
+
+    return `
+      <div class="card" style="margin-bottom:10px;padding:0;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.06)">
+          <span style="font-size:18px">${cat.cat.split(' ')[0]}</span>
+          <span style="font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:${cat.color}">${cat.cat.split(' ').slice(1).join(' ')}</span>
+        </div>
+        <div style="padding:4px 0">${catItems}</div>
+      </div>`
+  }).join('')
+
+  const pct = total > 0 ? Math.round(done / total * 100) : 0
+  document.getElementById('progress-bar').style.width = pct + '%'
+  document.getElementById('progress-label').textContent = `${done} / ${total}`
+  document.getElementById('progress-text').textContent = pct < 100 ? `${pct}% eingekauft` : '✓ Alles besorgt!'
+}
+
+function toggle(key, row) {
+  checked[key] = !checked[key]
+  localStorage.setItem('einkauf_checked', JSON.stringify(checked))
+  render()
+}
+
+function resetList() {
+  if (!confirm('Einkaufsliste zurücksetzen?')) return
+  checked = {}
+  localStorage.removeItem('einkauf_checked')
+  render()
+}
+
+document.getElementById('main').style.display = 'block'
+load()
+</script>
+
+<style>
+.einkauf-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 18px;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+  cursor: pointer; transition: background .15s;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.einkauf-row:last-child { border-bottom: none; }
+.einkauf-row:active { background: rgba(255,255,255,.04); }
+.einkauf-check {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 2px solid rgba(255,255,255,.2);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all .2s;
+}
+.einkauf-text {
+  font-size: 15px; font-weight: 500; transition: all .2s; line-height: 1.4;
+}
+</style>
+</body>
+</html>

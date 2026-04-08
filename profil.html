@@ -6,7 +6,7 @@
   <title>90TC — Profil</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#ff6b35">
+  <meta name="theme-color" content="#00d166">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="90TC">
@@ -154,7 +154,7 @@
         <div>
           <label class="field-label">Theme</label>
           <div class="theme-selector">
-            <div class="theme-dot" data-theme="orange" onclick="setTheme('orange',this)" style="background:linear-gradient(135deg,#ff6b35,#f97316)" title="Orange (Standard)">
+            <div class="theme-dot" data-theme="orange" onclick="setTheme('orange',this)" style="background:linear-gradient(135deg,#ff6b35,#f97316)" title="Orange">
               <span id="theme-check-orange" style="display:none;color:#fff;font-size:18px">✓</span>
             </div>
             <div class="theme-dot" data-theme="ice" onclick="setTheme('ice',this)" style="background:linear-gradient(135deg,#38bdf8,#0ea5e9)" title="Ice Blue">
@@ -201,6 +201,11 @@
         <a href="fortschritt.html" class="setting-row">
           <span class="setting-icon">📊</span>
           <span class="setting-label">Fortschritt & Badges</span>
+          <span class="setting-arrow">›</span>
+        </a>
+        <a href="einkauf.html" class="setting-row">
+          <span class="setting-icon">🛒</span>
+          <span class="setting-label">Einkaufsliste</span>
           <span class="setting-arrow">›</span>
         </a>
         <div class="setting-row" onclick="showResetModal()" style="color:var(--danger)">
@@ -443,7 +448,7 @@ async function saveMotto() {
 function setTheme(theme, el) {
   document.documentElement.setAttribute('data-theme', theme === 'orange' ? '' : theme)
   // update meta theme-color
-  const colors = { orange: '#ff6b35', ice: '#38bdf8', nature: '#22c55e', night: '#8b5cf6' }
+  const colors = { orange: '#ff6b35', ice: '#38bdf8', nature: '#f59e0b', night: '#8b5cf6' }
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', colors[theme])
   // update checkmarks
   document.querySelectorAll('[id^="theme-check-"]').forEach(e => e.style.display = 'none')

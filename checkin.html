@@ -6,7 +6,7 @@
   <title>90TC — Check-in</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#ff6b35">
+  <meta name="theme-color" content="#00d166">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="90TC">
@@ -121,7 +121,7 @@
         <div class="field-group">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
             <label class="field-label" style="margin-bottom:0">Ernährung heute</label>
-            <a href="essen.html" style="font-size:12px;color:var(--accent);text-decoration:none;background:rgba(255,107,53,0.12);padding:4px 10px;border-radius:20px;font-weight:600">🍽️ Tracker öffnen</a>
+            <a href="essen.html" style="font-size:12px;color:var(--accent);text-decoration:none;background:rgba(0,209,102,0.12);padding:4px 10px;border-radius:20px;font-weight:600">🍽️ Tracker öffnen</a>
           </div>
           <div class="input-row">
             <div class="input-group">
@@ -438,7 +438,7 @@ function showScoreOverlay(score, xpEarned, entry, profile) {
 
   document.getElementById('score-overlay').style.display = 'flex'
   if (score >= 7) {
-    setTimeout(() => confetti({ particleCount:150, spread:80, origin:{y:0.6}, colors:['#ff6b35','#fbbf24','#4ade80','#fff'] }), 300)
+    setTimeout(() => confetti({ particleCount:150, spread:80, origin:{y:0.6}, colors:['#00d166','#39f08a','#fbbf24','#fff'] }), 300)
   }
 }
 

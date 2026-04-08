@@ -26,14 +26,20 @@ CREATE TABLE IF NOT EXISTS weekly_reflections (
 
 ALTER TABLE weekly_reflections ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Eigene Reflexionen lesen"
-  ON weekly_reflections FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY IF NOT EXISTS "Eigene Reflexionen schreiben"
-  ON weekly_reflections FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY IF NOT EXISTS "Eigene Reflexionen aktualisieren"
-  ON weekly_reflections FOR UPDATE USING (auth.uid() = user_id);
-CREATE POLICY IF NOT EXISTS "Eigene Reflexionen loeschen"
-  ON weekly_reflections FOR DELETE USING (auth.uid() = user_id);
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='weekly_reflections' AND policyname='Eigene Reflexionen lesen') THEN
+    CREATE POLICY "Eigene Reflexionen lesen" ON weekly_reflections FOR SELECT USING (auth.uid() = user_id);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='weekly_reflections' AND policyname='Eigene Reflexionen schreiben') THEN
+    CREATE POLICY "Eigene Reflexionen schreiben" ON weekly_reflections FOR INSERT WITH CHECK (auth.uid() = user_id);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='weekly_reflections' AND policyname='Eigene Reflexionen aktualisieren') THEN
+    CREATE POLICY "Eigene Reflexionen aktualisieren" ON weekly_reflections FOR UPDATE USING (auth.uid() = user_id);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename='weekly_reflections' AND policyname='Eigene Reflexionen loeschen') THEN
+    CREATE POLICY "Eigene Reflexionen loeschen" ON weekly_reflections FOR DELETE USING (auth.uid() = user_id);
+  END IF;
+END $$;
 
 -- Community: likes Spalte sicherstellen
 ALTER TABLE community_posts ADD COLUMN IF NOT EXISTS likes INTEGER DEFAULT 0;

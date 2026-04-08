@@ -28,7 +28,7 @@ const QUOTES = [
   { text: "Kleine tägliche Verbesserungen führen zu atemberaubenden Ergebnissen.", autor: "" },
   { text: "Der Körper erreicht, was der Geist glaubt.", autor: "" },
   { text: "Stark sein ist die einzige Option.", autor: "" },
-  { text: "90 Tage. Konsequent. Kein Kompromiss.", autor: "Sjard Roscher" },
+  { text: "90 Tage. Konsequent. Kein Kompromiss.", autor: "" },
   { text: "Du bist nicht hier um durchschnittlich zu sein.", autor: "" },
   { text: "Schreib dir jeden Tag gut, dass du etwas für deinen Körper getan hast.", autor: "" },
   { text: "Wer aufhört, besser zu werden, hat aufgehört, gut zu sein.", autor: "" },
