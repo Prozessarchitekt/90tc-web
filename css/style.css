@@ -140,6 +140,7 @@ body::before {
 /* ── Page Layout ─────────────────────────────── */
 .page {
   padding: 0 16px var(--nav-h);
+  padding-top: env(safe-area-inset-top);
   min-height: 100vh;
 }
 .page-centered {
@@ -154,7 +155,7 @@ body::before {
 /* ── Page Header ─────────────────────────────── */
 .page-header {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 20px 0 8px;
+  padding: max(20px, env(safe-area-inset-top)) 0 8px;
   position: sticky; top: 0; z-index: 50;
   background: linear-gradient(var(--bg), transparent);
 }
