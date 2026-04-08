@@ -199,17 +199,17 @@
     /* ── Pause Timer ── */
     .pause-timer {
       position:fixed;
-      bottom: calc(env(safe-area-inset-bottom) + 70px);
-      left:50%; transform:translateX(-50%) translateY(160px);
-      width:calc(100% - 32px); max-width:440px;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 78px);
+      left:16px; right:16px;
       background:var(--card); border:1.5px solid var(--border2);
       border-radius:20px; padding:14px 18px;
       display:flex; align-items:center; gap:14px;
       z-index:200;
+      transform:translateY(220px);
       transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
       box-shadow:0 8px 32px rgba(0,0,0,0.5);
     }
-    .pause-timer.visible { transform:translateX(-50%) translateY(0); }
+    .pause-timer.visible { transform:translateY(0); }
     .timer-countdown {
       font-size:30px; font-weight:900; color:var(--accent);
       min-width:58px; font-variant-numeric:tabular-nums; letter-spacing:-1px;
@@ -1189,7 +1189,8 @@ function renderWorkout() {
 
   // End training button
   if (isThisDayActive && !isDone) {
-    html += `<button class="end-workout-btn" onclick="endSession()">✅ Training beenden &amp; speichern</button>`;
+    html += `<button class="end-workout-btn" onclick="endSession()">✅ Training beenden &amp; speichern</button>
+    <button onclick="cancelSession()" style="width:100%;padding:12px;border-radius:14px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px;font-family:inherit">Training abbrechen</button>`;
   }
 
   el.innerHTML = html;
@@ -1422,6 +1423,20 @@ async function endSession() {
   } catch(e) {
     showToast('Fehler beim Speichern', 'error');
   }
+}
+
+async function cancelSession() {
+  if (!activeSession) return;
+  if (!confirm('Training wirklich abbrechen? Keine Daten werden gespeichert.')) return;
+  try {
+    await sb.from('training_sessions').delete().eq('id', activeSession.id);
+  } catch(e) {}
+  skipTimer();
+  activeSession = null;
+  sessionSets = {};
+  renderDayTabs();
+  renderWorkout();
+  showToast('Training abgebrochen', 'error');
 }
 
 async function awardTrainingXP() {
