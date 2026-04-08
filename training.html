@@ -183,12 +183,6 @@
     }
     .plan-result-name { font-size:20px; font-weight:900; margin-bottom:4px; }
     .plan-result-sub { font-size:14px; color:var(--text2); margin-bottom:16px; }
-    .plan-pdf-btn {
-      display:flex; align-items:center; justify-content:center; gap:8px;
-      background:var(--accent); color:#000; border:none; border-radius:14px;
-      padding:14px; font-size:15px; font-weight:800; width:100%;
-      text-decoration:none; margin-bottom:10px;
-    }
 
     /* Plan Banner (in main view) */
     .plan-banner {
@@ -200,7 +194,6 @@
     .plan-banner-name { font-size:13px; font-weight:800; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .plan-banner-sub { font-size:11px; color:var(--text2); margin-top:1px; }
     .plan-banner-btns { display:flex; gap:6px; flex-shrink:0; }
-    .plan-banner-pdf { background:var(--accent-dim); border:1px solid var(--accent-border); color:var(--accent); border-radius:10px; padding:6px 10px; font-size:12px; font-weight:700; text-decoration:none; white-space:nowrap; }
     .plan-banner-change { background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.1); color:var(--text2); border-radius:10px; padding:6px 10px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; font-family:inherit; border:none; }
 
     /* Multiple options */
@@ -390,9 +383,6 @@
     <div class="plan-result" id="plan-result">
       <div class="plan-result-name" id="plan-result-name">—</div>
       <div class="plan-result-sub" id="plan-result-sub">—</div>
-      <a id="plan-pdf-btn" class="plan-pdf-btn" href="#" target="_blank" download>
-        📄 Plan als PDF herunterladen
-      </a>
     </div>
     <button class="ob-btn-next" style="width:100%" onclick="confirmPlan()">Plan starten 🚀</button>
     <div class="ob-nav" style="margin-top:12px">
@@ -423,7 +413,6 @@
           <div class="plan-banner-sub" id="plan-banner-sub">—</div>
         </div>
         <div class="plan-banner-btns">
-          <a id="plan-banner-pdf" class="plan-banner-pdf" href="#" target="_blank" download style="display:none">PDF</a>
           <button class="plan-banner-change" onclick="resetPlan()">Wechseln</button>
         </div>
       </div>
@@ -870,7 +859,6 @@ function showPlanResult(plan) {
   document.getElementById('plan-result-name').textContent = plan.name;
   document.getElementById('plan-result-sub').textContent =
     `${plan.tage}×/Woche · ${plan.split} · ${plan.ort === 'gym' ? 'Fitnessstudio' : 'Homefit'}`;
-  document.getElementById('plan-pdf-btn').href = plan.pdf;
 }
 
 function confirmPlan() {
@@ -912,9 +900,6 @@ function renderPlanBanner(planId) {
   document.getElementById('plan-banner-name').textContent = plan.name;
   document.getElementById('plan-banner-sub').textContent =
     `${plan.tage}×/Woche · ${plan.ort === 'gym' ? 'Studio' : 'Homefit'}`;
-  const pdfEl = document.getElementById('plan-banner-pdf');
-  pdfEl.href = plan.pdf;
-  pdfEl.style.display = '';
   document.getElementById('plan-banner').style.display = 'flex';
 }
 
