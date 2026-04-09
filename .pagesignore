@@ -1,0 +1,7 @@
+plans/
+backup/
+*.zip
+*.pdf
+*.docx
+node_modules/
+.git/
