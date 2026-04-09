@@ -11,16 +11,240 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="90TC">
   <link rel="apple-touch-icon" href="icon.svg">
+  <style>
+    /* ── Login Page Overrides ── */
+    body { overflow-y: auto; }
+
+    .login-wrap {
+      width: 100%;
+      max-width: var(--max-w);
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Animated background orbs */
+    .login-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .login-bg .orb1 {
+      position: absolute;
+      top: -120px; left: -80px;
+      width: 380px; height: 380px;
+      background: radial-gradient(circle, rgba(232,163,23,0.14) 0%, transparent 70%);
+      animation: orbFloat 8s ease-in-out infinite;
+    }
+    .login-bg .orb2 {
+      position: absolute;
+      bottom: 80px; right: -100px;
+      width: 320px; height: 320px;
+      background: radial-gradient(circle, rgba(139,92,246,0.10) 0%, transparent 70%);
+      animation: orbFloat 10s ease-in-out infinite reverse;
+    }
+    .login-bg .orb3 {
+      position: absolute;
+      top: 45%; left: 30%;
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(59,130,246,0.07) 0%, transparent 70%);
+      animation: orbFloat 12s ease-in-out infinite 2s;
+    }
+    @keyframes orbFloat {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33%       { transform: translate(20px, -30px) scale(1.05); }
+      66%       { transform: translate(-15px, 20px) scale(0.97); }
+    }
+
+    /* Hero */
+    .login-hero {
+      padding: max(52px, calc(env(safe-area-inset-top) + 36px)) 24px 36px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .login-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--accent-dim);
+      border: 1px solid var(--accent-border);
+      border-radius: 50px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent2);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      animation: fadeUp 0.6s ease both;
+    }
+    .login-flame {
+      font-size: 72px;
+      line-height: 1;
+      margin-bottom: 16px;
+      display: block;
+      animation: flameAnim 3s ease-in-out infinite, fadeUp 0.6s ease 0.1s both;
+      filter: drop-shadow(0 0 24px rgba(232,163,23,0.5));
+    }
+    @keyframes flameAnim {
+      0%, 100% { transform: scale(1) rotate(-2deg); }
+      50%       { transform: scale(1.08) rotate(2deg); }
+    }
+    .login-title {
+      font-size: 36px;
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 10px;
+      animation: fadeUp 0.6s ease 0.15s both;
+    }
+    .login-title span {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text2);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      background: none;
+      -webkit-text-fill-color: var(--text2);
+    }
+    .login-tagline {
+      color: var(--text2);
+      font-size: 15px;
+      margin-bottom: 32px;
+      animation: fadeUp 0.6s ease 0.2s both;
+    }
+
+    /* Feature Pills */
+    .login-features {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 0;
+      animation: fadeUp 0.6s ease 0.25s both;
+    }
+    .login-feat {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--card);
+      border: 1px solid var(--border2);
+      border-radius: 50px;
+      padding: 7px 13px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text2);
+    }
+    .login-feat .feat-icon { font-size: 14px; }
+
+    /* Form Card */
+    .login-card {
+      margin: 32px 16px;
+      margin-bottom: calc(32px + env(safe-area-inset-bottom));
+      background: var(--card);
+      border: 1px solid var(--border2);
+      border-radius: var(--r-xl);
+      padding: 28px 24px;
+      animation: fadeUp 0.6s ease 0.3s both;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04);
+    }
+
+    .auth-tabs {
+      display: flex;
+      background: var(--surface);
+      border-radius: var(--r);
+      padding: 4px;
+      margin-bottom: 24px;
+      width: 100%;
+      border: 1px solid var(--border);
+    }
+    .auth-tab {
+      flex: 1; padding: 11px;
+      border: none; background: transparent;
+      color: var(--text2); font-size: 14px;
+      font-weight: 700; border-radius: calc(var(--r) - 4px);
+      cursor: pointer; transition: all 0.2s; font-family: inherit;
+    }
+    .auth-tab.active {
+      background: var(--accent); color: #000;
+      box-shadow: 0 2px 16px var(--accent-glow);
+    }
+    .auth-form { display: flex; flex-direction: column; gap: 14px; }
+
+    .login-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0 4px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .login-divider::before,
+    .login-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .login-footer {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 20px;
+      line-height: 1.6;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
 <body>
-<div id="app">
-  <div class="page-centered">
-    <div class="auth-logo">🔥</div>
-    <h1 class="auth-title gradient-text">90 Tage Challenge</h1>
-    <p class="auth-sub">Dein persönliches Fitness-Tagebuch</p>
 
+<div class="login-bg">
+  <div class="orb1"></div>
+  <div class="orb2"></div>
+  <div class="orb3"></div>
+</div>
+
+<div id="app">
+<div class="login-wrap">
+
+  <!-- Hero -->
+  <div class="login-hero">
+    <div class="login-badge">
+      <span>✦</span> 90-Tage-Programm
+    </div>
+    <span class="login-flame">🔥</span>
+    <h1 class="login-title">
+      <span>Deine</span>
+      <span class="gradient-text">90 Tage Challenge</span>
+    </h1>
+    <p class="login-tagline">Kein Bullshit. Nur Ergebnisse.</p>
+
+    <div class="login-features">
+      <div class="login-feat"><span class="feat-icon">📊</span> Tages-Tracking</div>
+      <div class="login-feat"><span class="feat-icon">🏆</span> Badges & XP</div>
+      <div class="login-feat"><span class="feat-icon">💪</span> Workout-Logger</div>
+      <div class="login-feat"><span class="feat-icon">🔥</span> Streak</div>
+    </div>
+  </div>
+
+  <!-- Form Card -->
+  <div class="login-card">
     <div class="auth-tabs">
-      <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Login</button>
+      <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Einloggen</button>
       <button class="auth-tab" id="tab-register" onclick="switchTab('register')">Registrieren</button>
     </div>
 
@@ -34,15 +258,20 @@
         <input type="password" id="password" placeholder="Mindestens 6 Zeichen" required autocomplete="current-password">
       </div>
       <div id="msg"></div>
-      <button class="btn btn-primary" type="submit" id="submit-btn">
+      <button class="btn btn-primary" type="submit" id="submit-btn" style="margin-top:4px;">
         <span id="btn-text">Einloggen</span>
       </button>
     </form>
 
-    <p style="margin-top:20px; font-size:13px; color:var(--muted); text-align:center;">
-      Dein persönliches Projekt. Kein Bullshit. Nur Ergebnisse.
-    </p>
+    <div class="login-divider">oder</div>
+
+    <div class="login-footer">
+      Dein persönliches Fitness-Tagebuch.<br>
+      Deine Daten. Nur für dich.
+    </div>
   </div>
+
+</div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -50,7 +279,6 @@
 <script>
   let currentTab = 'login'
 
-  // Redirect if already logged in
   sb.auth.getSession().then(({ data: { session } }) => {
     if (session) window.location.href = 'index.html'
   })
