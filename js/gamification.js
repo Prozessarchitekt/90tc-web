@@ -154,3 +154,49 @@ async function updateStreak(profile, xpEarned) {
 
   return newStreak
 }
+
+// ── Count-up Animation ────────────────────────────────
+function countUp(el, target, duration = 900, suffix = '') {
+  if (!el) return
+  const start = parseInt(el.textContent.replace(/\D/g, '')) || 0
+  const diff  = target - start
+  if (diff === 0) return
+  const t0 = performance.now()
+  function step(t) {
+    const p = Math.min((t - t0) / duration, 1)
+    const eased = 1 - Math.pow(1 - p, 3) // cubic ease-out
+    el.textContent = Math.round(start + diff * eased) + suffix
+    if (p < 1) requestAnimationFrame(step)
+  }
+  requestAnimationFrame(step)
+}
+
+// ── Auto countUp for [data-countup] elements ──────────
+function initCountUps() {
+  document.querySelectorAll('[data-countup]').forEach(el => {
+    const target = parseInt(el.dataset.countup)
+    const suffix = el.dataset.suffix || ''
+    if (!isNaN(target)) countUp(el, target, 900, suffix)
+  })
+}
+
+// ── Confetti (requires canvas-confetti) ──────────────
+function fireConfetti(opts = {}) {
+  if (typeof confetti === 'undefined') return
+  confetti({
+    particleCount: opts.count || 80,
+    spread: opts.spread || 70,
+    origin: { y: opts.y || 0.65 },
+    colors: opts.colors || ['#00d166','#39f08a','#fbbf24','#ffffff'],
+    disableForReducedMotion: true,
+  })
+}
+
+function firePRConfetti() {
+  if (typeof confetti === 'undefined') return
+  // Left burst
+  confetti({ particleCount: 50, angle: 60, spread: 55, origin: { x: 0, y: 0.7 }, colors: ['#fbbf24','#f59e0b','#fff'] })
+  setTimeout(() =>
+    confetti({ particleCount: 50, angle: 120, spread: 55, origin: { x: 1, y: 0.7 }, colors: ['#fbbf24','#f59e0b','#fff'] })
+  , 150)
+}

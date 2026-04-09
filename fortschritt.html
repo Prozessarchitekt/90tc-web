@@ -101,6 +101,15 @@
         <div id="energie-insights"></div>
       </div>
 
+      <!-- Training-Verlauf -->
+      <div class="card" id="tv-card" style="display:none">
+        <div class="section-header">
+          <span class="section-title">LETZTE EINHEITEN</span>
+          <span class="text-muted fs-12" id="tv-count"></span>
+        </div>
+        <div id="tv-list"></div>
+      </div>
+
       <!-- Persönliche Rekorde -->
       <div class="card" id="pr-card" style="display:none">
         <div class="section-header">
@@ -198,8 +207,10 @@ async function init() {
   const { data: wcs } = await sb.from('weekly_checks')
     .select('*').eq('user_id', user.id).order('woche_nr', { ascending: true })
 
-  const { data: prs } = await sb.from('personal_records')
-    .select('*').eq('user_id', user.id).order('datum', { ascending: false })
+  const [{ data: prs }, { data: trainSessions }] = await Promise.all([
+    sb.from('personal_records').select('*').eq('user_id', user.id).order('datum', { ascending: false }),
+    sb.from('training_sessions').select('id,datum,plan_name,notizen,dauer_min').eq('user_id', user.id).order('datum', { ascending: false }).limit(10)
+  ])
 
   document.getElementById('loading').style.display = 'none'
   document.getElementById('main').style.display = 'block'
@@ -314,6 +325,25 @@ async function init() {
           <span class="compare-delta">${d != null ? `<span class="${d<0?'delta-neg':d>0?'delta-pos':'delta-zero'}">${d>0?'+':''}${d}</span>` : '—'}</span>
         </div>`
       }).join('')
+  }
+
+  // Training-Verlauf
+  if (trainSessions?.length) {
+    document.getElementById('tv-card').style.display = 'block'
+    document.getElementById('tv-count').textContent = `${trainSessions.length} Einheiten`
+    document.getElementById('tv-list').innerHTML = trainSessions.map((s, i) => {
+      const d = new Date(s.datum + 'T00:00:00')
+      const dateStr = d.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' })
+      const dauerStr = s.dauer_min ? `${s.dauer_min} min` : ''
+      return `<div class="session-item">
+        <div class="session-dot" style="${i === 0 ? 'background:var(--accent)' : ''}"></div>
+        <div class="session-info">
+          <div style="font-size:14px;font-weight:600;color:var(--text)">${s.plan_name || 'Training'}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">${dateStr}${s.notizen ? ' · ' + s.notizen : ''}</div>
+        </div>
+        ${dauerStr ? `<div class="session-stat">${dauerStr}</div>` : ''}
+      </div>`
+    }).join('')
   }
 
   // Persönliche Rekorde

@@ -409,16 +409,23 @@ async function init() {
   setTimeout(() => { arc.style.strokeDashoffset = C - (C * pct / 100) }, 200)
 
   // Streak
-  document.getElementById('s-streak').textContent = profile.streak_aktuell || 0
+  const streakEl = document.getElementById('s-streak')
+  streakEl.setAttribute('data-countup', profile.streak_aktuell || 0)
+  streakEl.textContent = profile.streak_aktuell || 0
 
   // XP Bar
   const xp = profile.xp_gesamt || 0
   const level = Math.floor(xp / 500) + 1
   const xpInLevel = xp % 500
   document.getElementById('xp-level-lbl').textContent = `Level ${level}`
-  document.getElementById('xp-val-lbl').textContent = `${xp} XP`
+  const xpValEl = document.getElementById('xp-val-lbl')
+  xpValEl.textContent = `${xp} XP`
   document.getElementById('xp-bar-wrap').style.display = 'block'
-  setTimeout(() => { document.getElementById('xp-fill').style.width = Math.round(xpInLevel / 5) + '%' }, 300)
+  setTimeout(() => {
+    document.getElementById('xp-fill').style.width = Math.round(xpInLevel / 5) + '%'
+    if (typeof countUp === 'function') countUp(xpValEl, xp, 900, ' XP')
+    if (typeof countUp === 'function') countUp(streakEl, profile.streak_aktuell || 0, 800)
+  }, 300)
 
   // Weekly reminder (montags oder wenn tag % 7 === 0 und noch nicht gemessen)
   const wocheNr = Math.ceil(dayNr / 7)

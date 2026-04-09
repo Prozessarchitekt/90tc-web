@@ -185,6 +185,40 @@
         </div>
       </div>
 
+      <!-- Challenge Info -->
+      <div class="card mb-12" id="start-card">
+        <div class="section-header">
+          <span class="section-title">CHALLENGE</span>
+          <button class="section-link" onclick="toggleStartEdit()">Ändern</button>
+        </div>
+        <div id="start-view">
+          <div style="display:flex;gap:16px">
+            <div style="flex:1;background:var(--surface);border-radius:var(--r-sm);padding:12px;text-align:center">
+              <div style="font-size:20px;font-weight:900;color:var(--accent)" id="sv-day">—</div>
+              <div style="font-size:11px;color:var(--text2);margin-top:3px">Aktueller Tag</div>
+            </div>
+            <div style="flex:1;background:var(--surface);border-radius:var(--r-sm);padding:12px;text-align:center">
+              <div style="font-size:15px;font-weight:700;color:var(--text)" id="sv-start">—</div>
+              <div style="font-size:11px;color:var(--text2);margin-top:3px">Startdatum</div>
+            </div>
+            <div style="flex:1;background:var(--surface);border-radius:var(--r-sm);padding:12px;text-align:center">
+              <div style="font-size:15px;font-weight:700;color:var(--gold2)" id="sv-end">—</div>
+              <div style="font-size:11px;color:var(--text2);margin-top:3px">Zieldatum</div>
+            </div>
+          </div>
+        </div>
+        <div id="start-edit" style="display:none;margin-top:14px">
+          <div class="input-group mb-12">
+            <label class="input-label">Startdatum ändern</label>
+            <input type="date" id="e-startdatum">
+          </div>
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-ghost" onclick="toggleStartEdit()" style="flex:1">Abbrechen</button>
+            <button class="btn btn-primary" onclick="saveStartdatum()" style="flex:2">Speichern</button>
+          </div>
+        </div>
+      </div>
+
       <!-- Settings -->
       <div class="card mb-12">
         <div class="card-title">EINSTELLUNGEN</div>
@@ -357,6 +391,16 @@ function renderProfile(p) {
     document.getElementById('p-warum').textContent = '„' + p.mein_warum + '"'
   }
 
+  // Challenge card
+  if (p.startdatum) {
+    const sd = new Date(p.startdatum + 'T00:00:00')
+    const ed = new Date(sd); ed.setDate(ed.getDate() + 89)
+    const fmt = d => d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: '2-digit' })
+    document.getElementById('sv-day').textContent = `Tag ${dayNr}`
+    document.getElementById('sv-start').textContent = fmt(sd)
+    document.getElementById('sv-end').textContent = fmt(ed)
+  }
+
   // Motto
   if (p.motto) document.getElementById('motto-input').value = p.motto
 
@@ -476,6 +520,24 @@ async function activateStreakSchutz() {
   document.getElementById('btn-schutz').disabled = true
   document.getElementById('schutz-title').textContent = '🛡️ Streak gerettet!'
   showToast('Streak-Schutz aktiviert! Dein Streak bleibt erhalten. 🛡️')
+}
+
+function toggleStartEdit() {
+  const editing = document.getElementById('start-edit').style.display !== 'none'
+  document.getElementById('start-view').style.display = editing ? 'block' : 'none'
+  document.getElementById('start-edit').style.display = editing ? 'none' : 'block'
+  if (!editing) document.getElementById('e-startdatum').value = currentProfile.startdatum || ''
+}
+
+async function saveStartdatum() {
+  const val = document.getElementById('e-startdatum').value
+  if (!val) return
+  const { error } = await sb.from('profiles').update({ startdatum: val }).eq('id', currentProfile.id)
+  if (error) { showToast(error.message, 'error'); return }
+  currentProfile.startdatum = val
+  renderProfile(currentProfile)
+  toggleStartEdit()
+  showToast('Startdatum gespeichert ✓')
 }
 
 async function init() {

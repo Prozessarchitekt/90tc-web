@@ -11,6 +11,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="90TC">
   <link rel="apple-touch-icon" href="icon.svg">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <style>
     .week-dots { display:flex; gap:5px; flex-wrap:wrap; margin-top:10px; }
     .week-dot {
@@ -1544,8 +1545,10 @@ async function endSession() {
 
     if (newPRs.length > 0) {
       showToast(`🏆 ${newPRs.length} neuer PR! +50 XP`, 'success');
+      if (typeof firePRConfetti === 'function') firePRConfetti();
     } else {
       showToast('Training gespeichert! +50 XP 💪', 'success');
+      if (typeof confetti === 'function') confetti({ particleCount: 60, spread: 70, origin: { y: 0.7 }, colors: ['#00d166','#22c55e','#ffffff'] });
     }
   } catch(e) {
     showToast('Fehler beim Speichern', 'error');
@@ -1582,6 +1585,10 @@ async function awardTrainingXP() {
 }
 
 init();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
 </script>
 </body>
 </html>
