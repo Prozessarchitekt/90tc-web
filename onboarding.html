@@ -67,8 +67,6 @@ function renderStep() {
   const fgr = document.getElementById('f-groesse'); if (fgr) form.groesse_cm = fgr.value
   const fkfa = document.getElementById('f-kfa'); if (fkfa) form.kfa = fkfa.value
   const falt = document.getElementById('f-alter'); if (falt) form.alter = falt.value
-  const fs = document.getElementById('f-start'); if (fs) form.startdatum = fs.value
-
   renderProgress()
   const back = document.getElementById('btn-back')
   const next = document.getElementById('btn-next')
@@ -148,37 +146,118 @@ function renderStep() {
   }
 
   else if (step === 3) {
+    const kg = parseFloat(form.gewicht_kg) || 80
+    const groesse = parseFloat(form.groesse_cm) || 0
+    const kfa  = parseFloat(form.kfa) || 0
+    const alter = parseInt(form.alter) || 0
     const gesamt = Object.values(form.stunden).reduce((s,h)=>s+h,0)
+
     next.textContent = 'Weiter →'
-    next.disabled = gesamt !== 24
+    next.disabled = form.methode === 'formel' ? gesamt !== 24 : false
+
     el.innerHTML = `
       <div>
-        <h1 class="ob-title">Aktivität ⚡</h1>
-        <p class="ob-sub">Wie viele Stunden pro Tag verbringst du mit jeder Aktivität? Muss 24h ergeben.</p>
+        <h1 class="ob-title">Kalorienmethode 🍽️</h1>
+        <p class="ob-sub">Wie sollen deine Makros berechnet werden?</p>
       </div>
-      <div class="activity-total ${gesamt===24?'ok':'notok'}">
-        ${gesamt === 24 ? '✓ Perfekt! 24 Stunden' : `${gesamt}/24 Stunden — noch ${24-gesamt > 0 ? (24-gesamt)+' übrig' : Math.abs(24-gesamt)+' zu viel'}`}
+
+      <div class="toggle-group" id="methode-toggle">
+        <button class="toggle-btn ${form.methode==='tabelle'?'active':''}" id="btn-tabelle">📋 90TC-Tabelle</button>
+        <button class="toggle-btn ${form.methode==='formel'?'active':''}" id="btn-formel">📊 Aktivitätsformel</button>
       </div>
-      ${PAL_KAT.map(k => `
-        <div class="activity-item">
-          <div class="activity-label">${k.label}</div>
-          <div class="activity-controls">
-            <button class="activity-btn" onclick="changeStunde('${k.key}',-1)">−</button>
-            <span class="activity-val">${form.stunden[k.key]}</span>
-            <button class="activity-btn" onclick="changeStunde('${k.key}',1)">+</button>
+
+      <div id="methode-content"></div>
+    `
+
+    // Methoden-Toggle via addEventListener (kein inline-onclick nötig)
+    document.getElementById('btn-tabelle').addEventListener('click', () => {
+      form.methode = 'tabelle'
+      renderStep()
+    })
+    document.getElementById('btn-formel').addEventListener('click', () => {
+      form.methode = 'formel'
+      renderStep()
+    })
+
+    const content = document.getElementById('methode-content')
+
+    if (form.methode === 'tabelle') {
+      content.innerHTML = `
+        <div style="background:var(--accent-dim);border:1px solid var(--accent-border);border-radius:var(--r-sm);padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.6">
+          Die offizielle 90TC-Methode — basiert auf Größe, KFA und Gewicht. Voraussetzung: min. 7.500 Schritte/Tag + 2–4× Krafttraining.
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label class="input-label">Körperfettanteil</label>
+            <div class="input-with-unit">
+              <input type="number" id="f-kfa" placeholder="25" value="${form.kfa}" min="3" max="60">
+              <span class="input-unit">%</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Alter (optional)</label>
+            <div class="input-with-unit">
+              <input type="number" id="f-alter" placeholder="30" value="${form.alter}" min="16" max="99">
+              <span class="input-unit">J.</span>
+            </div>
           </div>
         </div>
-      `).join('')}
-    `
+        <div class="toggle-group">
+          <button class="toggle-btn ${!form.vegan?'active':''}" id="btn-normal">🥩 Normal</button>
+          <button class="toggle-btn ${form.vegan?'active':''}" id="btn-vegan">🌱 Vegan (+20% Protein)</button>
+        </div>
+        ${!groesse ? '<div style="font-size:12px;color:var(--gold2);margin-top:6px">⚠️ Keine Körpergröße angegeben — bitte zurückgehen.</div>' : ''}
+      `
+      document.getElementById('f-kfa').addEventListener('input', e => { form.kfa = e.target.value })
+      document.getElementById('f-alter').addEventListener('input', e => { form.alter = e.target.value })
+      document.getElementById('btn-normal').addEventListener('click', () => { form.vegan = false; renderStep() })
+      document.getElementById('btn-vegan').addEventListener('click', () => { form.vegan = true; renderStep() })
+
+    } else {
+      content.innerHTML = `
+        <div style="background:var(--accent-dim);border:1px solid var(--accent-border);border-radius:var(--r-sm);padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.6">
+          Berechnung über deinen täglichen Energieverbrauch (TDEE) basierend auf deiner Aktivitätsverteilung.
+        </div>
+        <div class="activity-total ${gesamt===24?'ok':'notok'}">
+          ${gesamt === 24 ? '✓ Perfekt! 24 Stunden' : `${gesamt}/24 Stunden — noch ${24-gesamt > 0 ? (24-gesamt)+' übrig' : Math.abs(24-gesamt)+' zu viel'}`}
+        </div>
+        ${PAL_KAT.map(k => `
+          <div class="activity-item">
+            <div class="activity-label">${k.label}</div>
+            <div class="activity-controls">
+              <button class="activity-btn" id="minus-${k.key}">−</button>
+              <span class="activity-val">${form.stunden[k.key]}</span>
+              <button class="activity-btn" id="plus-${k.key}">+</button>
+            </div>
+          </div>
+        `).join('')}
+        ${form.ziel !== 'recomp' ? `
+          <div class="input-group" style="margin-top:4px">
+            <label class="input-label">${form.ziel==='aufbauen'?'Kalorienüberschuss':'Kaloriendefizit'}</label>
+            <div class="anpassung-row">
+              ${[100,200,300,400,500].map(a => `
+                <button class="anpassung-btn ${form.anpassung===a?'active':''}" id="anp-${a}">±${a}</button>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+      `
+      PAL_KAT.forEach(k => {
+        document.getElementById('minus-' + k.key)?.addEventListener('click', () => changeStunde(k.key, -1))
+        document.getElementById('plus-'  + k.key)?.addEventListener('click', () => changeStunde(k.key,  1))
+      });
+      [100,200,300,400,500].forEach(a => {
+        document.getElementById('anp-' + a)?.addEventListener('click', () => { form.anpassung = a; renderStep() })
+      })
+    }
   }
 
   else if (step === 4) {
     const kg = parseFloat(form.gewicht_kg) || 80
     const groesse = parseFloat(form.groesse_cm) || 0
-    const kfa     = parseFloat(form.kfa) || 0
-    const alter   = parseInt(form.alter) || 0
+    const kfa  = parseFloat(form.kfa) || 0
+    const alter = parseInt(form.alter) || 0
 
-    // Berechne je nach gewählter Methode
     let m = null
     let tabellenHinweis = ''
     if (form.methode === 'tabelle' && groesse > 0 && kfa > 0) {
@@ -191,54 +270,9 @@ function renderStep() {
     next.disabled = false
     el.innerHTML = `
       <div>
-        <h1 class="ob-title">Deine Makros 🍽️</h1>
-        <p class="ob-sub">Wähle deine Berechnungsmethode.</p>
+        <h1 class="ob-title">Deine Makros ✅</h1>
+        <p class="ob-sub">Täglich empfohlen — ${form.methode === 'tabelle' ? '90TC-Tabelle' : 'Aktivitätsformel'}.</p>
       </div>
-
-      <div class="toggle-group">
-        <button class="toggle-btn ${form.methode==='tabelle'?'active':''}" onclick="form.methode='tabelle';renderStep()">📋 90TC-Tabelle</button>
-        <button class="toggle-btn ${form.methode==='formel'?'active':''}" onclick="form.methode='formel';renderStep()">📊 Aktivitäts-Formel</button>
-      </div>
-
-      ${form.methode === 'tabelle' ? `
-        <div style="background:var(--accent-dim);border:1px solid var(--accent-border);border-radius:var(--r-sm);padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.6">
-          Die offizielle 90TC-Methode — basiert auf Größe, Gewicht und Körperfettanteil. Voraussetzung: min. 7.500 Schritte/Tag + 2–4× Krafttraining.
-        </div>
-        <div class="input-row">
-          <div class="input-group">
-            <label class="input-label">Körperfettanteil</label>
-            <div class="input-with-unit">
-              <input type="number" id="f-kfa" placeholder="25" value="${form.kfa}" oninput="form.kfa=this.value;renderStep()" min="3" max="60">
-              <span class="input-unit">%</span>
-            </div>
-          </div>
-          <div class="input-group">
-            <label class="input-label">Alter (optional)</label>
-            <div class="input-with-unit">
-              <input type="number" id="f-alter" placeholder="30" value="${form.alter}" oninput="form.alter=this.value;renderStep()" min="16" max="99">
-              <span class="input-unit">J.</span>
-            </div>
-          </div>
-        </div>
-        <div class="toggle-group" style="margin-bottom:0">
-          <button class="toggle-btn ${!form.vegan?'active':''}" onclick="form.vegan=false;renderStep()">🥩 Normal</button>
-          <button class="toggle-btn ${form.vegan?'active':''}" onclick="form.vegan=true;renderStep()">🌱 Vegan (+20% Protein)</button>
-        </div>
-        ${!groesse ? `<div style="font-size:12px;color:var(--gold2);margin-top:6px">⚠️ Keine Körpergröße angegeben — bitte zurückgehen und eintragen.</div>` : ''}
-        ${groesse && !kfa ? `<div style="font-size:12px;color:var(--muted);margin-top:6px">Körperfettanteil eingeben, um die Tabelle zu nutzen.</div>` : ''}
-      ` : `
-        <p class="ob-sub" style="margin:0">Dein TDEE: <strong>${m.tdee} kcal/Tag</strong></p>
-        ${form.ziel !== 'recomp' ? `
-          <div class="input-group">
-            <label class="input-label">${form.ziel==='aufbauen'?'Kalorienüberschuss':'Kaloriendefizit'}</label>
-            <div class="anpassung-row">
-              ${[100,200,300,400,500].map(a => `
-                <button class="anpassung-btn ${form.anpassung===a?'active':''}" onclick="setAnpassung(${a})">±${a}</button>
-              `).join('')}
-            </div>
-          </div>
-        ` : ''}
-      `}
 
       <div class="macro-preview">
         <div class="macro-preview-title">Täglich empfohlen</div>
@@ -251,13 +285,16 @@ function renderStep() {
         ${tabellenHinweis}
       </div>
 
+      ${form.methode === 'tabelle' && kfa === 0 ? '<div style="font-size:12px;color:var(--gold2);margin-top:6px">⚠️ Kein KFA angegeben — Formel wird als Fallback genutzt.</div>' : ''}
+
       <div class="input-group" style="margin-top:8px">
         <label class="input-label">🗓️ Geplanter Challenge-Start</label>
-        <input type="date" id="f-start" value="${form.startdatum}" oninput="form.startdatum=this.value"
+        <input type="date" id="f-start" value="${form.startdatum}"
           style="background:var(--card);border:1.5px solid var(--border2);border-radius:var(--r-sm);padding:12px 14px;color:var(--text);font-size:15px;width:100%;box-sizing:border-box">
         <div style="font-size:12px;color:var(--muted);margin-top:6px">Standard: heute. Kannst du auch rückwirkend setzen.</div>
       </div>
     `
+    document.getElementById('f-start').addEventListener('input', e => { form.startdatum = e.target.value })
   }
 
   else if (step === 5) {
@@ -308,7 +345,10 @@ function canProceed() {
     if (el) form.gewicht_kg = el.value
     return !!form.gewicht_kg && parseFloat(form.gewicht_kg) > 0
   }
-  if (step === 3) return Object.values(form.stunden).reduce((s,h)=>s+h,0) === 24
+  if (step === 3) {
+    if (form.methode === 'formel') return Object.values(form.stunden).reduce((s,h)=>s+h,0) === 24
+    return true // tabelle: kein Pflichtfeld
+  }
   return true // step 4 + 5 always ok
 }
 
