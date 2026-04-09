@@ -6,7 +6,7 @@
   <title>90TC — Fortschritt</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#00d166">
+  <meta name="theme-color" content="#E8A317">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="90TC">
@@ -246,7 +246,7 @@ async function init() {
       data: {
         labels,
         datasets: [
-          { label: 'Gewicht', data: weights, borderColor: '#00d166', borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: '#00d166', tension: 0.3, fill: false },
+          { label: 'Gewicht', data: weights, borderColor: '#E8A317', borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: '#E8A317', tension: 0.3, fill: false },
           { label: '7-Tage-Schnitt', data: avg, borderColor: '#fbbf24', borderWidth: 2.5, pointRadius: 0, tension: 0.4, fill: false },
         ]
       },
@@ -267,7 +267,7 @@ async function init() {
   heatmap.innerHTML = last30.map(e => {
     const s = e.score_von_7
     let bg = '#1a1a2e'
-    if (s >= 7) bg = '#00d166'
+    if (s >= 7) bg = '#E8A317'
     else if (s >= 4) bg = '#22c55e'
     else if (s >= 1) bg = '#f59e0b'
     return `<div title="Tag ${e.tag_nr}: ${s != null ? s+'/7' : 'Kein Score'}" style="width:28px;height:28px;border-radius:4px;background:${bg};display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.5)">${e.tag_nr}</div>`
@@ -290,7 +290,7 @@ async function init() {
         labels: wLabels,
         datasets: [{
           data: wScores,
-          backgroundColor: wScores.map(s => s >= 6 ? 'rgba(0,209,102,0.8)' : s >= 4 ? 'rgba(0,209,102,0.45)' : 'rgba(245,158,11,0.5)'),
+          backgroundColor: wScores.map(s => s >= 6 ? 'rgba(232,163,23,0.8)' : s >= 4 ? 'rgba(232,163,23,0.45)' : 'rgba(245,158,11,0.5)'),
           borderRadius: 4,
         }]
       },

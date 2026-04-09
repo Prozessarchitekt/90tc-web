@@ -6,7 +6,7 @@
   <title>90TC — Training</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#00d166">
+  <meta name="theme-color" content="#E8A317">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="90TC">
@@ -174,12 +174,12 @@
     .ob-check-item.checked .ob-check-box { background:var(--accent); border-color:var(--accent); color:#000; }
     .ob-nav { display:flex; gap:12px; margin-top:28px; }
     .ob-btn-back { flex:1; background:rgba(255,255,255,.07); border:none; border-radius:50px; padding:16px; color:var(--text2); font-size:16px; font-weight:700; cursor:pointer; font-family:inherit; }
-    .ob-btn-next { flex:2; background:linear-gradient(135deg,var(--accent),#00a653); border:none; border-radius:50px; padding:16px; color:#000; font-size:16px; font-weight:800; cursor:pointer; font-family:inherit; }
+    .ob-btn-next { flex:2; background:linear-gradient(135deg,var(--accent),#c8880f); border:none; border-radius:50px; padding:16px; color:#000; font-size:16px; font-weight:800; cursor:pointer; font-family:inherit; }
     .ob-btn-next:disabled { opacity:.4; cursor:not-allowed; }
 
     /* Plan Result Card */
     .plan-result {
-      background:rgba(0,209,102,.06); border:1.5px solid rgba(0,209,102,.25);
+      background:rgba(232,163,23,.06); border:1.5px solid rgba(232,163,23,.25);
       border-radius:20px; padding:20px; margin-bottom:20px;
     }
     .plan-result-name { font-size:20px; font-weight:900; margin-bottom:4px; }
@@ -415,7 +415,7 @@
     <h2 class="ob-h">Dein Plan ist bereit!</h2>
     <p class="ob-sub">Basierend auf deinen Angaben empfehlen wir:</p>
     <div class="plan-result" id="plan-result">
-      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(0,209,102,.7);margin-bottom:8px">Empfohlener Plan</div>
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(232,163,23,.7);margin-bottom:8px">Empfohlener Plan</div>
       <div class="plan-result-name" id="plan-result-name">—</div>
       <div class="plan-result-sub" id="plan-result-sub">—</div>
       <div id="plan-result-days" style="display:flex;gap:6px;margin-top:12px"></div>
@@ -933,7 +933,7 @@ function showPlanResult(plan) {
   if (daysEl && plan.tagKonfig) {
     daysEl.innerHTML = plan.tagKonfig.map((konfigId, i) => {
       const k = ALLE_TAGE_KONFIGS[konfigId];
-      return k ? `<div style="flex:1;text-align:center;background:rgba(0,209,102,.1);border:1px solid rgba(0,209,102,.25);border-radius:10px;padding:8px 4px">
+      return k ? `<div style="flex:1;text-align:center;background:rgba(232,163,23,.1);border:1px solid rgba(232,163,23,.25);border-radius:10px;padding:8px 4px">
         <div style="font-size:18px">${k.icon}</div>
         <div style="font-size:10px;font-weight:700;margin-top:3px">${k.kurz}</div>
       </div>` : '';
@@ -1362,13 +1362,13 @@ function renderMovementCard(musterId, meta, uebungen, sets, selectedUebung, isTr
         const pr = prData[selectedUebung];
         const isNewPR = pr && last.gewicht_kg >= pr;
         const suggest = parseFloat((last.gewicht_kg + 2.5).toFixed(1));
-        body += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 10px;background:rgba(0,209,102,.08);border:1px solid rgba(0,209,102,.2);border-radius:10px">
+        body += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 10px;background:rgba(232,163,23,.08);border:1px solid rgba(232,163,23,.2);border-radius:10px">
           <span style="font-size:16px">📊</span>
           <div style="flex:1;font-size:12px">
             <span style="color:var(--text2)">Letzte Einheit:</span>
             <strong style="color:var(--text);margin-left:4px">${last.gewicht_kg} kg × ${last.wiederholungen || '?'} Wdh.</strong>
           </div>
-          <div onclick="prefillLastWeight('${musterId}',${suggest})" style="font-size:11px;font-weight:700;color:var(--accent);cursor:pointer;white-space:nowrap;background:rgba(0,209,102,.15);padding:4px 8px;border-radius:8px">
+          <div onclick="prefillLastWeight('${musterId}',${suggest})" style="font-size:11px;font-weight:700;color:var(--accent);cursor:pointer;white-space:nowrap;background:rgba(232,163,23,.15);padding:4px 8px;border-radius:8px">
             +2.5 → ${suggest}
           </div>
         </div>`;
@@ -1548,7 +1548,7 @@ async function endSession() {
       if (typeof firePRConfetti === 'function') firePRConfetti();
     } else {
       showToast('Training gespeichert! +50 XP 💪', 'success');
-      if (typeof confetti === 'function') confetti({ particleCount: 60, spread: 70, origin: { y: 0.7 }, colors: ['#00d166','#22c55e','#ffffff'] });
+      if (typeof confetti === 'function') confetti({ particleCount: 60, spread: 70, origin: { y: 0.7 }, colors: ['#E8A317','#22c55e','#ffffff'] });
     }
   } catch(e) {
     showToast('Fehler beim Speichern', 'error');
