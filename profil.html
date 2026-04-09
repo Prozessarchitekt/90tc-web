@@ -404,11 +404,13 @@ function renderProfile(p) {
   // Motto
   if (p.motto) document.getElementById('motto-input').value = p.motto
 
-  // Theme
-  const activeTheme = p.theme || 'orange'
-  if (activeTheme !== 'orange') document.documentElement.setAttribute('data-theme', activeTheme)
-  document.getElementById('theme-check-' + activeTheme).style.display = 'block'
-  document.querySelector(`.theme-dot[data-theme="${activeTheme}"]`)?.classList.add('active')
+  // Theme (no stored theme = default green accent, no dot highlighted)
+  const activeTheme = p.theme || ''
+  document.documentElement.setAttribute('data-theme', activeTheme)
+  if (activeTheme) {
+    document.getElementById('theme-check-' + activeTheme)?.style.setProperty('display', 'block')
+    document.querySelector(`.theme-dot[data-theme="${activeTheme}"]`)?.classList.add('active')
+  }
 
   // Streak-Schutz
   const schutz = p.streak_schutz_verfuegbar ?? 1
@@ -490,9 +492,9 @@ async function saveMotto() {
 }
 
 function setTheme(theme, el) {
-  document.documentElement.setAttribute('data-theme', theme === 'orange' ? '' : theme)
+  document.documentElement.setAttribute('data-theme', theme)
   // update meta theme-color
-  const colors = { orange: '#ff6b35', ice: '#38bdf8', nature: '#f59e0b', night: '#8b5cf6' }
+  const colors = { orange: '#ff6b35', ice: '#38bdf8', nature: '#22c55e', night: '#8b5cf6' }
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', colors[theme])
   // update checkmarks
   document.querySelectorAll('[id^="theme-check-"]').forEach(e => e.style.display = 'none')
@@ -544,7 +546,7 @@ async function init() {
   const ctx = await requireProfile()
   if (!ctx) return
   currentProfile = ctx.profile
-  if (currentProfile.theme && currentProfile.theme !== 'orange') {
+  if (currentProfile.theme) {
     document.documentElement.setAttribute('data-theme', currentProfile.theme)
   }
   renderProfile(ctx.profile)

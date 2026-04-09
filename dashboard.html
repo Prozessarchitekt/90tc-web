@@ -348,7 +348,7 @@ async function init() {
   const { user, profile } = ctx
 
   // Apply theme
-  if (profile.theme && profile.theme !== 'orange') {
+  if (profile.theme) {
     document.documentElement.setAttribute('data-theme', profile.theme)
   }
 

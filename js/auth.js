@@ -15,7 +15,7 @@ async function requireProfile() {
   const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle()
   if (!profile) { window.location.href = 'onboarding.html'; return null }
   // Apply theme globally
-  if (profile.theme && profile.theme !== 'orange') {
+  if (profile.theme) {
     document.documentElement.setAttribute('data-theme', profile.theme)
   }
   return { user, profile }
