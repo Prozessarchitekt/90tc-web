@@ -102,7 +102,38 @@
               <input type="number" id="e-schritte" min="1000" max="50000">
             </div>
           </div>
-          <div style="display:flex;gap:10px;margin-top:16px">
+          <!-- 90TC-Tabellen-Rechner -->
+          <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px">
+            <div style="font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.08em;margin-bottom:10px">AUS 90TC-TABELLE BERECHNEN</div>
+            <div class="input-row mb-12">
+              <div class="input-group">
+                <label class="input-label">Körpergröße</label>
+                <div class="input-with-unit"><input type="number" id="t-groesse" placeholder="175" min="140" max="220"><span class="input-unit">cm</span></div>
+              </div>
+              <div class="input-group">
+                <label class="input-label">KFA</label>
+                <div class="input-with-unit"><input type="number" id="t-kfa" placeholder="20" min="3" max="60"><span class="input-unit">%</span></div>
+              </div>
+            </div>
+            <div class="input-row mb-12">
+              <div class="input-group">
+                <label class="input-label">Alter (opt.)</label>
+                <div class="input-with-unit"><input type="number" id="t-alter" placeholder="30" min="16" max="99"><span class="input-unit">J.</span></div>
+              </div>
+              <div class="input-group" style="display:flex;align-items:flex-end">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding-bottom:4px">
+                  <input type="checkbox" id="t-vegan" style="width:18px;height:18px;accent-color:var(--accent)">
+                  <span style="font-size:13px;color:var(--text2)">🌱 Vegan (+20% EW)</span>
+                </label>
+              </div>
+            </div>
+            <button class="btn btn-ghost" onclick="berechneAusTabelle()" style="width:100%;margin-bottom:16px">
+              📋 Makros aus Tabelle übernehmen
+            </button>
+            <div id="tabellen-hint" style="font-size:12px;color:var(--muted);margin-top:-8px;margin-bottom:8px"></div>
+          </div>
+
+          <div style="display:flex;gap:10px;margin-top:4px">
             <button class="btn btn-ghost" onclick="toggleEdit()" style="flex:1">Abbrechen</button>
             <button class="btn btn-primary" onclick="saveMacros()" style="flex:2" id="btn-save-macros">Speichern</button>
           </div>
@@ -522,6 +553,30 @@ async function activateStreakSchutz() {
   document.getElementById('btn-schutz').disabled = true
   document.getElementById('schutz-title').textContent = '🛡️ Streak gerettet!'
   showToast('Streak-Schutz aktiviert! Dein Streak bleibt erhalten. 🛡️')
+}
+
+function berechneAusTabelle() {
+  const groesse = parseFloat(document.getElementById('t-groesse').value)
+  const kfa     = parseFloat(document.getElementById('t-kfa').value)
+  const alter   = parseInt(document.getElementById('t-alter').value) || 0
+  const vegan   = document.getElementById('t-vegan').checked
+  const hint    = document.getElementById('tabellen-hint')
+
+  if (!groesse || !kfa) { hint.textContent = '⚠️ Bitte Größe und KFA eingeben.'; return }
+
+  const gewicht = currentProfile.gewicht_kg || 80
+  const geschlecht = currentProfile.geschlecht || 'maennlich'
+  const ziel = document.getElementById('e-ziel').value || currentProfile.ziel || 'recomp'
+
+  const m = calculateMacrosFromTable(geschlecht, ziel, kfa, groesse, gewicht, alter, vegan)
+  if (!m) { hint.textContent = '⚠️ Keine passende Tabellengruppe gefunden. KFA oder Größe außerhalb des Bereichs?'; return }
+
+  document.getElementById('e-kcal').value  = m.kalorien
+  document.getElementById('e-prot').value  = m.protein
+  document.getElementById('e-fett').value  = m.fett
+  document.getElementById('e-carbs').value = m.carbs
+  hint.style.color = 'var(--accent)'
+  hint.textContent = `✓ Übernommen — ${m.kfaGruppe} · ${m.hZeile} · KH berechnet als Rest`
 }
 
 function toggleStartEdit() {

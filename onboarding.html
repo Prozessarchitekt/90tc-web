@@ -44,9 +44,10 @@ let user = null
 let obFotoFile = null
 const form = {
   name: '', mein_warum: '', ziel: '',
-  geschlecht: 'maennlich', gewicht_kg: '',
+  geschlecht: 'maennlich', gewicht_kg: '', groesse_cm: '',
   stunden: {...DEFAULT_STUNDEN}, anpassung: 300,
-  startdatum: new Date().toISOString().split('T')[0]
+  startdatum: new Date().toISOString().split('T')[0],
+  methode: 'tabelle', kfa: '', alter: '', vegan: false,
 }
 
 // Auth check
@@ -63,6 +64,9 @@ function renderStep() {
   // Persist any typed values before re-rendering
   const fn = document.getElementById('f-name'); if (fn) form.name = fn.value
   const fg = document.getElementById('f-gewicht'); if (fg) form.gewicht_kg = fg.value
+  const fgr = document.getElementById('f-groesse'); if (fgr) form.groesse_cm = fgr.value
+  const fkfa = document.getElementById('f-kfa'); if (fkfa) form.kfa = fkfa.value
+  const falt = document.getElementById('f-alter'); if (falt) form.alter = falt.value
   const fs = document.getElementById('f-start'); if (fs) form.startdatum = fs.value
 
   renderProgress()
@@ -133,6 +137,13 @@ function renderStep() {
           <span class="input-unit">kg</span>
         </div>
       </div>
+      <div class="input-group">
+        <label class="input-label">Körpergröße</label>
+        <div class="input-with-unit">
+          <input type="number" id="f-groesse" placeholder="175" value="${form.groesse_cm}" oninput="form.groesse_cm=this.value" min="140" max="220">
+          <span class="input-unit">cm</span>
+        </div>
+      </div>
     `
   }
 
@@ -163,24 +174,72 @@ function renderStep() {
 
   else if (step === 4) {
     const kg = parseFloat(form.gewicht_kg) || 80
-    const m = calculateMacros(kg, form.geschlecht, form.stunden, form.ziel, form.anpassung)
+    const groesse = parseFloat(form.groesse_cm) || 0
+    const kfa     = parseFloat(form.kfa) || 0
+    const alter   = parseInt(form.alter) || 0
+
+    // Berechne je nach gewählter Methode
+    let m = null
+    let tabellenHinweis = ''
+    if (form.methode === 'tabelle' && groesse > 0 && kfa > 0) {
+      m = calculateMacrosFromTable(form.geschlecht, form.ziel, kfa, groesse, kg, alter, form.vegan)
+      if (m) tabellenHinweis = `<div style="font-size:11px;color:var(--muted);margin-top:8px;text-align:center">Gruppe: ${m.kfaGruppe} · ${m.hZeile}</div>`
+    }
+    if (!m) m = calculateMacros(kg, form.geschlecht, form.stunden, form.ziel, form.anpassung)
+
     next.textContent = 'Weiter →'
     next.disabled = false
     el.innerHTML = `
       <div>
         <h1 class="ob-title">Deine Makros 🍽️</h1>
-        <p class="ob-sub">Dein persönlicher Tagesbedarf: <strong>${m.tdee} kcal/Tag</strong></p>
+        <p class="ob-sub">Wähle deine Berechnungsmethode.</p>
       </div>
-      ${form.ziel !== 'recomp' ? `
-        <div class="input-group">
-          <label class="input-label">${form.ziel==='aufbauen'?'Kalorienüberschuss':'Kaloriendefizit'}</label>
-          <div class="anpassung-row">
-            ${[100,200,300,400,500].map(a => `
-              <button class="anpassung-btn ${form.anpassung===a?'active':''}" onclick="setAnpassung(${a})">±${a}</button>
-            `).join('')}
+
+      <div class="toggle-group">
+        <button class="toggle-btn ${form.methode==='tabelle'?'active':''}" onclick="form.methode='tabelle';renderStep()">📋 90TC-Tabelle</button>
+        <button class="toggle-btn ${form.methode==='formel'?'active':''}" onclick="form.methode='formel';renderStep()">📊 Aktivitäts-Formel</button>
+      </div>
+
+      ${form.methode === 'tabelle' ? `
+        <div style="background:var(--accent-dim);border:1px solid var(--accent-border);border-radius:var(--r-sm);padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.6">
+          Die offizielle 90TC-Methode — basiert auf Größe, Gewicht und Körperfettanteil. Voraussetzung: min. 7.500 Schritte/Tag + 2–4× Krafttraining.
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label class="input-label">Körperfettanteil</label>
+            <div class="input-with-unit">
+              <input type="number" id="f-kfa" placeholder="25" value="${form.kfa}" oninput="form.kfa=this.value;renderStep()" min="3" max="60">
+              <span class="input-unit">%</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Alter (optional)</label>
+            <div class="input-with-unit">
+              <input type="number" id="f-alter" placeholder="30" value="${form.alter}" oninput="form.alter=this.value;renderStep()" min="16" max="99">
+              <span class="input-unit">J.</span>
+            </div>
           </div>
         </div>
-      ` : ''}
+        <div class="toggle-group" style="margin-bottom:0">
+          <button class="toggle-btn ${!form.vegan?'active':''}" onclick="form.vegan=false;renderStep()">🥩 Normal</button>
+          <button class="toggle-btn ${form.vegan?'active':''}" onclick="form.vegan=true;renderStep()">🌱 Vegan (+20% Protein)</button>
+        </div>
+        ${!groesse ? `<div style="font-size:12px;color:var(--gold2);margin-top:6px">⚠️ Keine Körpergröße angegeben — bitte zurückgehen und eintragen.</div>` : ''}
+        ${groesse && !kfa ? `<div style="font-size:12px;color:var(--muted);margin-top:6px">Körperfettanteil eingeben, um die Tabelle zu nutzen.</div>` : ''}
+      ` : `
+        <p class="ob-sub" style="margin:0">Dein TDEE: <strong>${m.tdee} kcal/Tag</strong></p>
+        ${form.ziel !== 'recomp' ? `
+          <div class="input-group">
+            <label class="input-label">${form.ziel==='aufbauen'?'Kalorienüberschuss':'Kaloriendefizit'}</label>
+            <div class="anpassung-row">
+              ${[100,200,300,400,500].map(a => `
+                <button class="anpassung-btn ${form.anpassung===a?'active':''}" onclick="setAnpassung(${a})">±${a}</button>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+      `}
+
       <div class="macro-preview">
         <div class="macro-preview-title">Täglich empfohlen</div>
         <div class="macro-grid4">
@@ -189,7 +248,9 @@ function renderStep() {
           <div class="macro-box"><div class="macro-val" style="color:var(--purple)">${m.fett}g</div><div class="macro-lbl">Fett</div></div>
           <div class="macro-box"><div class="macro-val" style="color:var(--green2)">${m.carbs}g</div><div class="macro-lbl">Carbs</div></div>
         </div>
+        ${tabellenHinweis}
       </div>
+
       <div class="input-group" style="margin-top:8px">
         <label class="input-label">🗓️ Geplanter Challenge-Start</label>
         <input type="date" id="f-start" value="${form.startdatum}" oninput="form.startdatum=this.value"
@@ -268,7 +329,15 @@ async function finish() {
   btn.disabled = true
   btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border-width:2px;margin:0 auto"></div>'
 
-  const m = calculateMacros(parseFloat(form.gewicht_kg), form.geschlecht, form.stunden, form.ziel, form.anpassung)
+  const kg = parseFloat(form.gewicht_kg)
+  const groesse = parseFloat(form.groesse_cm) || 0
+  const kfa     = parseFloat(form.kfa) || 0
+  const alter   = parseInt(form.alter) || 0
+  let m = null
+  if (form.methode === 'tabelle' && groesse > 0 && kfa > 0) {
+    m = calculateMacrosFromTable(form.geschlecht, form.ziel, kfa, groesse, kg, alter, form.vegan)
+  }
+  if (!m) m = calculateMacros(kg, form.geschlecht, form.stunden, form.ziel, form.anpassung)
 
   // upsert statt insert — verhindert "duplicate key" beim Challenge-Reset
   const { error } = await sb.from('profiles').upsert({
