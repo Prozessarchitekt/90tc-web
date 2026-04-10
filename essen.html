@@ -491,26 +491,44 @@ async function fsGet(params) {
   if (!token) return null
   try {
     const url = 'https://platform.fatsecret.com/rest/server.api?' + new URLSearchParams({ ...params, format:'json' })
-    const r = await fetch(url, { headers:{ Authorization:'Bearer '+token }, signal:AbortSignal.timeout(6000) })
+    const r = await fetch(url, { headers:{ Authorization:'Bearer '+token }, signal:AbortSignal.timeout(4000) })
     return await r.json()
   } catch(e) { return null }
 }
 
 async function lookupBarcode(code) {
-  const fs = await fsGet({ method:'food.find_id_for_barcode', barcode:code })
-  if (fs?.food_id?.value) {
+  const fields = 'product_name,product_name_de,generic_name_de,generic_name,brands,nutriments,image_small_url,code'
+
+  // FatSecret: barcode → ID → detail (chained but fast)
+  const fsPromise = (async () => {
+    const fs = await fsGet({ method:'food.find_id_for_barcode', barcode:code })
+    if (!fs?.food_id?.value) return null
     const detail = await fsGet({ method:'food.get.v4', food_id:fs.food_id.value, include_food_images:true })
     if (detail?.food) { const p = parseFSProduct(detail.food); if (p?.kcal100 != null) return p }
-  }
-  const fields = 'product_name,product_name_de,generic_name_de,generic_name,brands,nutriments,image_small_url,code'
-  for (const base of ['https://world.openfoodfacts.org','https://de.openfoodfacts.org']) {
-    try {
-      const r = await fetch(`${base}/api/v2/product/${code}?fields=${fields}`, { signal:AbortSignal.timeout(6000) })
-      const d = await r.json()
-      if (d.status === 1 && d.product) { const p = parseOFFProduct(d.product); if (p?.kcal100 != null) return p }
-    } catch(e) {}
-  }
-  return null
+    return null
+  })()
+
+  // OpenFoodFacts: parallel race (DE first, world fallback)
+  const offPromise = (async () => {
+    for (const base of ['https://de.openfoodfacts.org','https://world.openfoodfacts.org']) {
+      try {
+        const r = await fetch(`${base}/api/v2/product/${code}?fields=${fields}`, { signal:AbortSignal.timeout(4000) })
+        const d = await r.json()
+        if (d.status === 1 && d.product) { const p = parseOFFProduct(d.product); if (p?.kcal100 != null) return p }
+      } catch(e) {}
+    }
+    return null
+  })()
+
+  // Return first non-null result (FatSecret preferred, OFF as fast fallback)
+  const result = await Promise.race([
+    fsPromise,
+    offPromise.then(r => r ? new Promise(res => setTimeout(() => res(r), 300)) : new Promise(() => {})),
+  ].filter(Boolean))
+
+  if (result) return result
+  // Wait for both if race returned nothing
+  return await fsPromise || await offPromise || null
 }
 
 async function searchProducts(query) {
@@ -570,13 +588,18 @@ async function openScanner() {
     const formats = [Html5QrcodeSupportedFormats.EAN_13,Html5QrcodeSupportedFormats.EAN_8,Html5QrcodeSupportedFormats.CODE_128,Html5QrcodeSupportedFormats.UPC_A,Html5QrcodeSupportedFormats.UPC_E]
     html5Scanner = new Html5Qrcode('scanner-qr-div', { formatsToSupport:formats, verbose:false })
     await html5Scanner.start({ facingMode:'environment' },
-      { fps:15, qrbox:{ width:Math.min(300,window.innerWidth-60), height:120 }, aspectRatio:window.innerHeight/window.innerWidth,
-        videoConstraints:{ facingMode:'environment', advanced:[{ focusMode:'continuous', focusDistance:0 }] } },
+      {
+        fps: 30,
+        qrbox: { width: Math.min(320, window.innerWidth - 40), height: 140 },
+        aspectRatio: window.innerHeight / window.innerWidth,
+        videoConstraints: { facingMode: 'environment' }
+      },
       async (code) => {
-        await stopScanner(); showToast('Barcode erkannt — lade Produkt…')
+        await stopScanner()
+        showLoadingSheet()                          // Sheet sofort öffnen
         const product = await lookupBarcode(code)
         if (product) showSheet(product)
-        else { showToast('Produkt nicht in Datenbank','error'); setTimeout(()=>document.getElementById('search-input')?.focus(),500) }
+        else { closeSheet(); showToast('Produkt nicht gefunden','error'); setTimeout(()=>document.getElementById('search-input')?.focus(),400) }
       }, () => {})
     document.getElementById('scanner-status').textContent = 'Barcode in den Rahmen halten'
   } catch(e) {
@@ -626,6 +649,20 @@ function pickResult(i) {
 }
 
 // ── Product Sheet ──────────────────────────────────────
+function showLoadingSheet() {
+  document.getElementById('p-img-wrap').textContent = '⏳'
+  document.getElementById('p-name').textContent = 'Produkt wird geladen…'
+  document.getElementById('p-brand').textContent = ''
+  document.getElementById('nw-row').innerHTML = [1,2,3,4].map(() =>
+    `<div class="bg-white/5 border border-white/5 rounded-2xl p-3 text-center animate-pulse">
+      <div class="h-5 bg-white/10 rounded mx-auto w-10 mb-1"></div>
+      <div class="h-2 bg-white/5 rounded mx-auto w-8"></div>
+    </div>`).join('')
+  document.getElementById('calc-row').innerHTML = ''
+  document.getElementById('calc-g-badge').textContent = '…'
+  document.getElementById('produkt-sheet').classList.add('active')
+}
+
 function showSheet(p) {
   currentProduct = p
   const imgWrap = document.getElementById('p-img-wrap')
