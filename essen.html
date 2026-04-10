@@ -274,7 +274,8 @@ tailwind.config = {
   </div>
 
   <!-- ── 4. EINTRAGEN: Suche + Scan ── -->
-  <section class="flex flex-col gap-2.5" style="position:sticky;top:calc(max(16px,env(safe-area-inset-top)) + 56px);z-index:30;background:#03030A;padding-bottom:4px;">
+  <div id="search-spacer"></div>
+  <section id="search-bar-section" class="flex flex-col gap-2.5" style="position:fixed;left:0;right:0;z-index:30;background:#03030A;padding:0 16px 8px;">
     <p class="font-label text-[9px] uppercase tracking-widest text-on-surface-variant font-bold px-1">Eintragen</p>
     <div class="flex items-center rounded-[18px] border overflow-hidden" style="background:rgba(18,18,26,0.8);backdrop-filter:blur(16px);border-color:rgba(72,71,82,0.35);height:54px;">
       <span class="material-symbols-outlined text-on-surface-variant px-4 flex-shrink-0" style="font-size:20px;">search</span>
@@ -1134,6 +1135,17 @@ async function init() {
 
   document.getElementById('splash').style.display = 'none'
   document.getElementById('main').style.display = 'block'
+
+  requestAnimationFrame(() => {
+    const nav = document.querySelector('nav')
+    const sec = document.getElementById('search-bar-section')
+    const spacer = document.getElementById('search-spacer')
+    if (nav && sec) {
+      const top = nav.getBoundingClientRect().bottom
+      sec.style.top = top + 'px'
+      if (spacer) spacer.style.height = (sec.offsetHeight + 8) + 'px'
+    }
+  })
 }
 init()
 </script>
