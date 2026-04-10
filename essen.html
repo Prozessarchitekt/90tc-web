@@ -315,26 +315,6 @@ tailwind.config = {
     </div>
   </div>
 
-  <!-- Plan Confirm Sheet (checkbox selection) -->
-  <div id="plan-confirm-overlay" onclick="closePlanConfirm()" style="display:none;position:fixed;inset:0;z-index:410;background:rgba(0,0,0,0.85);backdrop-filter:blur(16px);align-items:flex-end;">
-    <div onclick="event.stopPropagation()" style="width:100%;max-height:82vh;display:flex;flex-direction:column;background:linear-gradient(180deg,#191825,#0d0d17);border:1.5px solid rgba(255,197,108,0.15);border-bottom:none;border-radius:28px 28px 0 0;padding-bottom:max(28px,env(safe-area-inset-bottom));">
-      <div style="padding:14px;display:flex;justify-content:center;flex-shrink:0;"><div style="width:40px;height:4px;background:rgba(255,197,108,0.3);border-radius:2px;"></div></div>
-      <div style="padding:0 20px;flex-shrink:0;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-          <p class="font-headline font-black italic uppercase text-primary" style="font-size:1.1rem;letter-spacing:-0.02em;" id="plan-confirm-title">Plan laden</p>
-          <button onclick="toggleAllPlanItems()" style="font-size:11px;font-weight:700;color:#757481;letter-spacing:0.05em;text-transform:uppercase;padding:4px 8px;border-radius:8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);" id="btn-toggle-all">Alle ab</button>
-        </div>
-        <p style="font-size:11px;color:#757481;margin-bottom:14px;">Haken entfernen was du heute weglässt</p>
-      </div>
-      <div id="plan-confirm-list" style="overflow-y:auto;padding:0 20px;flex:1;"></div>
-      <div style="padding:16px 20px 0;flex-shrink:0;">
-        <button onclick="confirmLoadPlan()" style="width:100%;padding:15px;border-radius:18px;background:linear-gradient(135deg,#ffc56c,#f0a500);color:#0d0d17;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:0.05em;box-shadow:0 4px 20px rgba(255,197,108,0.3);active:opacity:0.85;">
-          Ausgewählte laden
-        </button>
-      </div>
-    </div>
-  </div>
-
   <!-- ── Meal Sections ── -->
   <section class="space-y-8" id="meals-section">
     <div class="text-center py-16 opacity-40">
@@ -493,7 +473,7 @@ tailwind.config = {
 <script src="js/auth.js"></script>
 <script>
 let currentUser = null, currentProfile = null
-let todayMeals = [], currentProduct = null
+let todayMeals = [], stagedMeals = [], currentProduct = null
 let currentMahlzeit = 'mittagessen'
 let _pendingCat = null   // set by openAddForCat, consumed by showSheet
 let tagNr = 1
@@ -885,6 +865,32 @@ async function addMeal() {
   btn.disabled = false; btn.textContent = '+ Hinzufügen'
 }
 
+async function confirmStagedItem(stageId, checkbox) {
+  const item = stagedMeals.find(m => m._stageId === stageId)
+  if (!item) return
+  checkbox.disabled = true
+  try {
+    const entry = {
+      user_id: currentUser.id, datum: getToday(), mahlzeit: item.mahlzeit,
+      produkt_name: item.produkt_name, barcode: null, menge_g: item.menge_g,
+      kcal_100g: null, protein_100g: null, fett_100g: null, carbs_100g: null,
+      kalorien: item.kalorien, protein_g: item.protein_g,
+      fett_g: item.fett_g, carbs_g: item.carbs_g
+    }
+    const { data } = await sb.from('meal_entries').insert(entry).select().single()
+    if (data) {
+      stagedMeals = stagedMeals.filter(m => m._stageId !== stageId)
+      todayMeals.push(data)
+      renderMeals(); syncTotals()
+    }
+  } catch(e) { checkbox.disabled = false; checkbox.checked = false; showToast('Fehler', 'error') }
+}
+
+function removeStagedItem(stageId) {
+  stagedMeals = stagedMeals.filter(m => m._stageId !== stageId)
+  renderMeals()
+}
+
 async function deleteMeal(id) {
   await sb.from('meal_entries').delete().eq('id', id)
   todayMeals = todayMeals.filter(m => m.id !== id)
@@ -903,7 +909,8 @@ function renderMeals() {
   const sec = document.getElementById('meals-section')
   updateMacroRings(todayMeals.length ? totals() : null)
 
-  if (!todayMeals.length) {
+  const hasAny = todayMeals.length > 0 || stagedMeals.length > 0
+  if (!hasAny) {
     sec.innerHTML = `<div class="text-center py-16 opacity-40">
       <span class="material-symbols-outlined text-5xl block mb-3" style="font-size:52px">restaurant</span>
       <p class="font-headline font-bold uppercase tracking-widest text-sm">Noch nichts eingetragen</p>
@@ -915,15 +922,16 @@ function renderMeals() {
 
   const order = ['frühstück','mittagessen','abendessen','snack']
   const names = { frühstück:'Frühstück', mittagessen:'Mittagessen', abendessen:'Abendessen', snack:'Snack' }
-  const allCats = ['frühstück','mittagessen','abendessen','snack']
   let html = ''
 
-  // Show logged categories as premium cards
   order.forEach(cat => {
-    const items = todayMeals.filter(m => m.mahlzeit === cat)
-    if (!items.length) return
-    const catKcal = items.reduce((s,m) => s+(m.kalorien||0), 0)
+    const confirmed = todayMeals.filter(m => m.mahlzeit === cat)
+    const staged    = stagedMeals.filter(m => m.mahlzeit === cat)
+    if (!confirmed.length && !staged.length) return
+
+    const catKcal = confirmed.reduce((s,m) => s+(m.kalorien||0), 0)
     const c = MEAL_COLORS[cat]
+
     html += `<div class="rounded-[20px] overflow-hidden border" style="background:rgba(14,14,22,0.85);border-color:${c.border};box-shadow:0 0 20px ${c.glow};">
       <div class="flex items-center justify-between px-4 py-3 border-b" style="border-color:rgba(255,255,255,0.05);">
         <div class="flex items-center gap-2">
@@ -938,51 +946,48 @@ function renderMeals() {
         </div>
       </div>
       <div class="px-4 py-1">
-        ${items.map(m => `
-          <div class="flex items-center justify-between gap-2 py-2 border-b last:border-b-0" style="border-color:rgba(255,255,255,0.04);">
+        ${confirmed.map(m => `
+          <div class="flex items-center gap-2 py-2 border-b last:border-b-0" style="border-color:rgba(255,255,255,0.04);">
             <div class="flex-1 min-w-0">
-              <div class="text-[12px] font-semibold truncate text-white/90">${m.produkt_name}</div>
-              <div class="text-[10px] text-on-surface-variant">${m.menge_g?m.menge_g+'g · ':''}<span style="color:${c.accent}">${m.kalorien??'—'} kcal</span>${m.protein_g!=null?' · P '+Math.round(m.protein_g)+'g':''}</div>
+              <div style="font-size:12px;font-weight:600;color:rgba(232,224,240,0.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.produkt_name}</div>
+              <div style="font-size:10px;color:#757481;">${m.menge_g?m.menge_g+'g · ':''}<span style="color:${c.accent}">${m.kalorien??'—'} kcal</span>${m.protein_g!=null?' · P '+Math.round(m.protein_g)+'g':''}</div>
             </div>
-            <button onclick="event.stopPropagation();deleteMeal('${m.id}')" class="text-on-surface-variant/30 hover:text-red-400 transition-colors flex-shrink-0 p-1">
+            <button onclick="event.stopPropagation();deleteMeal('${m.id}')" style="color:rgba(117,116,129,0.4);flex-shrink:0;padding:4px;">
               <span class="material-symbols-outlined" style="font-size:14px">close</span>
             </button>
           </div>`).join('')}
+        ${staged.map(m => `
+          <label style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer;-webkit-tap-highlight-color:transparent;" class="last:border-b-0">
+            <input type="checkbox" onchange="confirmStagedItem('${m._stageId}',this)"
+              style="width:18px;height:18px;border-radius:5px;accent-color:#ffc56c;flex-shrink:0;cursor:pointer;">
+            <div style="flex:1;min-width:0;opacity:0.45;">
+              <div style="font-size:12px;font-weight:600;color:#e8e0f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.produkt_name}</div>
+              <div style="font-size:10px;color:#757481;">${m.menge_g?m.menge_g+'g · ':''}<span style="color:${c.accent}">${m.kalorien??'—'} kcal</span>${m.protein_g!=null?' · P '+Math.round(m.protein_g)+'g':''}</div>
+            </div>
+            <button onclick="event.stopPropagation();removeStagedItem('${m._stageId}')" style="color:rgba(117,116,129,0.3);flex-shrink:0;padding:4px;">
+              <span class="material-symbols-outlined" style="font-size:14px">close</span>
+            </button>
+          </label>`).join('')}
       </div>
     </div>`
   })
 
-  // Empty categories as compact add cards
-  const usedCats = new Set(todayMeals.map(m => m.mahlzeit))
-  const emptyCats = allCats.filter(c => !usedCats.has(c))
-  if (emptyCats.length) {
-    html += `<div class="space-y-4">`
-    emptyCats.forEach(cat => {
-      const c = MEAL_COLORS[cat]
-      html += `<div class="bg-surface-container-low rounded-2xl p-4 flex items-center justify-between border border-outline-variant/10 cursor-pointer active:bg-white/5 transition-colors" onclick="openAddForCat('${cat}')">
-        <div class="flex items-center gap-4">
-          <div class="relative w-12 h-12 flex items-center justify-center">
-            <svg class="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 48 48">
-              <circle fill="transparent" cx="24" cy="24" r="20" stroke="rgba(255,255,255,0.06)" stroke-width="4"></circle>
-              <circle fill="transparent" cx="24" cy="24" r="20" stroke="${c.accent}" stroke-dasharray="125" stroke-dashoffset="125" stroke-width="4" stroke-linecap="round" opacity="0.4"></circle>
-            </svg>
-            <span class="material-symbols-outlined text-on-surface" style="font-size:18px">${MEAL_ICONS_MS[cat]}</span>
-          </div>
-          <div>
-            <h4 class="font-headline font-black italic text-sm uppercase tracking-tight">${names[cat]}</h4>
-            <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Keine Einträge</p>
-          </div>
-        </div>
-        <button class="text-primary active:scale-90 transition-transform">
-          <span class="material-symbols-outlined text-4xl" style="font-variation-settings:'FILL' 1">add_circle</span>
-        </button>
-      </div>`
-    })
-    html += `</div>`
-  }
+  // Empty categories — add button
+  const usedCats = new Set([...todayMeals, ...stagedMeals].map(m => m.mahlzeit))
+  const emptyCats = order.filter(c => !usedCats.has(c))
+  emptyCats.forEach(cat => {
+    const c = MEAL_COLORS[cat]
+    html += `<div style="background:rgba(255,255,255,0.02);border-radius:18px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border:1px solid rgba(255,255,255,0.05);cursor:pointer;" onclick="openAddForCat('${cat}')">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="material-symbols-outlined" style="font-size:18px;color:${c.accent};opacity:0.5;">${MEAL_ICONS_MS[cat]}</span>
+        <span style="font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;font-style:italic;text-transform:uppercase;color:rgba(255,255,255,0.3);">${names[cat]}</span>
+      </div>
+      <span class="material-symbols-outlined" style="font-size:22px;color:${c.accent};opacity:0.5;font-variation-settings:'FILL' 1;">add_circle</span>
+    </div>`
+  })
 
   sec.innerHTML = html || '<div></div>'
-  document.getElementById('transfer-section').style.display = 'block'
+  document.getElementById('transfer-section').style.display = todayMeals.length ? 'block' : 'none'
 }
 
 function openAddForCat(cat) {
@@ -1053,109 +1058,34 @@ function closePlanPicker() {
   document.getElementById('plan-picker-overlay').style.display = 'none'
 }
 
-let _confirmPlan = null  // plan staged for checkbox confirm
-
 function loadPlan(planId) {
   closePlanPicker()
   const plan = getPlans().find(p => p.id === planId)
   if (!plan) { showToast('Plan nicht gefunden', 'error'); return }
-  _confirmPlan = plan
-  openPlanConfirm(plan)
+  // Build staged items (not yet in DB, not yet counted)
+  stagedMeals = []
+  let i = 0
+  for (const cat of ['frühstück','mittagessen','abendessen','snack']) {
+    for (const item of (plan.meals[cat] || [])) {
+      stagedMeals.push({
+        _stageId: `s${i++}`, mahlzeit: cat,
+        produkt_name: item.name,
+        menge_g: item.amount || item.menge_g || 100,
+        kalorien: item.kcal || item.kalorien || null,
+        protein_g: item.prot || item.protein_g || null,
+        fett_g: item.fett || item.fett_g || null,
+        carbs_g: item.carbs || item.carbs_g || null
+      })
+    }
+  }
+  document.getElementById('load-plan-section').style.display = 'none'
+  renderMeals()
+  showToast(`${stagedMeals.length} Produkte geladen — bitte abhaken`)
 }
 
 const MEAL_ORDER_LABELS = { frühstück:'Frühstück', mittagessen:'Mittagessen', abendessen:'Abendessen', snack:'Snack' }
 const MEAL_ORDER_KEYS = ['frühstück','mittagessen','abendessen','snack']
 
-function openPlanConfirm(plan) {
-  document.getElementById('plan-confirm-title').textContent = plan.name
-  const list = document.getElementById('plan-confirm-list')
-  const meals = plan.meals || {}
-  let idx = 0
-  let html = ''
-  for (const cat of MEAL_ORDER_KEYS) {
-    const items = meals[cat] || []
-    if (!items.length) continue
-    const c = MEAL_COLORS[cat]
-    html += `<div style="margin-bottom:16px;">
-      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:${c.accent};margin-bottom:8px;display:flex;align-items:center;gap:6px;">
-        <span class="material-symbols-outlined" style="font-size:14px;font-variation-settings:'FILL' 1;">${MEAL_ICONS_MS[cat]}</span>${MEAL_ORDER_LABELS[cat]}
-      </div>`
-    for (const item of items) {
-      const id = `pc-${idx++}`
-      const kcal = item.kcal || item.kalorien || 0
-      const prot = item.prot || item.protein_g || 0
-      const menge = item.amount || item.menge_g || 100
-      html += `<label for="${id}" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);margin-bottom:6px;cursor:pointer;-webkit-tap-highlight-color:transparent;">
-        <input type="checkbox" id="${id}" checked data-mahlzeit="${cat}" data-idx="${items.indexOf(item)}"
-          style="width:20px;height:20px;border-radius:6px;accent-color:#ffc56c;flex-shrink:0;cursor:pointer;">
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:13px;font-weight:600;color:#e8e0f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.name}</div>
-          <div style="font-size:10px;color:#757481;margin-top:1px;">${menge}g · <span style="color:${c.accent}">${Math.round(kcal)} kcal</span>${prot ? ' · P '+Math.round(prot)+'g' : ''}</div>
-        </div>
-      </label>`
-    }
-    html += `</div>`
-  }
-  if (!html) {
-    list.innerHTML = '<p style="color:#757481;font-size:13px;text-align:center;padding:20px 0;">Dieser Plan hat keine Einträge.</p>'
-  } else {
-    list.innerHTML = html
-  }
-  document.getElementById('plan-confirm-overlay').style.display = 'flex'
-  updateToggleAllBtn()
-}
-
-function updateToggleAllBtn() {
-  const boxes = document.querySelectorAll('#plan-confirm-list input[type=checkbox]')
-  const allChecked = [...boxes].every(b => b.checked)
-  document.getElementById('btn-toggle-all').textContent = allChecked ? 'Alle ab' : 'Alle an'
-}
-
-function toggleAllPlanItems() {
-  const boxes = document.querySelectorAll('#plan-confirm-list input[type=checkbox]')
-  const allChecked = [...boxes].every(b => b.checked)
-  boxes.forEach(b => { b.checked = !allChecked })
-  updateToggleAllBtn()
-}
-
-document.getElementById('plan-confirm-list')?.addEventListener('change', updateToggleAllBtn)
-
-function closePlanConfirm() {
-  document.getElementById('plan-confirm-overlay').style.display = 'none'
-  _confirmPlan = null
-}
-
-async function confirmLoadPlan() {
-  if (!_confirmPlan) return
-  const plan = _confirmPlan
-  const checked = [...document.querySelectorAll('#plan-confirm-list input[type=checkbox]:checked')]
-  if (!checked.length) { showToast('Nichts ausgewählt', 'error'); return }
-  closePlanConfirm()
-  try {
-    let added = 0
-    for (const box of checked) {
-      const cat = box.dataset.mahlzeit
-      const itemIdx = parseInt(box.dataset.idx)
-      const item = (plan.meals[cat] || [])[itemIdx]
-      if (!item) continue
-      const entry = {
-        user_id: currentUser.id, datum: getToday(), mahlzeit: cat,
-        produkt_name: item.name, barcode: null,
-        menge_g: item.amount || item.menge_g || 100,
-        kcal_100g: null, protein_100g: null, fett_100g: null, carbs_100g: null,
-        kalorien: item.kcal || item.kalorien,
-        protein_g: item.prot || item.protein_g,
-        fett_g: item.fett || item.fett_g,
-        carbs_g: item.carbs || item.carbs_g
-      }
-      const { data } = await sb.from('meal_entries').insert(entry).select().single()
-      if (data) { todayMeals.push(data); added++ }
-    }
-    document.getElementById('load-plan-section').style.display = 'none'
-    renderMeals(); syncTotals()
-    showToast(`${added} Produkte geladen ✓`)
-  } catch(e) { showToast('Fehler beim Laden', 'error') }
-}
 
 // kept for backward compat (old HTML button still calls this)
 async function loadStandardday() {
