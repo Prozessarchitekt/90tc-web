@@ -405,7 +405,12 @@
           <h1>Ernährung</h1>
           <p id="page-sub">Heute · Tag —</p>
         </div>
-        <div class="date-badge" id="date-badge">—</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <a href="ernaehrungsplan.html" style="background:var(--accent-dim);border:1px solid var(--accent-border);border-radius:50px;padding:6px 13px;font-size:12px;font-weight:700;color:var(--accent2);white-space:nowrap">
+            📋 Ernährungsplan
+          </a>
+          <div class="date-badge" id="date-badge">—</div>
+        </div>
       </div>
 
       <!-- Macro Ring Hero -->
@@ -787,15 +792,20 @@ function updateMacroRings(t) {
 
 // ── Open Food Facts ───────────────────────────────────────────
 async function lookupBarcode(code) {
+  // v2 API: besseres Datenmodell, schneller
+  const fields = 'product_name,product_name_de,generic_name_de,generic_name,brands,nutriments,image_small_url,image_front_small_url,code'
   const urls = [
-    `https://world.openfoodfacts.org/api/v0/product/${code}.json`,
-    `https://de.openfoodfacts.org/api/v0/product/${code}.json`,
+    `https://world.openfoodfacts.org/api/v2/product/${code}?fields=${fields}`,
+    `https://de.openfoodfacts.org/api/v2/product/${code}?fields=${fields}`,
   ]
   for (const url of urls) {
     try {
-      const r = await fetch(url)
+      const r = await fetch(url, { signal: AbortSignal.timeout(6000) })
       const d = await r.json()
-      if (d.status === 1 && d.product) return parseProduct(d.product)
+      if (d.status === 1 && d.product) {
+        const p = parseProduct(d.product)
+        if (p && p.kcal100 != null) return p   // nur zurückgeben wenn Nährwerte vorhanden
+      }
     } catch(e) {}
   }
   return null
@@ -816,17 +826,18 @@ async function searchProducts(query) {
 
 function parseProduct(p) {
   const n = p.nutriments || {}
-  const raw = n['energy-kcal_100g'] ?? n['energy-kcal'] ?? null
+  const raw = n['energy-kcal_100g'] ?? n['energy-kcal_value'] ?? n['energy-kcal'] ?? null
   const kcal = raw ?? (n['energy_100g'] ? Math.round(n['energy_100g'] / 4.184) : null)
+  const name = p.product_name_de || p.product_name || p.generic_name_de || p.generic_name || '—'
   return {
-    name: p.product_name_de || p.product_name || '—',
-    brand: (p.brands || '').split(',')[0].trim(),
+    name:    name.charAt(0).toUpperCase() + name.slice(1),
+    brand:   (p.brands || '').split(',')[0].trim(),
     barcode: p.code || p._id || '',
-    image: p.image_small_url || p.image_front_small_url || null,
-    kcal100: kcal != null ? Math.round(kcal) : null,
+    image:   p.image_small_url || p.image_front_small_url || null,
+    kcal100:    kcal != null ? Math.round(kcal) : null,
     protein100: n.proteins_100g != null ? Math.round(n.proteins_100g * 10) / 10 : null,
-    fett100: n.fat_100g != null ? Math.round(n.fat_100g * 10) / 10 : null,
-    carbs100: n.carbohydrates_100g != null ? Math.round(n.carbohydrates_100g * 10) / 10 : null,
+    fett100:    n.fat_100g      != null ? Math.round(n.fat_100g      * 10) / 10 : null,
+    carbs100:   n.carbohydrates_100g != null ? Math.round(n.carbohydrates_100g * 10) / 10 : null,
   }
 }
 
@@ -838,25 +849,41 @@ async function openScanner() {
   document.getElementById('scanner-status').textContent = 'Kamera wird gestartet…'
 
   try {
-    html5Scanner = new Html5Qrcode('scanner-qr-div')
+    // Nur Barcode-Formate — kein QR-Code — macht Erkennung deutlich schneller
+    const formats = [
+      Html5QrcodeSupportedFormats.EAN_13,
+      Html5QrcodeSupportedFormats.EAN_8,
+      Html5QrcodeSupportedFormats.CODE_128,
+      Html5QrcodeSupportedFormats.UPC_A,
+      Html5QrcodeSupportedFormats.UPC_E,
+    ]
+    html5Scanner = new Html5Qrcode('scanner-qr-div', { formatsToSupport: formats, verbose: false })
     await html5Scanner.start(
       { facingMode: 'environment' },
       {
         fps: 15,
-        qrbox: { width: 280, height: 110 },
-        aspectRatio: window.innerHeight / window.innerWidth
+        qrbox: { width: Math.min(300, window.innerWidth - 60), height: 120 },
+        aspectRatio: window.innerHeight / window.innerWidth,
+        videoConstraints: {
+          facingMode: 'environment',
+          advanced: [{ focusMode: 'continuous', focusDistance: 0 }]
+        }
       },
       async (code) => {
         await stopScanner()
         showToast('Barcode erkannt — lade Produkt…')
         const product = await lookupBarcode(code)
         if (product) showSheet(product)
-        else showToast('Produkt nicht in Datenbank', 'error')
+        else {
+          showToast('Produkt nicht in Datenbank', 'error')
+          // Manuelle Suche vorschlagen
+          setTimeout(() => {
+            document.getElementById('search-input')?.focus()
+          }, 500)
+        }
       },
       () => {}
     )
-    // Autofocus aktivieren (funktioniert auf Android, iOS ignoriert es still)
-    try { await html5Scanner.applyVideoConstraints({ advanced: [{ focusMode: 'continuous' }] }) } catch(e) {}
     document.getElementById('scanner-status').textContent = 'Barcode in den Rahmen halten'
   } catch(e) {
     document.getElementById('scanner-status').textContent = 'Kamera nicht verfügbar'

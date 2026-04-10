@@ -224,7 +224,7 @@ async function save() {
       ? JSON.parse(profile.pal_stunden)
       : profile.pal_stunden
     const anpassung = profile.kalorienanpassung || 300
-    const m = calculateMacros(newWeight, profile.geschlecht, stunden, profile.ziel, anpassung)
+    const m = calculateMacros(newWeight, profile.geschlecht, stunden, profile.ziel, anpassung, profile.groesse_cm || 0)
     profileUpdates.gewicht_kg      = newWeight
     profileUpdates.kalorien_ziel   = m.kalorien
     profileUpdates.protein_ziel_g  = m.protein

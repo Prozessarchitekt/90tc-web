@@ -75,32 +75,34 @@ function berechnePAL(stunden) {
   return PAL_KAT.reduce((s, k) => s + (stunden[k.key] || 0) * k.pal, 0) / 24
 }
 
-function calculateMacros(gewicht, geschlecht, stunden, ziel, anpassung = 300) {
+function calculateMacros(gewicht, geschlecht, stunden, ziel, anpassung = 300, groesse = 0) {
   const mann = geschlecht === 'maennlich'
   const bmr  = gewicht * (mann ? 24 : 21.6)
   const pal  = berechnePAL(stunden)
   const tdee = bmr * pal
 
   let kcal
-  if (ziel === 'aufbauen')   kcal = Math.round(tdee + anpassung)
+  if (ziel === 'aufbauen')        kcal = Math.round(tdee + anpassung)
   else if (ziel === 'definieren') kcal = Math.round(tdee - anpassung)
-  else                       kcal = Math.round(tdee)
+  else                            kcal = Math.round(tdee)
 
-  let protein, fettQ
-  if (ziel === 'aufbauen') {
-    protein = Math.round(gewicht * 1.9)
-    fettQ   = mann ? 0.25 : 0.35
-  } else if (ziel === 'definieren') {
-    protein = Math.round(gewicht * (mann ? 2.3 : 2.2))
-    fettQ   = mann ? 0.20 : 0.30
-  } else {
-    protein = Math.round(gewicht * (mann ? 2.2 : 2.0))
-    fettQ   = mann ? 0.20 : 0.30
-  }
+  // Idealgewicht nach Sjard: Größe - 100 (falls bekannt, sonst Körpergewicht)
+  const idealGewicht = groesse > 100 ? groesse - 100 : gewicht
 
-  const fett  = Math.round((kcal * fettQ) / 9)
-  const carbs = Math.max(0, Math.round((kcal - protein * 4 - fett * 9) / 4))
-  return { kalorien: kcal, protein, fett, carbs, tdee: Math.round(tdee) }
+  let proteinFaktor
+  if (ziel === 'aufbauen')        proteinFaktor = 1.9
+  else if (ziel === 'definieren') proteinFaktor = mann ? 2.3 : 2.2
+  else                            proteinFaktor = mann ? 2.2 : 2.0
+  const protein = Math.round(idealGewicht * proteinFaktor)
+
+  // Fett: 25% (M) / 30% (F) der Kalorien, mindestens Größe/3 g
+  const fettQ   = mann ? 0.25 : 0.30
+  const fettMin = groesse > 0 ? Math.round(groesse / 3) : 0
+  const fett    = Math.max(fettMin, Math.round((kcal * fettQ) / 9.3))
+
+  // Carbs: restliche Kalorien (Sjard: 4.1 kcal/g Protein & Carbs, 9.3 kcal/g Fett)
+  const carbs = Math.max(0, Math.round((kcal - protein * 4.1 - fett * 9.3) / 4.1))
+  return { kalorien: kcal, protein, fett, carbs, tdee: Math.round(tdee), idealGewicht }
 }
 
 // ── Score berechnen (7 Erfolgsfaktoren) ─────────────

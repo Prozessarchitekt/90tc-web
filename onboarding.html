@@ -264,7 +264,7 @@ function renderStep() {
       m = calculateMacrosFromTable(form.geschlecht, form.ziel, kfa, groesse, kg, alter, form.vegan)
       if (m) tabellenHinweis = `<div style="font-size:11px;color:var(--muted);margin-top:8px;text-align:center">Gruppe: ${m.kfaGruppe} · ${m.hZeile}</div>`
     }
-    if (!m) m = calculateMacros(kg, form.geschlecht, form.stunden, form.ziel, form.anpassung)
+    if (!m) m = calculateMacros(kg, form.geschlecht, form.stunden, form.ziel, form.anpassung, groesse)
 
     next.textContent = 'Weiter →'
     next.disabled = false
