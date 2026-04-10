@@ -270,6 +270,9 @@ tailwind.config = {
     <div class="flex items-center rounded-[18px] border overflow-hidden" style="background:rgba(18,18,26,0.8);backdrop-filter:blur(16px);border-color:rgba(72,71,82,0.35);height:54px;">
       <span class="material-symbols-outlined text-on-surface-variant px-4 flex-shrink-0" style="font-size:20px;">search</span>
       <input class="bg-transparent border-none focus:ring-0 font-medium w-full outline-none p-0" id="search-input" placeholder="Lebensmittel suchen…" type="text" style="background:transparent;border:none;padding:0;color:#efecfb;font-family:'Inter',sans-serif;font-size:16px;"/>
+      <button id="btn-clear-search" onclick="clearSearch()" class="flex items-center justify-center flex-shrink-0 active:scale-90 transition-all" style="width:40px;height:54px;display:none;">
+        <span class="material-symbols-outlined text-on-surface-variant" style="font-size:18px;">close</span>
+      </button>
       <button onclick="doSearch()" class="flex items-center justify-center flex-shrink-0 active:scale-90 transition-all" style="width:52px;height:54px;background:linear-gradient(135deg,rgba(255,197,108,0.2),rgba(255,197,108,0.08));border-left:1px solid rgba(255,197,108,0.2);">
         <span class="material-symbols-outlined text-primary" style="font-size:22px;">arrow_forward</span>
       </button>
@@ -961,11 +964,21 @@ document.getElementById('btn-cancel-sheet').addEventListener('click', closeSheet
 document.getElementById('btn-transfer').addEventListener('click', transferToCheckin)
 document.getElementById('search-input').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch() })
 document.getElementById('search-input').addEventListener('input', e => {
-  if (!e.target.value.trim()) {
+  const hasValue = e.target.value.trim().length > 0
+  document.getElementById('btn-clear-search').style.display = hasValue ? 'flex' : 'none'
+  if (!hasValue) {
     document.getElementById('search-results').style.display = 'none'
     document.getElementById('search-results').innerHTML = ''
   }
 })
+function clearSearch() {
+  const input = document.getElementById('search-input')
+  input.value = ''
+  input.focus()
+  document.getElementById('btn-clear-search').style.display = 'none'
+  document.getElementById('search-results').style.display = 'none'
+  document.getElementById('search-results').innerHTML = ''
+}
 document.getElementById('menge-input').addEventListener('input', updateCalc)
 
 // ── Init ───────────────────────────────────────────────
