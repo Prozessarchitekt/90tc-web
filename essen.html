@@ -187,7 +187,7 @@ tailwind.config = {
 
 <main class="px-4 max-w-lg mx-auto space-y-5 relative" style="overflow-x:hidden;padding-top:calc(max(16px,env(safe-area-inset-top)) + 64px);padding-bottom:calc(max(12px,env(safe-area-inset-bottom)) + 64px);">
 
-  <!-- ── Hero Header ── -->
+  <!-- ── 1. HEADER ── -->
   <header class="relative">
     <span class="font-headline font-bold text-primary tracking-[0.28em] text-[9px] uppercase opacity-70 mb-3 block" id="page-sub">TAG — · PHASE I</span>
     <h1 class="text-huge font-headline font-black text-on-background tracking-tighter uppercase italic">
@@ -196,10 +196,8 @@ tailwind.config = {
     <div class="h-1 w-14 bg-primary rounded-full mt-2 shadow-[0_0_16px_rgba(240,165,0,0.8)]"></div>
   </header>
 
-  <!-- ── Macro Stats Grid ── -->
+  <!-- ── 2. TAGESSTATUS (Makros) ── -->
   <section class="grid grid-cols-2 gap-2.5">
-
-    <!-- Kcal -->
     <div class="p-3.5 rounded-[18px] flex flex-col gap-1 border border-white/5" style="background:rgba(18,18,26,0.75);backdrop-filter:blur(16px);">
       <div class="flex items-center gap-1.5">
         <span class="material-symbols-outlined text-primary" style="font-size:15px;font-variation-settings:'FILL' 1">local_fire_department</span>
@@ -214,8 +212,6 @@ tailwind.config = {
       </div>
       <span class="text-[9px] text-on-surface-variant font-medium" id="sub-kcal">kein Ziel</span>
     </div>
-
-    <!-- Protein -->
     <div class="p-3.5 rounded-[18px] flex flex-col gap-1 border border-white/5" style="background:rgba(18,18,26,0.75);backdrop-filter:blur(16px);">
       <div class="flex items-center gap-1.5">
         <span class="material-symbols-outlined text-secondary" style="font-size:15px">exercise</span>
@@ -230,8 +226,6 @@ tailwind.config = {
       </div>
       <span class="text-[9px] text-on-surface-variant font-medium" id="sub-prot">kein Ziel</span>
     </div>
-
-    <!-- Carbs -->
     <div class="p-3.5 rounded-[18px] flex flex-col gap-1 border border-white/5" style="background:rgba(18,18,26,0.75);backdrop-filter:blur(16px);">
       <div class="flex items-center gap-1.5">
         <span class="material-symbols-outlined text-on-surface-variant" style="font-size:15px">grain</span>
@@ -246,8 +240,6 @@ tailwind.config = {
       </div>
       <span class="text-[9px] text-on-surface-variant font-medium" id="sub-carbs">kein Ziel</span>
     </div>
-
-    <!-- Fett -->
     <div class="p-3.5 rounded-[18px] flex flex-col gap-1 border border-white/5" style="background:rgba(18,18,26,0.75);backdrop-filter:blur(16px);">
       <div class="flex items-center gap-1.5">
         <span class="material-symbols-outlined text-tertiary" style="font-size:15px">water_drop</span>
@@ -264,9 +256,26 @@ tailwind.config = {
     </div>
   </section>
 
-  <!-- ── Search ── -->
-  <section class="flex flex-col gap-3">
-    <!-- Search bar with submit arrow -->
+  <!-- ── 3. TAGESSTART: Plan laden (wenn vorhanden + noch nix eingetragen) ── -->
+  <div id="load-plan-section" style="display:none">
+    <p class="font-label text-[9px] uppercase tracking-widest text-on-surface-variant font-bold mb-2 px-1">Tagesstart</p>
+    <button onclick="openPlanPicker()" class="w-full flex items-center justify-between px-5 py-4 rounded-[18px] border active:scale-[.98] transition-all" style="background:rgba(255,197,108,0.07);border-color:rgba(255,197,108,0.22);box-shadow:0 0 24px rgba(255,197,108,0.06);">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-[14px] flex items-center justify-center flex-shrink-0" style="background:rgba(255,197,108,0.15);border:1px solid rgba(255,197,108,0.25);">
+          <span class="material-symbols-outlined text-primary" style="font-size:20px;font-variation-settings:'FILL' 1;">calendar_today</span>
+        </div>
+        <div>
+          <div class="font-headline font-black italic uppercase text-sm text-primary" style="letter-spacing:-0.01em;">Standardtag laden</div>
+          <div class="font-label text-[9px] uppercase tracking-widest text-on-surface-variant" id="plan-count-label">Als Basis für heute eintragen</div>
+        </div>
+      </div>
+      <span class="material-symbols-outlined text-primary" style="font-size:20px;">arrow_forward_ios</span>
+    </button>
+  </div>
+
+  <!-- ── 4. EINTRAGEN: Suche + Scan ── -->
+  <section class="flex flex-col gap-2.5">
+    <p class="font-label text-[9px] uppercase tracking-widest text-on-surface-variant font-bold px-1">Eintragen</p>
     <div class="flex items-center rounded-[18px] border overflow-hidden" style="background:rgba(18,18,26,0.8);backdrop-filter:blur(16px);border-color:rgba(72,71,82,0.35);height:54px;">
       <span class="material-symbols-outlined text-on-surface-variant px-4 flex-shrink-0" style="font-size:20px;">search</span>
       <input class="bg-transparent border-none focus:ring-0 font-medium w-full outline-none p-0" id="search-input" placeholder="Lebensmittel suchen…" type="text" style="background:transparent;border:none;padding:0;color:#efecfb;font-family:'Inter',sans-serif;font-size:16px;"/>
@@ -277,7 +286,6 @@ tailwind.config = {
         <span class="material-symbols-outlined text-primary" style="font-size:22px;">arrow_forward</span>
       </button>
     </div>
-    <!-- Scan button separate -->
     <button id="btn-scan" class="flex items-center justify-between px-5 rounded-[18px] border active:scale-[0.98] transition-all" style="height:52px;background:rgba(18,18,26,0.8);backdrop-filter:blur(16px);border-color:rgba(72,71,82,0.35);width:100%;">
       <div class="flex items-center gap-3">
         <span class="material-symbols-outlined" style="font-size:20px;color:#ffc56c;font-variation-settings:'FILL' 1;">barcode_scanner</span>
@@ -288,23 +296,7 @@ tailwind.config = {
   </section>
 
   <!-- Search Results -->
-  <div id="search-results" style="display:none" class="-mt-4"></div>
-
-  <!-- Plan laden -->
-  <div id="load-plan-section" style="display:none">
-    <button onclick="openPlanPicker()" class="w-full flex items-center justify-between px-5 py-4 rounded-[18px] border active:scale-[.98] transition-all" style="background:rgba(255,197,108,0.07);border-color:rgba(255,197,108,0.22);box-shadow:0 0 24px rgba(255,197,108,0.06);">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-[14px] flex items-center justify-center flex-shrink-0" style="background:rgba(255,197,108,0.15);border:1px solid rgba(255,197,108,0.25);">
-          <span class="material-symbols-outlined text-primary" style="font-size:20px;font-variation-settings:'FILL' 1;">calendar_today</span>
-        </div>
-        <div>
-          <div class="font-headline font-black italic uppercase text-sm text-primary" style="letter-spacing:-0.01em;">Plan laden</div>
-          <div class="font-label text-[9px] uppercase tracking-widest text-on-surface-variant" id="plan-count-label">Deinen Standardtag als Basis eintragen</div>
-        </div>
-      </div>
-      <span class="material-symbols-outlined text-primary" style="font-size:20px;">arrow_forward_ios</span>
-    </button>
-  </div>
+  <div id="search-results" style="display:none" class="-mt-2"></div>
 
   <!-- Plan Picker Sheet -->
   <div id="plan-picker-overlay" onclick="closePlanPicker()" style="display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,0.8);backdrop-filter:blur(16px);align-items:flex-end;">
@@ -315,30 +307,33 @@ tailwind.config = {
     </div>
   </div>
 
-  <!-- ── Meal Sections ── -->
-  <section class="space-y-8" id="meals-section">
+  <!-- ── 5. TAGESPROTOKOLL: Mahlzeiten ── -->
+  <section class="space-y-3" id="meals-section">
     <div class="text-center py-16 opacity-40">
       <span class="material-symbols-outlined text-5xl block mb-3" style="font-size:52px">restaurant</span>
       <p class="font-headline font-bold uppercase tracking-widest text-sm">Noch nichts eingetragen</p>
-      <p class="text-on-surface-variant text-xs mt-2">Scanne einen Barcode oder suche nach einem Produkt</p>
+      <p class="text-on-surface-variant text-xs mt-2">Lade deinen Standardtag oder trage Mahlzeiten manuell ein</p>
     </div>
   </section>
 
-  <!-- Transfer CTA -->
-  <div id="transfer-section" style="display:none">
+  <!-- ── 6. ABSCHLUSS: Transfer + Plan-Link ── -->
+  <div id="transfer-section" style="display:none" class="flex flex-col gap-3">
     <button id="btn-transfer" class="w-full flex items-center justify-center gap-3 rounded-[18px] font-headline font-black italic uppercase tracking-wide active:scale-[0.98] transition-all" style="padding:17px;font-size:16px;background:linear-gradient(135deg,#ffc56c,#cb9743);color:#321f00;box-shadow:0 8px 28px rgba(255,197,108,0.28);">
       <span class="material-symbols-outlined" style="font-size:20px;font-variation-settings:'FILL' 1">check_circle</span>
       Makros in Check-in speichern
     </button>
   </div>
 
-  <!-- Ernährungsplan Link -->
+  <!-- Ernährungsplan Link — immer sichtbar, am Ende -->
   <a href="ernaehrungsplan.html" class="flex items-center justify-between px-4 py-3.5 rounded-[18px] border" style="background:rgba(18,18,26,0.75);backdrop-filter:blur(16px);border-color:rgba(72,71,82,0.3);text-decoration:none;">
     <div class="flex items-center gap-3">
       <div class="w-9 h-9 rounded-[12px] flex items-center justify-center" style="background:rgba(255,197,108,0.1);border:1px solid rgba(255,197,108,0.2);">
         <span class="material-symbols-outlined text-primary" style="font-size:18px;font-variation-settings:'FILL' 1">menu_book</span>
       </div>
-      <span class="font-headline font-black italic uppercase text-sm text-primary tracking-tight">Ernährungsplan</span>
+      <div>
+        <div class="font-headline font-black italic uppercase text-sm text-primary tracking-tight">Ernährungsplan</div>
+        <div class="font-label text-[9px] uppercase tracking-widest text-on-surface-variant">Standardtag erstellen &amp; verwalten</div>
+      </div>
     </div>
     <span class="material-symbols-outlined text-on-surface-variant" style="font-size:20px;">chevron_right</span>
   </a>
