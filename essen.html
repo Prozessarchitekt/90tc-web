@@ -960,6 +960,12 @@ document.getElementById('btn-add').addEventListener('click', addMeal)
 document.getElementById('btn-cancel-sheet').addEventListener('click', closeSheet)
 document.getElementById('btn-transfer').addEventListener('click', transferToCheckin)
 document.getElementById('search-input').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch() })
+document.getElementById('search-input').addEventListener('input', e => {
+  if (!e.target.value.trim()) {
+    document.getElementById('search-results').style.display = 'none'
+    document.getElementById('search-results').innerHTML = ''
+  }
+})
 document.getElementById('menge-input').addEventListener('input', updateCalc)
 
 // ── Init ───────────────────────────────────────────────
