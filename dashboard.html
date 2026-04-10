@@ -135,16 +135,45 @@
     </div>
   </section>
 
-  <!-- Main CTA -->
-  <section>
-    <a id="cta-btn" href="checkin.html" class="obsidian-gradient w-full py-3 rounded-2xl flex items-center justify-center gap-2 shadow-[0_8px_24px_rgba(255,197,108,0.2)] active:scale-[0.98] transition-transform">
-      <span id="cta-icon" class="material-symbols-outlined text-on-primary" style="font-variation-settings:'FILL' 1;font-size:20px">rocket_launch</span>
-      <span class="font-headline italic font-black uppercase text-on-primary text-sm tracking-tight" id="cta-text">Morgen-Check-in starten</span>
+  <!-- Check-in Buttons -->
+  <section class="flex flex-col gap-3">
+    <!-- Morgen -->
+    <a id="btn-morgen" href="checkin.html"
+       class="flex items-center justify-between px-5 py-4 rounded-[22px] transition-all active:scale-[0.98]"
+       style="background:linear-gradient(135deg,rgba(255,197,108,0.14),rgba(255,197,108,0.06));border:1px solid rgba(255,197,108,0.28);box-shadow:0 4px 24px rgba(255,197,108,0.08);text-decoration:none">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+             style="background:linear-gradient(135deg,rgba(255,197,108,0.28),rgba(255,197,108,0.12))">
+          <span class="material-symbols-outlined text-primary" style="font-size:22px;font-variation-settings:'FILL' 1">wb_sunny</span>
+        </div>
+        <div>
+          <div class="font-label text-[9px] uppercase tracking-widest mb-0.5" style="color:rgba(255,197,108,0.5)">TAGES CHECK-IN</div>
+          <div class="font-headline font-black text-base uppercase tracking-tight text-on-surface" id="btn-morgen-label">Morgen starten</div>
+        </div>
+      </div>
+      <span id="btn-morgen-icon" class="material-symbols-outlined text-primary" style="font-size:22px">arrow_forward_ios</span>
+    </a>
+
+    <!-- Abend -->
+    <a id="btn-abend" href="checkin.html"
+       class="flex items-center justify-between px-5 py-4 rounded-[22px] transition-all"
+       style="background:rgba(137,206,255,0.06);border:1px solid rgba(137,206,255,0.12);opacity:0.38;pointer-events:none;text-decoration:none">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+             style="background:rgba(137,206,255,0.1)">
+          <span class="material-symbols-outlined text-secondary" style="font-size:22px;font-variation-settings:'FILL' 1">bedtime</span>
+        </div>
+        <div>
+          <div class="font-label text-[9px] uppercase tracking-widest mb-0.5" style="color:rgba(137,206,255,0.4)">TAGES CHECK-IN</div>
+          <div class="font-headline font-black text-base uppercase tracking-tight text-on-surface-variant" id="btn-abend-label">Abend</div>
+        </div>
+      </div>
+      <span id="btn-abend-icon" class="material-symbols-outlined text-on-surface-variant" style="font-size:22px;opacity:0.3">lock</span>
     </a>
   </section>
 
   <!-- Mindset des Tages -->
-  <div class="flex items-start gap-3 px-1 py-1">
+  <div class="flex items-start gap-3 px-1">
     <span class="material-symbols-outlined text-primary/40 flex-shrink-0 mt-0.5" style="font-size:20px;font-variation-settings:'FILL' 1">format_quote</span>
     <div class="min-w-0">
       <span class="font-label text-[9px] uppercase tracking-widest text-primary/50 block mb-0.5">MINDSET DES TAGES</span>
@@ -203,24 +232,6 @@
       <span id="s-train" class="font-headline italic text-xl font-black text-on-surface-variant uppercase">–</span>
       <span id="s-train-sub" class="font-label text-[9px] text-on-surface-variant uppercase tracking-widest">Heute</span>
     </div>
-  </section>
-
-  <!-- Check-in Status -->
-  <section class="grid grid-cols-2 gap-2.5">
-    <a id="pill-m" href="checkin.html" class="bg-surface-container-low border border-outline-variant/20 p-3.5 rounded-[18px] flex items-center justify-between transition-all">
-      <div>
-        <p class="font-label text-[9px] uppercase tracking-widest text-on-surface-variant mb-0.5">Morgen</p>
-        <p id="pill-m-sub" class="font-headline font-bold text-sm">Ausstehend</p>
-      </div>
-      <span class="material-symbols-outlined text-outline-variant pill-icon-el" id="pill-m-icon" style="font-size:20px">pending</span>
-    </a>
-    <a id="pill-a" href="checkin.html" class="bg-surface-container-low border border-outline-variant/20 p-3.5 rounded-[18px] flex items-center justify-between transition-all">
-      <div>
-        <p class="font-label text-[9px] uppercase tracking-widest text-on-surface-variant mb-0.5">Abend</p>
-        <p id="pill-a-sub" class="font-headline font-bold text-sm">Gesperrt</p>
-      </div>
-      <span class="material-symbols-outlined text-outline-variant opacity-30 pill-icon-el" id="pill-a-icon" style="font-size:20px">lock</span>
-    </a>
   </section>
 
 </main>
@@ -359,44 +370,43 @@ async function init() {
     statCard.style.background = 'rgba(0,237,125,0.04)'
   }
 
-  // Check-in pills
-  if (entry?.checkin_morgen) {
-    const pillM = document.getElementById('pill-m')
-    pillM.classList.add('pill-done')
-    document.getElementById('pill-m-icon').textContent = 'check_circle'
-    document.getElementById('pill-m-sub').textContent = 'Erledigt ✓'
-  }
-  if (entry?.checkin_abend) {
-    const pillA = document.getElementById('pill-a')
-    pillA.classList.add('pill-done')
-    pillA.querySelector('.pill-icon-el').style.opacity = '1'
-    document.getElementById('pill-a-icon').textContent = 'check_circle'
-    document.getElementById('pill-a-sub').textContent = entry.score_von_7 != null
-      ? `Score: ${entry.score_von_7}/7` : 'Erledigt ✓'
+  // Check-in Buttons
+  const morgenDone = !!entry?.checkin_morgen
+  const abendDone  = !!entry?.checkin_abend
+  const btnMorgen  = document.getElementById('btn-morgen')
+  const btnAbend   = document.getElementById('btn-abend')
+
+  if (morgenDone) {
+    document.getElementById('btn-morgen-label').textContent = 'Morgen erledigt'
+    document.getElementById('btn-morgen-icon').textContent = 'check_circle'
+    document.getElementById('btn-morgen-icon').style.color = '#11f080'
+    btnMorgen.style.background = 'linear-gradient(135deg,rgba(17,240,128,0.1),rgba(17,240,128,0.04))'
+    btnMorgen.style.borderColor = 'rgba(17,240,128,0.25)'
   }
 
-  // CTA
-  const cta = document.getElementById('cta-btn')
-  const ctaText = document.getElementById('cta-text')
-  const ctaIcon = document.getElementById('cta-icon')
-  if (entry?.checkin_morgen && entry?.checkin_abend && trainedToday) {
-    ctaText.textContent = 'Perfekter Tag — so weiter!'
-    ctaIcon.textContent = 'check_circle'
-    cta.className = 'w-full py-5 rounded-2xl flex items-center justify-center gap-3 bg-gradient-to-r from-tertiary/80 to-tertiary active:scale-[0.98] transition-transform shadow-[0_12px_32px_rgba(0,237,125,0.2)]'
-    cta.removeAttribute('href')
-    cta.style.cursor = 'default'
-  } else if (!entry?.checkin_morgen) {
-    ctaText.textContent = 'Morgen-Check-in starten'
-    ctaIcon.textContent = 'rocket_launch'
-    cta.href = 'checkin.html'
-  } else if (!trainedToday) {
-    ctaText.textContent = 'Heutiges Training starten'
-    ctaIcon.textContent = 'fitness_center'
-    cta.href = 'training.html'
-  } else {
-    ctaText.textContent = 'Abend-Check-in starten'
-    ctaIcon.textContent = 'nights_stay'
-    cta.href = 'checkin.html'
+  if (morgenDone && !abendDone) {
+    // Unlock Abend
+    btnAbend.style.opacity = '1'
+    btnAbend.style.pointerEvents = 'auto'
+    btnAbend.style.background = 'linear-gradient(135deg,rgba(137,206,255,0.14),rgba(137,206,255,0.06))'
+    btnAbend.style.borderColor = 'rgba(137,206,255,0.28)'
+    document.getElementById('btn-abend-label').textContent = 'Abend starten'
+    document.getElementById('btn-abend-label').style.color = ''
+    document.getElementById('btn-abend-icon').textContent = 'arrow_forward_ios'
+    document.getElementById('btn-abend-icon').style.color = '#89ceff'
+    document.getElementById('btn-abend-icon').style.opacity = '1'
+  }
+
+  if (abendDone) {
+    btnAbend.style.opacity = '1'
+    btnAbend.style.pointerEvents = 'auto'
+    btnAbend.style.background = 'linear-gradient(135deg,rgba(17,240,128,0.1),rgba(17,240,128,0.04))'
+    btnAbend.style.borderColor = 'rgba(17,240,128,0.25)'
+    document.getElementById('btn-abend-label').textContent = entry.score_von_7 != null
+      ? `Score: ${entry.score_von_7}/7` : 'Abend erledigt'
+    document.getElementById('btn-abend-icon').textContent = 'check_circle'
+    document.getElementById('btn-abend-icon').style.color = '#11f080'
+    document.getElementById('btn-abend-icon').style.opacity = '1'
   }
 }
 init()
