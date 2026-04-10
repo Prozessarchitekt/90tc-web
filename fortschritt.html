@@ -1,169 +1,295 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>90TC — Fortschritt</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#E8A317">
+  <meta name="theme-color" content="#ffc56c">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="90TC">
   <link rel="apple-touch-icon" href="icon.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Space+Grotesk:wght@900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode:'class',
+      theme:{ extend:{ colors:{
+        'background':'#03030A','surface':'#0d0d17',
+        'surface-container':'#191825','surface-container-low':'#12121d',
+        'surface-container-high':'#1f1e2c','surface-container-highest':'#252433',
+        'on-surface':'#efecfb','on-surface-variant':'#aca9b7',
+        'outline':'#757481','outline-variant':'#484752',
+        'primary':'#ffc56c','primary-container':'#cb9743','on-primary-container':'#321f00',
+        'secondary':'#89ceff','tertiary-dim':'#11f080','error':'#ff7351',
+      }, fontFamily:{ headline:['Space Grotesk'], body:['Inter'] } } }
+    }
+  </script>
+
+  <style>
+    :root {
+      --accent:#ffc56c; --green2:#11f080; --danger:#ff7351;
+      --muted:#757481; --text:#efecfb; --text2:#aca9b7;
+      --border:rgba(72,71,82,0.35);
+    }
+    body { background:#03030A; color:#efecfb; font-family:'Inter',sans-serif; min-height:100dvh; }
+    .grainy-overlay { pointer-events:none;position:fixed;inset:0;z-index:9999;opacity:0.035;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size:180px 180px; }
+    .splash { position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#03030A;z-index:200; }
+    .spinner { width:32px;height:32px;border:3px solid rgba(255,197,108,0.15);border-top-color:#ffc56c;border-radius:50%;animation:spin .7s linear infinite; }
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    #main { padding:max(80px,calc(env(safe-area-inset-top)+72px)) 16px 110px; max-width:600px; margin:0 auto; }
+
+    /* Cards */
+    .s-card { background:rgba(25,24,37,0.7);backdrop-filter:blur(16px);border:1.5px solid rgba(72,71,82,0.35);border-radius:20px;padding:20px;margin-bottom:14px; }
+    .s-card-title { font-family:'Space Grotesk',sans-serif;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0.12em;color:#aca9b7;margin-bottom:14px;display:flex;align-items:center;gap:8px; }
+    .s-card-title .material-symbols-outlined { font-size:14px;color:#ffc56c; }
+
+    /* Stat boxes */
+    .stat-grid { display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px; }
+    .stat-box { background:#12121d;border:1.5px solid rgba(72,71,82,0.3);border-radius:16px;padding:16px; }
+    .stat-box-val { font-family:'Space Grotesk',sans-serif;font-size:clamp(2rem,8vw,2.8rem);font-weight:900;font-style:italic;line-height:1;margin-bottom:4px; }
+    .stat-box-label { font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#aca9b7; }
+
+    /* Chart wrap */
+    .chart-wrap { height:160px;position:relative; }
+
+    /* Heatmap */
+    #heatmap { display:flex;flex-wrap:wrap;gap:5px;margin-top:4px; }
+    .heatmap-cell { width:clamp(22px,7vw,28px);height:clamp(22px,7vw,28px);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:8px;color:rgba(255,255,255,0.4); }
+
+    /* Compare table */
+    .compare-row { display:grid;grid-template-columns:1fr 52px 52px 52px;gap:4px;padding:8px 0;border-bottom:1px solid rgba(72,71,82,0.25);font-size:12px;align-items:center; }
+    .compare-row:last-child { border-bottom:none; }
+    .compare-label { color:#aca9b7;font-weight:600; }
+    .compare-prev,.compare-curr { text-align:center;font-family:'Space Grotesk',sans-serif;font-style:italic;font-weight:900;font-size:13px; }
+    .compare-delta { text-align:center; }
+    .delta-neg { color:#11f080;font-weight:700; }
+    .delta-pos { color:#ff7351;font-weight:700; }
+    .delta-zero { color:#757481;font-weight:700; }
+
+    /* Training sessions */
+    .session-item { display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(72,71,82,0.2); }
+    .session-item:last-child { border-bottom:none; }
+    .session-dot { width:8px;height:8px;border-radius:50%;background:#484752;flex-shrink:0; }
+    .session-info { flex:1;min-width:0; }
+    .session-stat { font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:900;color:#ffc56c;flex-shrink:0; }
+
+    /* PRs */
+    .pr-row { display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(72,71,82,0.2); }
+    .pr-row:last-child { border-bottom:none; }
+
+    /* Insights */
+    .insight-card { display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid rgba(72,71,82,0.2); }
+    .insight-card:last-child { border-bottom:none; }
+    .insight-icon { font-size:24px;flex-shrink:0;width:36px;text-align:center; }
+    .insight-label { font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#aca9b7;margin-bottom:2px; }
+    .insight-value { font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:900;font-style:italic;color:#ffc56c; }
+    .insight-sub { font-size:11px;color:#757481;margin-top:2px; }
+
+    /* Missions */
+    .mission-card { background:#12121d;border:1.5px solid rgba(72,71,82,0.3);border-radius:14px;padding:14px;margin-bottom:8px; }
+    .mission-card.done { border-color:rgba(17,240,128,0.3);background:rgba(17,240,128,0.04); }
+    .mission-header { display:flex;gap:10px;align-items:flex-start;margin-bottom:10px; }
+    .mission-icon { font-size:20px;flex-shrink:0; }
+    .mission-info { flex:1;min-width:0; }
+    .mission-name { font-size:13px;font-weight:700;margin-bottom:2px; }
+    .mission-desc { font-size:11px;color:#aca9b7; }
+    .mission-reward { font-size:11px;font-weight:700;color:#ffc56c;flex-shrink:0;white-space:nowrap; }
+    .mission-bar-track { height:4px;background:rgba(255,255,255,0.07);border-radius:4px;overflow:hidden;margin-bottom:5px; }
+    .mission-bar-fill { height:100%;background:#ffc56c;border-radius:4px;transition:width .5s; }
+    .mission-status { font-size:11px;color:#757481;font-weight:700; }
+    .mission-status.done { color:#11f080; }
+
+    /* Badges */
+    .badge-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px; }
+    .badge-box { background:#12121d;border:1.5px solid rgba(72,71,82,0.3);border-radius:14px;padding:12px 8px;text-align:center;transition:border-color .2s; }
+    .badge-box.earned { border-color:rgba(255,197,108,0.4);background:rgba(255,197,108,0.06); }
+    .badge-box.locked { opacity:0.4;filter:grayscale(1); }
+    .badge-emoji { font-size:22px;margin-bottom:4px; }
+    .badge-name { font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#aca9b7;line-height:1.2; }
+    .badge-box.earned .badge-name { color:#ffc56c; }
+
+    .bnav { display:none !important; }
+    .no-scrollbar::-webkit-scrollbar { display:none; }
+    .no-scrollbar { -ms-overflow-style:none;scrollbar-width:none; }
+  </style>
 </head>
-<body>
+<body class="dark font-body antialiased">
+
+<div class="grainy-overlay"></div>
+
+<!-- Top Nav -->
+<header class="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-4"
+        style="background:rgba(3,3,10,0.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(72,71,82,0.2);">
+  <a href="dashboard.html" class="flex items-center justify-center w-10 h-10 rounded-full"
+     style="background:rgba(255,197,108,0.08);border:1px solid rgba(255,197,108,0.15);text-decoration:none;">
+    <span class="material-symbols-outlined" style="font-size:20px;color:#ffc56c;">arrow_back</span>
+  </a>
+  <p class="font-headline italic font-black text-xl uppercase" style="color:#ffc56c;letter-spacing:-0.02em;">FORTSCHRITT</p>
+  <a href="maße.html" class="flex items-center gap-1 px-3 py-2 rounded-full text-[11px] font-bold uppercase tracking-wider"
+     style="background:rgba(255,197,108,0.08);border:1px solid rgba(255,197,108,0.2);color:#ffc56c;text-decoration:none;">
+    <span class="material-symbols-outlined" style="font-size:14px;">straighten</span>Messen
+  </a>
+</header>
+
 <div id="app">
   <div class="splash" id="loading"><div class="spinner"></div></div>
-  <div id="main" style="display:none">
-    <div class="page">
-      <div class="page-header">
-        <a href="dashboard.html" class="page-back">←</a>
-        <div><div class="page-title">📊 Fortschritt</div></div>
-        <a href="maße.html" class="btn btn-ghost btn-sm" style="width:auto;padding:8px 14px">📏 Messen</a>
-      </div>
+  <div id="main" class="no-scrollbar" style="display:none;">
 
-      <!-- Key Stats -->
-      <div class="stat-grid">
-        <div class="stat-box">
-          <div class="stat-box-val" id="s-streak" style="color:var(--accent)">0</div>
-          <div class="stat-box-label">🔥 Aktueller Streak</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-box-val" id="s-rec" style="color:var(--gold2)">0</div>
-          <div class="stat-box-label">🏆 Streak-Rekord</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-box-val" id="s-training" style="color:var(--green2)">0</div>
-          <div class="stat-box-label">🏋️ Trainingseinheiten</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-box-val" id="s-perfect" style="color:var(--purple)">0</div>
-          <div class="stat-box-label">⭐ Perfekte Tage (7/7)</div>
-        </div>
+    <!-- Key Stats -->
+    <div class="stat-grid">
+      <div class="stat-box">
+        <div class="stat-box-val" id="s-streak" style="color:#ffc56c;">0</div>
+        <div class="stat-box-label">🔥 Streak</div>
       </div>
-
-      <!-- Gewichts-Chart -->
-      <div class="card chart-card">
-        <div class="section-header">
-          <span class="section-title">GEWICHTSVERLAUF</span>
-          <span class="text-muted fs-12" id="weight-range">letzte 30 Tage</span>
-        </div>
-        <div class="chart-wrap">
-          <canvas id="weight-chart"></canvas>
-        </div>
-        <div style="display:flex;gap:16px;margin-top:12px;font-size:12px">
-          <span style="display:flex;align-items:center;gap:5px"><span style="width:20px;height:2px;background:var(--accent);display:inline-block"></span>Täglich</span>
-          <span style="display:flex;align-items:center;gap:5px"><span style="width:20px;height:3px;background:var(--gold2);display:inline-block"></span>7-Tage-Schnitt</span>
-        </div>
+      <div class="stat-box">
+        <div class="stat-box-val" id="s-rec" style="color:#f0b760;">0</div>
+        <div class="stat-box-label">🏆 Rekord</div>
       </div>
-
-      <!-- Score Heatmap -->
-      <div class="card">
-        <div class="section-header">
-          <span class="section-title">TAGES-SCORES</span>
-          <span class="text-muted fs-12">Letzte 30 Tage</span>
-        </div>
-        <div id="heatmap" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px"></div>
-        <div style="display:flex;gap:12px;margin-top:10px;font-size:11px;color:var(--text2)">
-          <span>⬜ Kein Eintrag</span>
-          <span style="color:var(--gold2)">■ 1-3/7</span>
-          <span style="color:var(--accent)">■ 4-6/7</span>
-          <span style="color:var(--green2)">■ 7/7</span>
-        </div>
+      <div class="stat-box">
+        <div class="stat-box-val" id="s-training" style="color:#11f080;">0</div>
+        <div class="stat-box-label">🏋️ Trainings</div>
       </div>
-
-      <!-- Körpermaße Vergleich -->
-      <div class="card" id="maß-compare-card" style="display:none">
-        <div class="section-header">
-          <span class="section-title">KÖRPERMASSE</span>
-          <span class="text-muted fs-12">Start vs. Jetzt</span>
-        </div>
-        <div id="maß-compare"></div>
+      <div class="stat-box">
+        <div class="stat-box-val" id="s-perfect" style="color:#89ceff;">0</div>
+        <div class="stat-box-label">⭐ Perfekte Tage</div>
       </div>
-
-      <!-- Wöchentlicher Score Verlauf -->
-      <div class="card chart-card">
-        <div class="section-header">
-          <span class="section-title">WOCHENSCHNITT (Score/7)</span>
-        </div>
-        <div class="chart-wrap" style="height:160px">
-          <canvas id="score-chart"></canvas>
-        </div>
-      </div>
-
-      <!-- Energie-Muster -->
-      <div class="card" id="energie-card" style="display:none">
-        <div class="section-header">
-          <span class="section-title">ENERGIE-MUSTER</span>
-          <span class="text-muted fs-12">Basierend auf deinen Daten</span>
-        </div>
-        <div id="energie-insights"></div>
-      </div>
-
-      <!-- Training-Verlauf -->
-      <div class="card" id="tv-card" style="display:none">
-        <div class="section-header">
-          <span class="section-title">LETZTE EINHEITEN</span>
-          <span class="text-muted fs-12" id="tv-count"></span>
-        </div>
-        <div id="tv-list"></div>
-      </div>
-
-      <!-- Persönliche Rekorde -->
-      <div class="card" id="pr-card" style="display:none">
-        <div class="section-header">
-          <span class="section-title">PERSÖNLICHE REKORDE</span>
-          <span class="text-muted fs-12" id="pr-count">0</span>
-        </div>
-        <div id="pr-list"></div>
-      </div>
-
-      <!-- Wöchentliche Missionen -->
-      <div class="card">
-        <div class="section-header">
-          <span class="section-title">WÖCHENTLICHE MISSIONEN</span>
-          <span class="text-muted fs-12" id="mission-week">Diese Woche</span>
-        </div>
-        <div id="mission-list"></div>
-      </div>
-
-      <!-- Badges -->
-      <div class="card">
-        <div class="section-header">
-          <span class="section-title">BADGES</span>
-          <span class="text-muted fs-12" id="badge-count">0 von 15</span>
-        </div>
-        <div class="badge-grid" id="badge-grid"></div>
-      </div>
-
-      <div style="height:88px"></div>
     </div>
+
+    <!-- Gewichtsverlauf -->
+    <div class="s-card">
+      <div class="s-card-title">
+        <span class="material-symbols-outlined">monitor_weight</span>
+        Gewichtsverlauf <span id="weight-range" style="margin-left:auto;font-weight:600;color:#757481;font-size:10px;text-transform:none;letter-spacing:0;">letzte 30 Tage</span>
+      </div>
+      <div class="chart-wrap"><canvas id="weight-chart"></canvas></div>
+      <div style="display:flex;gap:16px;margin-top:10px;">
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#aca9b7;"><span style="width:16px;height:2px;background:#ffc56c;display:inline-block;border-radius:2px;"></span>Täglich</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#aca9b7;"><span style="width:16px;height:3px;background:#f0b760;display:inline-block;border-radius:2px;"></span>7-Tage-Schnitt</span>
+      </div>
+    </div>
+
+    <!-- Score Heatmap -->
+    <div class="s-card">
+      <div class="s-card-title">
+        <span class="material-symbols-outlined">grid_view</span>
+        Tages-Scores <span style="margin-left:auto;font-weight:600;color:#757481;font-size:10px;text-transform:none;letter-spacing:0;">Letzte 30 Tage</span>
+      </div>
+      <div id="heatmap"></div>
+      <div style="display:flex;gap:12px;margin-top:10px;font-size:10px;color:#757481;flex-wrap:wrap;">
+        <span>⬜ Kein Eintrag</span>
+        <span style="color:#f0b760;">■ 1–3/7</span>
+        <span style="color:#ffc56c;">■ 4–6/7</span>
+        <span style="color:#11f080;">■ 7/7</span>
+      </div>
+    </div>
+
+    <!-- Wochenschnitt Score -->
+    <div class="s-card">
+      <div class="s-card-title"><span class="material-symbols-outlined">bar_chart</span>Wochenschnitt Score/7</div>
+      <div class="chart-wrap" style="height:140px;"><canvas id="score-chart"></canvas></div>
+    </div>
+
+    <!-- Energie-Muster -->
+    <div class="s-card" id="energie-card" style="display:none;">
+      <div class="s-card-title"><span class="material-symbols-outlined">bolt</span>Energie-Muster</div>
+      <div id="energie-insights"></div>
+    </div>
+
+    <!-- Körpermaße -->
+    <div class="s-card" id="maß-compare-card" style="display:none;">
+      <div class="s-card-title"><span class="material-symbols-outlined">straighten</span>Körpermaße <span style="margin-left:auto;font-weight:600;color:#757481;font-size:10px;text-transform:none;letter-spacing:0;">Start vs. Jetzt</span></div>
+      <div style="display:grid;grid-template-columns:1fr 52px 52px 52px;gap:4px;font-size:10px;color:#757481;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;padding-bottom:8px;border-bottom:1px solid rgba(72,71,82,0.25);">
+        <span>Maß</span><span style="text-align:center;">Start</span><span style="text-align:center;">Jetzt</span><span style="text-align:center;">Δ</span>
+      </div>
+      <div id="maß-compare"></div>
+    </div>
+
+    <!-- Training-Verlauf -->
+    <div class="s-card" id="tv-card" style="display:none;">
+      <div class="s-card-title">
+        <span class="material-symbols-outlined">fitness_center</span>
+        Letzte Einheiten <span id="tv-count" style="margin-left:auto;font-weight:600;color:#757481;font-size:10px;text-transform:none;letter-spacing:0;"></span>
+      </div>
+      <div id="tv-list"></div>
+    </div>
+
+    <!-- Persönliche Rekorde -->
+    <div class="s-card" id="pr-card" style="display:none;">
+      <div class="s-card-title">
+        <span class="material-symbols-outlined">emoji_events</span>
+        Persönliche Rekorde <span id="pr-count" style="margin-left:auto;font-weight:600;color:#757481;font-size:10px;text-transform:none;letter-spacing:0;">0</span>
+      </div>
+      <div id="pr-list"></div>
+    </div>
+
+    <!-- Wöchentliche Missionen -->
+    <div class="s-card">
+      <div class="s-card-title">
+        <span class="material-symbols-outlined">flag</span>
+        Wöchentliche Missionen <span id="mission-week" style="margin-left:auto;font-weight:600;color:#757481;font-size:10px;text-transform:none;letter-spacing:0;">Diese Woche</span>
+      </div>
+      <div id="mission-list"></div>
+    </div>
+
+    <!-- Badges -->
+    <div class="s-card">
+      <div class="s-card-title">
+        <span class="material-symbols-outlined">workspace_premium</span>
+        Badges <span id="badge-count" style="margin-left:auto;font-weight:600;color:#757481;font-size:10px;text-transform:none;letter-spacing:0;">0 von 15</span>
+      </div>
+      <div class="badge-grid" id="badge-grid"></div>
+    </div>
+
   </div>
 </div>
 
-<nav class="bnav">
-  <a href="dashboard.html" class="bnav-item">
-    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-    Start
+<!-- Bottom Nav (active: query_stats) -->
+<footer class="fixed bottom-0 left-0 right-0 z-50 flex justify-around items-end pt-2"
+        style="height:auto;min-height:64px;padding-bottom:max(12px,env(safe-area-inset-bottom));background:rgba(13,13,20,0.92);backdrop-filter:blur(24px);border-top:1px solid rgba(72,71,82,0.2);">
+
+  <a href="dashboard.html" class="flex flex-col items-center justify-center gap-0.5 px-3"
+     style="color:#757481;text-decoration:none;min-width:52px;">
+    <span class="material-symbols-outlined" style="font-size:22px;">home</span>
+    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Start</span>
   </a>
-  <a href="essen.html" class="bnav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
-    Ernährung
+
+  <a href="essen.html" class="flex flex-col items-center justify-center gap-0.5 px-3"
+     style="color:#757481;text-decoration:none;min-width:52px;">
+    <span class="material-symbols-outlined" style="font-size:22px;">restaurant</span>
+    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Essen</span>
   </a>
-  <a href="training.html" class="bnav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="4" height="8" rx="1"/><rect x="18" y="8" width="4" height="8" rx="1"/><line x1="6" y1="12" x2="10" y2="12"/><line x1="14" y1="12" x2="18" y2="12"/><rect x="10" y="9" width="4" height="6" rx="1"/></svg>
-    Training
+
+  <a href="training.html" class="flex flex-col items-center justify-center gap-0.5 px-3 -mt-4"
+     style="text-decoration:none;min-width:52px;">
+    <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#ffc56c,#cb9743);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(255,197,108,0.35);">
+      <span class="material-symbols-outlined" style="font-size:22px;color:#321f00;">fitness_center</span>
+    </div>
+    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#ffc56c;">Training</span>
   </a>
-  <a href="fortschritt.html" class="bnav-item active">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-    Statistik
+
+  <div class="flex flex-col items-center justify-center gap-0.5 px-3" style="min-width:52px;">
+    <span class="material-symbols-outlined" style="font-size:22px;color:#ffc56c;filter:drop-shadow(0 0 6px rgba(255,197,108,0.5));">query_stats</span>
+    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#ffc56c;">Stats</span>
+  </div>
+
+  <a href="profil.html" class="flex flex-col items-center justify-center gap-0.5 px-3"
+     style="color:#757481;text-decoration:none;min-width:52px;">
+    <span class="material-symbols-outlined" style="font-size:22px;">person</span>
+    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Profil</span>
   </a>
-  <a href="profil.html" class="bnav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    Profil
-  </a>
-</nav>
+
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
@@ -189,15 +315,14 @@ const ALL_BADGES = [
   { id:'perfekte_woche',   emoji:'💯', name:'Perfekte Woche',   desc:'7/7 Tage alle Faktoren' },
 ]
 
-Chart.defaults.color = '#9090b0'
-Chart.defaults.borderColor = 'rgba(255,255,255,0.06)'
+Chart.defaults.color = '#757481'
+Chart.defaults.borderColor = 'rgba(255,255,255,0.05)'
 
 async function init() {
   const ctx = await requireProfile()
   if (!ctx) return
   const { user, profile } = ctx
 
-  // Load data
   const { data: entries } = await sb.from('daily_entries')
     .select('*').eq('user_id', user.id).order('datum', { ascending: true })
 
@@ -216,92 +341,55 @@ async function init() {
   document.getElementById('main').style.display = 'block'
 
   const earnedIds = new Set((badges || []).map(b => b.badge_id))
-
-  // Check + award badges
   await checkBadges(user, profile, entries, earnedIds)
 
   // Stats
-  const trainDays  = (entries||[]).filter(e => e.training_gemacht).length
+  const trainDays   = (entries||[]).filter(e => e.training_gemacht).length
   const perfectDays = (entries||[]).filter(e => e.score_von_7 === 7).length
-  document.getElementById('s-streak').textContent  = profile.streak_aktuell || 0
-  document.getElementById('s-rec').textContent     = profile.streak_rekord || 0
+  document.getElementById('s-streak').textContent   = profile.streak_aktuell || 0
+  document.getElementById('s-rec').textContent      = profile.streak_rekord || 0
   document.getElementById('s-training').textContent = trainDays
   document.getElementById('s-perfect').textContent  = perfectDays
 
   // Weight Chart
   const weightData = (entries||[]).filter(e => e.gewicht_kg)
   if (weightData.length > 1) {
-    const labels = weightData.map(e => {
-      const d = new Date(e.datum+'T00:00:00')
-      return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})
-    })
+    const labels  = weightData.map(e => { const d = new Date(e.datum+'T00:00:00'); return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}) })
     const weights = weightData.map(e => e.gewicht_kg)
-    // 7-day moving average
-    const avg = weights.map((_, i) => {
-      const slice = weights.slice(Math.max(0, i-6), i+1)
-      return parseFloat((slice.reduce((s,v)=>s+v,0)/slice.length).toFixed(1))
-    })
+    const avg     = weights.map((_, i) => { const slice = weights.slice(Math.max(0,i-6),i+1); return parseFloat((slice.reduce((s,v)=>s+v,0)/slice.length).toFixed(1)) })
     new Chart(document.getElementById('weight-chart'), {
       type: 'line',
-      data: {
-        labels,
-        datasets: [
-          { label: 'Gewicht', data: weights, borderColor: '#E8A317', borderWidth: 1.5, pointRadius: 2, pointBackgroundColor: '#E8A317', tension: 0.3, fill: false },
-          { label: '7-Tage-Schnitt', data: avg, borderColor: '#fbbf24', borderWidth: 2.5, pointRadius: 0, tension: 0.4, fill: false },
-        ]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { ticks: { maxTicksLimit: 6, font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
-          y: { ticks: { font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } }
-        }
-      }
+      data: { labels, datasets: [
+        { label:'Gewicht', data:weights, borderColor:'#ffc56c', borderWidth:1.5, pointRadius:2, pointBackgroundColor:'#ffc56c', tension:0.3, fill:false },
+        { label:'7-Tage-Schnitt', data:avg, borderColor:'#f0b760', borderWidth:2.5, pointRadius:0, tension:0.4, fill:false },
+      ]},
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } },
+        scales: { x:{ ticks:{ maxTicksLimit:6, font:{ size:10 } }, grid:{ color:'rgba(255,255,255,0.04)' } }, y:{ ticks:{ font:{ size:10 } }, grid:{ color:'rgba(255,255,255,0.04)' } } } }
     })
   }
 
-  // Score Heatmap (last 30 days)
+  // Heatmap
   const last30 = (entries||[]).slice(-30)
-  const heatmap = document.getElementById('heatmap')
-  heatmap.innerHTML = last30.map(e => {
+  document.getElementById('heatmap').innerHTML = last30.map(e => {
     const s = e.score_von_7
-    let bg = '#1a1a2e'
-    if (s >= 7) bg = '#E8A317'
-    else if (s >= 4) bg = '#22c55e'
-    else if (s >= 1) bg = '#f59e0b'
-    return `<div title="Tag ${e.tag_nr}: ${s != null ? s+'/7' : 'Kein Score'}" style="width:28px;height:28px;border-radius:4px;background:${bg};display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.5)">${e.tag_nr}</div>`
+    let bg = '#1a1a28'
+    if (s >= 7) bg = '#11f080'
+    else if (s >= 4) bg = '#ffc56c'
+    else if (s >= 1) bg = '#f0b760'
+    return `<div class="heatmap-cell" title="Tag ${e.tag_nr}: ${s!=null?s+'/7':'Kein Score'}" style="background:${bg}">${e.tag_nr}</div>`
   }).join('')
 
   // Weekly Score Chart
   if (entries?.length > 6) {
     const weeks = {}
-    entries.forEach(e => {
-      const w = Math.ceil(e.tag_nr / 7)
-      if (!weeks[w]) weeks[w] = []
-      if (e.score_von_7 != null) weeks[w].push(e.score_von_7)
-    })
+    entries.forEach(e => { const w = Math.ceil(e.tag_nr/7); if (!weeks[w]) weeks[w]=[]; if (e.score_von_7!=null) weeks[w].push(e.score_von_7) })
     const wLabels = Object.keys(weeks).map(w => 'W'+w)
     const wScores = Object.values(weeks).map(arr => arr.length ? parseFloat((arr.reduce((s,v)=>s+v,0)/arr.length).toFixed(1)) : null)
-
     new Chart(document.getElementById('score-chart'), {
-      type: 'bar',
-      data: {
-        labels: wLabels,
-        datasets: [{
-          data: wScores,
-          backgroundColor: wScores.map(s => s >= 6 ? 'rgba(232,163,23,0.8)' : s >= 4 ? 'rgba(232,163,23,0.45)' : 'rgba(245,158,11,0.5)'),
-          borderRadius: 4,
-        }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          y: { min: 0, max: 7, ticks: { font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
-          x: { ticks: { font: { size: 11 } }, grid: { display: false } }
-        }
-      }
+      type:'bar',
+      data:{ labels:wLabels, datasets:[{ data:wScores, backgroundColor:wScores.map(s=>s>=6?'rgba(255,197,108,0.85)':s>=4?'rgba(255,197,108,0.5)':'rgba(240,183,96,0.35)'), borderRadius:6 }] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } },
+        scales:{ y:{ min:0, max:7, ticks:{ font:{ size:10 } }, grid:{ color:'rgba(255,255,255,0.04)' } }, x:{ ticks:{ font:{ size:10 } }, grid:{ display:false } } } }
     })
   }
 
@@ -309,70 +397,61 @@ async function init() {
   if (wcs?.length > 1) {
     const first = wcs[0]; const last = wcs[wcs.length-1]
     const FELDER = ['schulter','brust','arm_rechts','arm_links','bauch_oben','bauch_mitte','bauch_unten','huefte','bein_rechts','bein_links']
-    const LABELS = ['Schulter','Brust','Arm rechts','Arm links','Bauch oben','Bauch mitte','Bauch unten','Hüfte','Bein rechts','Bein links']
+    const LABELS = ['Schulter','Brust','Arm re.','Arm li.','Bauch o.','Bauch m.','Bauch u.','Hüfte','Bein re.','Bein li.']
     document.getElementById('maß-compare-card').style.display = 'block'
-    document.getElementById('maß-compare').innerHTML = `
-      <div style="display:grid;grid-template-columns:1fr 60px 60px 60px;gap:4px;font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.05em;padding-bottom:8px">
-        <span>Maß</span><span style="text-align:center">Start</span><span style="text-align:center">Jetzt</span><span style="text-align:center">Δ</span>
-      </div>` +
-      FELDER.map((f,i) => {
-        if (!first[f]) return ''
-        const d = last[f] ? parseFloat((last[f] - first[f]).toFixed(1)) : null
-        return `<div class="compare-row">
-          <span class="compare-label">${LABELS[i]}</span>
-          <span class="compare-prev">${first[f]}</span>
-          <span class="compare-curr">${last[f] ?? '—'}</span>
-          <span class="compare-delta">${d != null ? `<span class="${d<0?'delta-neg':d>0?'delta-pos':'delta-zero'}">${d>0?'+':''}${d}</span>` : '—'}</span>
-        </div>`
-      }).join('')
-  }
-
-  // Training-Verlauf
-  if (trainSessions?.length) {
-    document.getElementById('tv-card').style.display = 'block'
-    document.getElementById('tv-count').textContent = `${trainSessions.length} Einheiten`
-    document.getElementById('tv-list').innerHTML = trainSessions.map((s, i) => {
-      const d = new Date(s.datum + 'T00:00:00')
-      const dateStr = d.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' })
-      const dauerStr = s.dauer_min ? `${s.dauer_min} min` : ''
-      return `<div class="session-item">
-        <div class="session-dot" style="${i === 0 ? 'background:var(--accent)' : ''}"></div>
-        <div class="session-info">
-          <div style="font-size:14px;font-weight:600;color:var(--text)">${s.plan_name || 'Training'}</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:2px">${dateStr}${s.notizen ? ' · ' + s.notizen : ''}</div>
-        </div>
-        ${dauerStr ? `<div class="session-stat">${dauerStr}</div>` : ''}
+    document.getElementById('maß-compare').innerHTML = FELDER.map((f,i) => {
+      if (!first[f]) return ''
+      const d = last[f] ? parseFloat((last[f]-first[f]).toFixed(1)) : null
+      return `<div class="compare-row">
+        <span class="compare-label">${LABELS[i]}</span>
+        <span class="compare-prev">${first[f]}</span>
+        <span class="compare-curr">${last[f]??'—'}</span>
+        <span class="compare-delta">${d!=null?`<span class="${d<0?'delta-neg':d>0?'delta-pos':'delta-zero'}">${d>0?'+':''}${d}</span>`:'—'}</span>
       </div>`
     }).join('')
   }
 
-  // Persönliche Rekorde
+  // Training sessions
+  if (trainSessions?.length) {
+    document.getElementById('tv-card').style.display = 'block'
+    document.getElementById('tv-count').textContent = `${trainSessions.length} Einheiten`
+    document.getElementById('tv-list').innerHTML = trainSessions.map((s,i) => {
+      const dateStr = new Date(s.datum+'T00:00:00').toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'})
+      return `<div class="session-item">
+        <div class="session-dot" style="${i===0?'background:#ffc56c':''}"></div>
+        <div class="session-info">
+          <div style="font-size:13px;font-weight:700;">${s.plan_name||'Training'}</div>
+          <div style="font-size:11px;color:#757481;margin-top:2px;">${dateStr}${s.notizen?' · '+s.notizen:''}</div>
+        </div>
+        ${s.dauer_min?`<div class="session-stat">${s.dauer_min}m</div>`:''}
+      </div>`
+    }).join('')
+  }
+
+  // Personal Records
   if (prs?.length) {
     document.getElementById('pr-card').style.display = 'block'
-    document.getElementById('pr-count').textContent = `${prs.length} PR${prs.length !== 1 ? 's' : ''}`
+    document.getElementById('pr-count').textContent = `${prs.length} PR${prs.length!==1?'s':''}`
     document.getElementById('pr-list').innerHTML = prs.map(pr => `
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div class="pr-row">
         <div>
-          <div style="font-size:14px;font-weight:600;color:var(--text)">${pr.uebung}</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:2px">${new Date(pr.datum+'T00:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'})}</div>
+          <div style="font-size:13px;font-weight:700;">${pr.uebung}</div>
+          <div style="font-size:11px;color:#757481;margin-top:2px;">${new Date(pr.datum+'T00:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'})}</div>
         </div>
-        <div style="font-size:20px;font-weight:900;color:var(--accent)">${pr.gewicht_kg} <span style="font-size:13px;font-weight:500;color:var(--muted)">kg</span></div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:900;font-style:italic;color:#ffc56c;">${pr.gewicht_kg}<span style="font-size:12px;font-weight:500;color:#757481;"> kg</span></div>
       </div>`).join('')
   }
 
   // Badges
   document.getElementById('badge-count').textContent = `${earnedIds.size} von ${ALL_BADGES.length}`
-  document.getElementById('badge-grid').innerHTML = ALL_BADGES.map(b => `
-    <div class="badge-box ${earnedIds.has(b.id)?'earned':'locked'}" title="${b.desc}">
+  document.getElementById('badge-grid').innerHTML = ALL_BADGES.map(b =>
+    `<div class="badge-box ${earnedIds.has(b.id)?'earned':'locked'}" title="${b.desc}">
       <div class="badge-emoji">${b.emoji}</div>
       <div class="badge-name">${b.name}</div>
-    </div>
-  `).join('')
+    </div>`
+  ).join('')
 
-  // Energie-Muster (nur wenn genug Daten)
   if (entries?.length >= 7) renderEnergieMuster(entries, profile)
-
-  // Wöchentliche Missionen
   renderMissionen(entries, profile)
 }
 
@@ -380,169 +459,87 @@ function renderEnergieMuster(entries, profile) {
   const card = document.getElementById('energie-card')
   const el = document.getElementById('energie-insights')
   card.style.display = 'block'
-
   const insights = []
-
-  // Beste Energie nach Wochentag
   const byDay = {}
-  entries.forEach(e => {
-    if (!e.energie_level) return
-    const d = new Date(e.datum + 'T00:00:00').getDay()
-    if (!byDay[d]) byDay[d] = []
-    byDay[d].push(e.energie_level)
-  })
+  entries.forEach(e => { if (!e.energie_level) return; const d = new Date(e.datum+'T00:00:00').getDay(); if (!byDay[d]) byDay[d]=[]; byDay[d].push(e.energie_level) })
   const dayNames = ['So','Mo','Di','Mi','Do','Fr','Sa']
-  let bestDay = -1, bestAvg = 0
-  Object.entries(byDay).forEach(([d, vals]) => {
-    const avg = vals.reduce((s,v) => s+v, 0) / vals.length
-    if (avg > bestAvg) { bestAvg = avg; bestDay = parseInt(d) }
-  })
-  if (bestDay >= 0) {
-    const emojis = ['😴','😐','⚡','🚀']
-    insights.push({ icon:'⚡', label:'Bester Wochentag', value: dayNames[bestDay], sub: `Ø ${bestAvg.toFixed(1)}/4 Energie ${emojis[Math.round(bestAvg)-1]||''}` })
-  }
-
-  // Schlaf → Energie Korrelation
-  const withBoth = entries.filter(e => e.schlaf_ist_h && e.energie_level)
-  if (withBoth.length >= 5) {
-    const gut = withBoth.filter(e => e.schlaf_ist_h >= 7)
-    const schlecht = withBoth.filter(e => e.schlaf_ist_h < 7)
-    if (gut.length && schlecht.length) {
-      const avgGut = gut.reduce((s,e) => s+e.energie_level, 0) / gut.length
-      const avgSchlecht = schlecht.reduce((s,e) => s+e.energie_level, 0) / schlecht.length
-      if (avgGut > avgSchlecht + 0.3) {
-        insights.push({ icon:'😴', label:'Schlaf macht den Unterschied', value: `+${((avgGut-avgSchlecht)/4*100).toFixed(0)}% mehr Energie`, sub: 'Bei ≥7h Schlaf vs. weniger Schlaf' })
-      }
+  let bestDay=-1, bestAvg=0
+  Object.entries(byDay).forEach(([d,vals]) => { const avg=vals.reduce((s,v)=>s+v,0)/vals.length; if(avg>bestAvg){bestAvg=avg;bestDay=parseInt(d)} })
+  if (bestDay>=0) { const emojis=['😴','😐','⚡','🚀']; insights.push({ icon:'⚡', label:'Bester Wochentag', value:dayNames[bestDay], sub:`Ø ${bestAvg.toFixed(1)}/4 Energie ${emojis[Math.round(bestAvg)-1]||''}` }) }
+  const withBoth = entries.filter(e=>e.schlaf_ist_h&&e.energie_level)
+  if (withBoth.length>=5) {
+    const gut=withBoth.filter(e=>e.schlaf_ist_h>=7); const schlecht=withBoth.filter(e=>e.schlaf_ist_h<7)
+    if (gut.length&&schlecht.length) {
+      const avgGut=gut.reduce((s,e)=>s+e.energie_level,0)/gut.length; const avgSchlecht=schlecht.reduce((s,e)=>s+e.energie_level,0)/schlecht.length
+      if (avgGut>avgSchlecht+0.3) insights.push({ icon:'😴', label:'Schlaf macht den Unterschied', value:`+${((avgGut-avgSchlecht)/4*100).toFixed(0)}% mehr Energie`, sub:'Bei ≥7h Schlaf vs. weniger Schlaf' })
     }
   }
-
-  // Trainings-Energie Boost
-  const trainingDays = entries.filter(e => e.training_gemacht && e.stimmung)
-  const restDays = entries.filter(e => e.training_gemacht === false && e.stimmung)
-  if (trainingDays.length >= 3 && restDays.length >= 3) {
-    const avgT = trainingDays.reduce((s,e) => s+e.stimmung, 0) / trainingDays.length
-    const avgR = restDays.reduce((s,e) => s+e.stimmung, 0) / restDays.length
-    if (avgT > avgR + 0.3) {
-      insights.push({ icon:'🏋️', label:'Training hebt deine Stimmung', value: `+${((avgT-avgR)/5*100).toFixed(0)}% bessere Stimmung`, sub: 'An Trainingstagen vs. Ruhetagen' })
-    }
+  const trainingDays=entries.filter(e=>e.training_gemacht&&e.stimmung); const restDays=entries.filter(e=>e.training_gemacht===false&&e.stimmung)
+  if (trainingDays.length>=3&&restDays.length>=3) {
+    const avgT=trainingDays.reduce((s,e)=>s+e.stimmung,0)/trainingDays.length; const avgR=restDays.reduce((s,e)=>s+e.stimmung,0)/restDays.length
+    if (avgT>avgR+0.3) insights.push({ icon:'🏋️', label:'Training hebt deine Stimmung', value:`+${((avgT-avgR)/5*100).toFixed(0)}% bessere Stimmung`, sub:'An Trainingstagen vs. Ruhetagen' })
   }
-
-  // Durchschnittliche Schritte
-  const stepsEntries = entries.filter(e => e.schritte_ist)
-  if (stepsEntries.length >= 5) {
-    const avgSteps = Math.round(stepsEntries.reduce((s,e) => s+e.schritte_ist, 0) / stepsEntries.length)
-    const goal = profile.schritte_ziel || 10000
-    const pct = Math.round(avgSteps / goal * 100)
-    insights.push({ icon:'👟', label:'Schritte-Durchschnitt', value: avgSteps.toLocaleString('de-DE'), sub: `${pct}% des Ziels (${goal.toLocaleString('de-DE')} Schritte)` })
+  const stepsEntries=entries.filter(e=>e.schritte_ist)
+  if (stepsEntries.length>=5) {
+    const avgSteps=Math.round(stepsEntries.reduce((s,e)=>s+e.schritte_ist,0)/stepsEntries.length); const goal=profile.schritte_ziel||10000
+    insights.push({ icon:'👟', label:'Schritte-Durchschnitt', value:avgSteps.toLocaleString('de-DE'), sub:`${Math.round(avgSteps/goal*100)}% des Ziels (${goal.toLocaleString('de-DE')})` })
   }
-
-  if (!insights.length) { card.style.display = 'none'; return }
-
-  el.innerHTML = insights.map(i => `
-    <div class="insight-card">
-      <div class="insight-icon">${i.icon}</div>
-      <div class="insight-info">
-        <div class="insight-label">${i.label}</div>
-        <div class="insight-value">${i.value}</div>
-        <div class="insight-sub">${i.sub}</div>
-      </div>
-    </div>`).join('')
+  if (!insights.length) { card.style.display='none'; return }
+  el.innerHTML = insights.map(i => `<div class="insight-card"><div class="insight-icon">${i.icon}</div><div class="insight-info"><div class="insight-label">${i.label}</div><div class="insight-value">${i.value}</div><div class="insight-sub">${i.sub}</div></div></div>`).join('')
 }
 
 function renderMissionen(entries, profile) {
   const el = document.getElementById('mission-list')
-  const thisWeekEntries = (entries || []).slice(-7)
-
+  const thisWeekEntries = (entries||[]).slice(-7)
   const MISSIONEN = [
-    {
-      icon: '💧', name: 'Hydrations-Champion',
-      desc: '5× diese Woche Wasserziel erreichen',
-      reward: '+100 XP',
-      current: thisWeekEntries.filter(e => e.wasser_ist_l && profile.wasser_ziel_l && e.wasser_ist_l >= profile.wasser_ziel_l).length,
-      target: 5,
-    },
-    {
-      icon: '🏋️', name: 'Trainings-Krieger',
-      desc: '4× diese Woche trainieren',
-      reward: '+150 XP',
-      current: thisWeekEntries.filter(e => e.training_gemacht).length,
-      target: 4,
-    },
-    {
-      icon: '💪', name: 'Protein-Profi',
-      desc: '5× Proteinziel erreichen',
-      reward: '+100 XP',
-      current: thisWeekEntries.filter(e => e.protein_ist_g && profile.protein_ziel_g && e.protein_ist_g >= profile.protein_ziel_g).length,
-      target: 5,
-    },
-    {
-      icon: '😴', name: 'Schlaf-Meister',
-      desc: '5× mindestens 7h schlafen',
-      reward: '+100 XP',
-      current: thisWeekEntries.filter(e => e.schlaf_ist_h && e.schlaf_ist_h >= 7).length,
-      target: 5,
-    },
-    {
-      icon: '⭐', name: 'Perfekte Woche',
-      desc: '7 Tage Streak + alle 7 Check-ins',
-      reward: '+300 XP 🏆',
-      current: thisWeekEntries.filter(e => e.checkin_morgen && e.checkin_abend).length,
-      target: 7,
-    },
+    { icon:'💧', name:'Hydrations-Champion', desc:'5× diese Woche Wasserziel erreichen', reward:'+100 XP', current:thisWeekEntries.filter(e=>e.wasser_ist_l&&profile.wasser_ziel_l&&e.wasser_ist_l>=profile.wasser_ziel_l).length, target:5 },
+    { icon:'🏋️', name:'Trainings-Krieger', desc:'4× diese Woche trainieren', reward:'+150 XP', current:thisWeekEntries.filter(e=>e.training_gemacht).length, target:4 },
+    { icon:'💪', name:'Protein-Profi', desc:'5× Proteinziel erreichen', reward:'+100 XP', current:thisWeekEntries.filter(e=>e.protein_ist_g&&profile.protein_ziel_g&&e.protein_ist_g>=profile.protein_ziel_g).length, target:5 },
+    { icon:'😴', name:'Schlaf-Meister', desc:'5× mindestens 7h schlafen', reward:'+100 XP', current:thisWeekEntries.filter(e=>e.schlaf_ist_h&&e.schlaf_ist_h>=7).length, target:5 },
+    { icon:'⭐', name:'Perfekte Woche', desc:'7 Tage Streak + alle 7 Check-ins', reward:'+300 XP 🏆', current:thisWeekEntries.filter(e=>e.checkin_morgen&&e.checkin_abend).length, target:7 },
   ]
-
   el.innerHTML = MISSIONEN.map(m => {
-    const pct = Math.min(100, Math.round(m.current / m.target * 100))
-    const done = m.current >= m.target
-    return `
-      <div class="mission-card ${done ? 'done' : ''}">
-        <div class="mission-header">
-          <div class="mission-icon">${m.icon}</div>
-          <div class="mission-info">
-            <div class="mission-name">${m.name} ${done ? '✅' : ''}</div>
-            <div class="mission-desc">${m.desc}</div>
-          </div>
-          <div class="mission-reward">${m.reward}</div>
+    const pct=Math.min(100,Math.round(m.current/m.target*100)); const done=m.current>=m.target
+    return `<div class="mission-card ${done?'done':''}">
+      <div class="mission-header">
+        <div class="mission-icon">${m.icon}</div>
+        <div class="mission-info">
+          <div class="mission-name">${m.name} ${done?'✅':''}</div>
+          <div class="mission-desc">${m.desc}</div>
         </div>
-        <div class="mission-bar-track"><div class="mission-bar-fill" style="width:${pct}%;${done?'background:var(--green)':''}"></div></div>
-        <div class="mission-status ${done ? 'done' : ''}">${done ? 'Abgeschlossen! 🎉' : `${m.current} / ${m.target}`}</div>
-      </div>`
+        <div class="mission-reward">${m.reward}</div>
+      </div>
+      <div class="mission-bar-track"><div class="mission-bar-fill" style="width:${pct}%;${done?'background:#11f080':''}"></div></div>
+      <div class="mission-status ${done?'done':''}">${done?'Abgeschlossen! 🎉':m.current+' / '+m.target}</div>
+    </div>`
   }).join('')
 }
 
 async function checkBadges(user, profile, entries, earnedIds) {
   const dayNr = calcDayNr(profile.startdatum)
   const toAward = []
-
-  const check = (id, cond) => { if (cond && !earnedIds.has(id)) { toAward.push({ user_id: user.id, badge_id: id }); earnedIds.add(id) } }
-
+  const check = (id, cond) => { if (cond && !earnedIds.has(id)) { toAward.push({ user_id:user.id, badge_id:id }); earnedIds.add(id) } }
   check('erster_schritt', dayNr >= 1)
-  check('eine_woche', (profile.streak_aktuell||0) >= 7 || (profile.streak_rekord||0) >= 7)
+  check('eine_woche', (profile.streak_aktuell||0)>=7||(profile.streak_rekord||0)>=7)
   check('halbzeit', dayNr >= 45)
   check('streak_30', (profile.streak_rekord||0) >= 30)
   check('die_letzten_10', dayNr >= 80)
   check('champion', dayNr >= 90)
-
   if (entries?.length) {
-    const trainDays = entries.filter(e => e.training_gemacht).length
-    const progDays  = entries.filter(e => e.progression).length
-    const proteinHits = entries.filter(e => e.protein_ist_g && profile.protein_ziel_g && e.protein_ist_g >= profile.protein_ziel_g).length
-    const waterHits   = entries.filter(e => e.wasser_ist_l && profile.wasser_ziel_l && e.wasser_ist_l >= profile.wasser_ziel_l).length
-    const stepHits    = entries.filter(e => e.schritte_ist && profile.schritte_ziel && e.schritte_ist >= profile.schritte_ziel).length
-    const sleepHits   = entries.filter(e => e.schlaf_ist_h && e.schlaf_ist_h >= 7).length
-    const perfectDays = entries.filter(e => e.score_von_7 === 7).length
-
+    const trainDays   = entries.filter(e=>e.training_gemacht).length
+    const progDays    = entries.filter(e=>e.progression).length
+    const proteinHits = entries.filter(e=>e.protein_ist_g&&profile.protein_ziel_g&&e.protein_ist_g>=profile.protein_ziel_g).length
+    const waterHits   = entries.filter(e=>e.wasser_ist_l&&profile.wasser_ziel_l&&e.wasser_ist_l>=profile.wasser_ziel_l).length
+    const stepHits    = entries.filter(e=>e.schritte_ist&&profile.schritte_ziel&&e.schritte_ist>=profile.schritte_ziel).length
+    const sleepHits   = entries.filter(e=>e.schlaf_ist_h&&e.schlaf_ist_h>=7).length
     check('proteinmaschine', proteinHits >= 7)
     check('wasserheld', waterHits >= 7)
     check('steps_club', stepHits >= 10)
     check('schlafkoenig', sleepHits >= 5)
     check('progressive', progDays >= 5)
-    check('perfekter_tag', entries.some(e => e.score_von_7 === 7 && e.training_gemacht && e.progression))
+    check('perfekter_tag', entries.some(e=>e.score_von_7===7&&e.training_gemacht&&e.progression))
   }
-
-  if (toAward.length) {
-    await sb.from('user_badges').upsert(toAward, {onConflict:'user_id,badge_id',ignoreDuplicates:true})
-  }
+  if (toAward.length) await sb.from('user_badges').upsert(toAward, {onConflict:'user_id,badge_id',ignoreDuplicates:true})
 }
 
 init()

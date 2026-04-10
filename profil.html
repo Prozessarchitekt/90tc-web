@@ -391,23 +391,31 @@ tailwind.config = {
 </main>
 
 <!-- ── Bottom Nav ── -->
-<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-[#0D0D17]/80 backdrop-blur-[30px] rounded-t-[32px] border-t border-white/5 shadow-[0_-12px_40px_rgba(0,0,0,0.9)]">
-  <a href="dashboard.html" class="flex flex-col items-center justify-center text-slate-500 p-3 hover:text-white transition-all active:scale-90 duration-300">
-    <span class="material-symbols-outlined">home</span>
+<footer class="fixed bottom-0 left-0 right-0 z-50 flex justify-around items-end pt-2"
+        style="height:auto;min-height:64px;padding-bottom:max(12px,env(safe-area-inset-bottom));background:rgba(13,13,20,0.92);backdrop-filter:blur(24px);border-top:1px solid rgba(72,71,82,0.2);">
+  <a href="dashboard.html" class="flex flex-col items-center justify-center gap-0.5 px-3" style="color:#757481;text-decoration:none;min-width:52px;">
+    <span class="material-symbols-outlined" style="font-size:22px;">home</span>
+    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Start</span>
   </a>
-  <a href="essen.html" class="flex flex-col items-center justify-center text-slate-500 p-3 hover:text-white transition-all active:scale-90 duration-300">
-    <span class="material-symbols-outlined">restaurant</span>
+  <a href="essen.html" class="flex flex-col items-center justify-center gap-0.5 px-3" style="color:#757481;text-decoration:none;min-width:52px;">
+    <span class="material-symbols-outlined" style="font-size:22px;">restaurant</span>
+    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Essen</span>
   </a>
-  <a href="training.html" class="flex flex-col items-center justify-center text-slate-500 p-3 hover:text-white transition-all active:scale-90 duration-300">
-    <span class="material-symbols-outlined text-3xl">add_circle</span>
+  <a href="training.html" class="flex flex-col items-center justify-center gap-0.5 px-3 -mt-4" style="text-decoration:none;min-width:52px;">
+    <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#ffc56c,#cb9743);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(255,197,108,0.35);">
+      <span class="material-symbols-outlined" style="font-size:22px;color:#321f00;">fitness_center</span>
+    </div>
+    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#ffc56c;">Training</span>
   </a>
-  <a href="fortschritt.html" class="flex flex-col items-center justify-center text-slate-500 p-3 hover:text-white transition-all active:scale-90 duration-300">
-    <span class="material-symbols-outlined">fitness_center</span>
+  <a href="fortschritt.html" class="flex flex-col items-center justify-center gap-0.5 px-3" style="color:#757481;text-decoration:none;min-width:52px;">
+    <span class="material-symbols-outlined" style="font-size:22px;">query_stats</span>
+    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Stats</span>
   </a>
-  <div class="flex flex-col items-center justify-center bg-gradient-to-tr from-[#F0A500] to-[#FFC56C] text-[#0D0D17] rounded-2xl p-3 shadow-[0_0_20px_rgba(240,165,0,0.4)] active:scale-90 duration-300 ease-out">
-    <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">person</span>
+  <div class="flex flex-col items-center justify-center gap-0.5 px-3" style="min-width:52px;">
+    <span class="material-symbols-outlined" style="font-size:22px;color:#ffc56c;filter:drop-shadow(0 0 6px rgba(255,197,108,0.5));">person</span>
+    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#ffc56c;">Profil</span>
   </div>
-</nav>
+</footer>
 
 </div><!-- #main -->
 

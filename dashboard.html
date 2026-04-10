@@ -106,7 +106,7 @@
 
   <!-- Progress Ring -->
   <section class="flex flex-col items-center gap-3">
-    <div class="relative w-60 h-60 flex items-center justify-center">
+    <div class="relative flex items-center justify-center" style="width:min(224px,58vw);height:min(224px,58vw);">
       <svg class="w-full h-full -rotate-90" viewBox="0 0 256 256">
         <circle cx="128" cy="128" fill="transparent" r="110" stroke="rgba(255,255,255,0.07)" stroke-width="12"/>
         <circle id="ring-arc" class="progress-ring-glow" cx="128" cy="128" fill="transparent" r="110"
@@ -120,7 +120,7 @@
     </div>
 
     <!-- XP Bar -->
-    <div id="xp-bar-wrap" class="w-60" style="display:none">
+    <div id="xp-bar-wrap" style="display:none;width:min(224px,58vw)">
       <div class="flex justify-between text-[10px] text-on-surface-variant font-bold mb-1.5">
         <span id="xp-level-lbl">Level 1</span>
         <span id="xp-val-lbl">0 XP</span>
@@ -228,7 +228,7 @@
 
 <!-- Bottom Nav — consistent across all tabs -->
 <footer class="fixed bottom-0 left-0 right-0 z-50 flex justify-around items-end pb-safe"
-        style="height:72px;background:rgba(13,13,20,0.92);backdrop-filter:blur(24px);border-top:1px solid rgba(72,71,82,0.2);">
+        style="height:auto;min-height:64px;padding-bottom:max(12px,env(safe-area-inset-bottom));background:rgba(13,13,20,0.92);backdrop-filter:blur(24px);border-top:1px solid rgba(72,71,82,0.2);">
 
   <div class="flex flex-col items-center justify-center gap-0.5 px-3 pt-2" style="min-width:56px;">
     <span class="material-symbols-outlined" style="font-size:22px;color:#ffc56c;filter:drop-shadow(0 0 6px rgba(255,197,108,0.5));" aria-hidden="true">home</span>
