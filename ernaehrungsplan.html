@@ -797,7 +797,7 @@ function confirmAdd() {
 }
 
 // Search input Enter key
-document.getElementById('plan-search-input').addEventListener('keydown', e => { if (e.key === 'Enter') doPlanSearch() })
+document.getElementById('plan-search-input').addEventListener('keydown', e => { if (e.key === 'Enter') { e.target.blur(); doPlanSearch() } })
 
 // ── Shared search logic ────────────────────────
 function parseOFFProduct(p) {
