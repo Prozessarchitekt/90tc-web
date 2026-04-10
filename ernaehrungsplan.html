@@ -799,41 +799,59 @@ function confirmAdd() {
 // Search input Enter key
 document.getElementById('plan-search-input').addEventListener('keydown', e => { if (e.key === 'Enter') doPlanSearch() })
 
-// ── Shared search logic (same as essen.html) ───
+// ── Shared search logic ────────────────────────
+function parseOFFProduct(p) {
+  const n = p.nutriments||{}
+  const raw = n['energy-kcal_100g']??n['energy-kcal_value']??n['energy-kcal']??n['energy-kcal_serving']??null
+  const kcal = raw != null ? raw : (n['energy_100g'] ? Math.round(n['energy_100g']/4.184) : null)
+  const name = p.product_name_de||p.product_name||p.generic_name_de||p.generic_name||'—'
+  return { name:name.charAt(0).toUpperCase()+name.slice(1), brand:(p.brands||'').split(',')[0].trim(), image:p.image_small_url||null,
+    kcal100:kcal!=null?Math.round(kcal):null, protein100:n.proteins_100g!=null?Math.round(n.proteins_100g*10)/10:null,
+    fett100:n.fat_100g!=null?Math.round(n.fat_100g*10)/10:null, carbs100:n.carbohydrates_100g!=null?Math.round(n.carbohydrates_100g*10)/10:null }
+}
+
 function rankAndFilter(prods, q) {
-  const parsed = prods
-    .filter(p => p.product_name || p.product_name_de || p.generic_name_de || p.generic_name)
-    .map(p => {
-      const n = p.nutriments||{}
-      const raw = n['energy-kcal_100g']??n['energy-kcal_value']??n['energy-kcal']??null
-      const kcal = raw??(n['energy_100g'] ? Math.round(n['energy_100g']/4.184) : null)
-      const name = (p.product_name_de||p.product_name||p.generic_name_de||p.generic_name||'—')
-      return { name:name.charAt(0).toUpperCase()+name.slice(1), brand:(p.brands||'').split(',')[0].trim(), image:p.image_small_url||null,
-        kcal100:kcal!=null?Math.round(kcal):null, protein100:n.proteins_100g!=null?Math.round(n.proteins_100g*10)/10:null,
-        fett100:n.fat_100g!=null?Math.round(n.fat_100g*10)/10:null, carbs100:n.carbohydrates_100g!=null?Math.round(n.carbohydrates_100g*10)/10:null }
+  return prods
+    .filter(p => p && (p.product_name || p.product_name_de || p.generic_name_de || p.generic_name))
+    .map(parseOFFProduct)
+    .filter(p => p && p.name && p.name !== '—')
+    .sort((a,b) => {
+      const na=(a.name||'').toLowerCase(), nb=(b.name||'').toLowerCase()
+      const aS=na.startsWith(q), bS=nb.startsWith(q)
+      if(aS!==bS) return aS?-1:1
+      const aC=na.includes(q), bC=nb.includes(q)
+      if(aC!==bC) return aC?-1:1
+      return 0
     })
-    .filter(p => p?.kcal100 != null)
-  parsed.sort((a,b) => {
-    const na=(a.name||'').toLowerCase(), nb=(b.name||'').toLowerCase()
-    const aS=na.startsWith(q), bS=nb.startsWith(q)
-    const aC=na.includes(q), bC=nb.includes(q)
-    if(aS!==bS) return aS?-1:1
-    if(aC!==bC) return aC?-1:1
-    return 0
-  })
-  return parsed
 }
 
 async function searchProducts(query) {
   const q = query.trim().toLowerCase()
   const fields = 'product_name,product_name_de,generic_name,generic_name_de,brands,nutriments,image_small_url,code'
+
+  // 1. OFF v2 API — most reliable
+  try {
+    const url = 'https://world.openfoodfacts.org/api/v2/search?' + new URLSearchParams({
+      search_terms: query, fields, page_size: '40', sort_by: 'popularity_key'
+    })
+    const r = await fetch(url, { signal: AbortSignal.timeout(10000) })
+    if (r.ok) {
+      const d = await r.json()
+      const result = rankAndFilter(d.products || [], q)
+      if (result.length) return result
+    }
+  } catch(e) {}
+
+  // 2. v1 CGI fallback
   for (const base of ['https://de.openfoodfacts.org','https://world.openfoodfacts.org']) {
     try {
-      const url = `${base}/cgi/search.pl?` + new URLSearchParams({ search_terms:query, action:'process', json:'1', page_size:'30', fields, sort_by:'popularity' })
+      const url = `${base}/cgi/search.pl?` + new URLSearchParams({ search_terms:query, action:'process', json:'1', page_size:'40', fields })
       const r = await fetch(url, { signal:AbortSignal.timeout(8000) })
-      const d = await r.json()
-      const result = rankAndFilter(d.products||[], q)
-      if (result.length) return result
+      if (r.ok) {
+        const d = await r.json()
+        const result = rankAndFilter(d.products||[], q)
+        if (result.length) return result
+      }
     } catch(e) {}
   }
   return []
