@@ -413,44 +413,42 @@
   </div>
 </div>
 
-<!-- Bottom Nav (consistent across all pages) -->
-<footer class="fixed bottom-0 left-0 right-0 z-50 flex justify-around items-end pb-safe"
-        style="height:auto;min-height:64px;padding-bottom:max(12px,env(safe-area-inset-bottom));background:rgba(13,13,20,0.92);backdrop-filter:blur(24px);border-top:1px solid rgba(72,71,82,0.2);">
-
-  <a href="dashboard.html" class="flex flex-col items-center justify-center gap-0.5 px-3 pt-2"
-     style="color:#757481;text-decoration:none;min-width:56px;">
-    <span class="material-symbols-outlined" style="font-size:22px;">home</span>
-    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Start</span>
-  </a>
-
-  <a href="essen.html" class="flex flex-col items-center justify-center gap-0.5 px-3 pt-2"
-     style="color:#757481;text-decoration:none;min-width:56px;">
-    <span class="material-symbols-outlined" style="font-size:22px;">restaurant</span>
-    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Essen</span>
-  </a>
-
-  <!-- FAB: Training -->
-  <a href="training.html" class="flex flex-col items-center justify-center gap-0.5 px-3 -mt-4"
-     style="text-decoration:none;min-width:56px;">
-    <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#ffc56c,#cb9743);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(255,197,108,0.35);">
-      <span class="material-symbols-outlined" style="font-size:24px;color:#321f00;" aria-hidden="true">fitness_center</span>
-    </div>
-    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#ffc56c;">Training</span>
-  </a>
-
-  <a href="fortschritt.html" class="flex flex-col items-center justify-center gap-0.5 px-3 pt-2"
-     style="color:#757481;text-decoration:none;min-width:56px;">
-    <span class="material-symbols-outlined" style="font-size:22px;">query_stats</span>
-    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Stats</span>
-  </a>
-
-  <a href="profil.html" class="flex flex-col items-center justify-center gap-0.5 px-3 pt-2"
-     style="color:#757481;text-decoration:none;min-width:56px;">
-    <span class="material-symbols-outlined" style="font-size:22px;">person</span>
-    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Profil</span>
-  </a>
-
-</footer>
+<!-- Split-Island Bottom Nav -->
+<div style="position:fixed;bottom:calc(16px + env(safe-area-inset-bottom));left:12px;right:12px;z-index:50;display:flex;align-items:flex-end;justify-content:space-between;gap:10px;pointer-events:none;">
+  <!-- Left island: Start | Training -->
+  <div style="flex:1;display:flex;align-items:center;justify-content:space-around;height:60px;background:rgba(18,17,26,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.07);border-radius:22px;overflow:hidden;pointer-events:auto;">
+    <a href="dashboard.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;padding:8px 4px;color:#757481;">
+      <span class="material-symbols-outlined" style="font-size:22px;">home</span>
+      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Start</span>
+    </a>
+    <div style="width:1px;height:28px;background:rgba(255,255,255,0.07);flex-shrink:0;"></div>
+    <a href="training.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;padding:8px 4px;color:#757481;">
+      <span class="material-symbols-outlined" style="font-size:22px;">fitness_center</span>
+      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Training</span>
+    </a>
+  </div>
+  <!-- Center: Essen FAB -->
+  <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:4px;margin-bottom:6px;pointer-events:auto;">
+    <a href="essen.html" style="text-decoration:none;display:block;">
+      <div style="width:60px;height:60px;border-radius:20px;background:linear-gradient(135deg,#ffc56c,#cb9743);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(255,197,108,0.55);">
+        <span class="material-symbols-outlined" style="font-size:26px;color:#321f00;">restaurant</span>
+      </div>
+    </a>
+    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#ffc56c;">Essen</span>
+  </div>
+  <!-- Right island: Stats | Profil -->
+  <div style="flex:1;display:flex;align-items:center;justify-content:space-around;height:60px;background:rgba(18,17,26,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.07);border-radius:22px;overflow:hidden;pointer-events:auto;">
+    <a href="fortschritt.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;padding:8px 4px;color:#757481;">
+      <span class="material-symbols-outlined" style="font-size:22px;">query_stats</span>
+      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Stats</span>
+    </a>
+    <div style="width:1px;height:28px;background:rgba(255,255,255,0.07);flex-shrink:0;"></div>
+    <a href="profil.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;padding:8px 4px;color:#757481;">
+      <span class="material-symbols-outlined" style="font-size:22px;">person</span>
+      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Profil</span>
+    </a>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js"></script>
