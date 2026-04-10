@@ -68,7 +68,7 @@ tailwind.config = {
 
   /* Toast */
   #toast {
-    position: fixed; bottom: 88px; left: 50%;
+    position: fixed; bottom: calc(180px + env(safe-area-inset-bottom)); left: 50%;
     transform: translateX(-50%) translateY(12px);
     background: #12121a; color: #e4e1ef;
     border: 1px solid rgba(255,255,255,.12);
@@ -185,7 +185,7 @@ tailwind.config = {
   <div class="absolute bottom-0 left-0 bg-gradient-to-r from-transparent via-amber-500/20 to-transparent h-[1px] w-full"></div>
 </nav>
 
-<main class="px-4 max-w-lg mx-auto space-y-4 relative" style="overflow-x:clip;padding-top:calc(max(16px,env(safe-area-inset-top)) + 64px);padding-bottom:calc(160px + env(safe-area-inset-bottom));">
+<main class="px-4 max-w-lg mx-auto space-y-4 relative" style="overflow-x:clip;padding-top:calc(max(16px,env(safe-area-inset-top)) + 64px);padding-bottom:calc(200px + env(safe-area-inset-bottom));">
 
   <!-- ── 1. HEADER ── -->
   <header class="relative">
@@ -322,7 +322,7 @@ tailwind.config = {
 </main>
 
 <!-- ── Bottom Search Bar ── -->
-<div id="bottom-search-bar" style="position:fixed;left:0;right:0;z-index:40;padding:10px 16px;background:rgba(3,3,10,0.97);backdrop-filter:blur(24px);border-top:1px solid rgba(72,71,82,0.18);bottom:calc(64px + env(safe-area-inset-bottom));">
+<div id="bottom-search-bar" style="position:fixed;left:0;right:0;z-index:40;padding:10px 16px;background:rgba(3,3,10,0.97);backdrop-filter:blur(24px);border-top:1px solid rgba(72,71,82,0.18);bottom:calc(86px + env(safe-area-inset-bottom));">
   <div style="max-width:512px;margin:0 auto;display:flex;gap:10px;align-items:center;">
     <!-- Search input -->
     <div style="flex:1;display:flex;align-items:center;background:rgba(18,18,26,0.95);border:1.5px solid rgba(72,71,82,0.4);border-radius:18px;height:52px;overflow:hidden;">
@@ -343,42 +343,44 @@ tailwind.config = {
   </div>
 </div>
 
-<!-- ── Bottom Nav ── -->
-<footer class="fixed bottom-0 left-0 right-0 z-50 flex justify-around items-end pb-safe"
-        style="height:auto;min-height:64px;padding-bottom:max(12px,env(safe-area-inset-bottom));background:rgba(13,13,20,0.92);backdrop-filter:blur(24px);border-top:1px solid rgba(72,71,82,0.2);">
+<!-- ── Bottom Nav (Split Island) ── -->
+<div style="position:fixed;bottom:calc(16px + env(safe-area-inset-bottom));left:12px;right:12px;z-index:50;display:flex;align-items:flex-end;justify-content:space-between;gap:10px;pointer-events:none;">
 
-  <a href="dashboard.html" class="flex flex-col items-center justify-center gap-0.5 px-3 pt-2"
-     style="color:#757481;text-decoration:none;min-width:56px;">
-    <span class="material-symbols-outlined" style="font-size:22px;">home</span>
-    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Start</span>
-  </a>
-
-  <div class="flex flex-col items-center justify-center gap-0.5 px-3 pt-2" style="min-width:56px;">
-    <span class="material-symbols-outlined" style="font-size:22px;color:#ffc56c;filter:drop-shadow(0 0 6px rgba(255,197,108,0.5));" aria-hidden="true" aria-label="Aktiv: Ernährung">restaurant</span>
-    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#ffc56c;">Essen</span>
+  <!-- Left Island: Start + Essen -->
+  <div style="flex:1;display:flex;height:60px;background:rgba(11,11,19,0.97);backdrop-filter:blur(32px);border:1px solid rgba(255,255,255,0.07);border-radius:22px;box-shadow:0 8px 40px rgba(0,0,0,0.8),inset 0 1px 0 rgba(255,255,255,0.055);overflow:hidden;pointer-events:auto;">
+    <a href="dashboard.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-decoration:none;-webkit-tap-highlight-color:transparent;gap:2px;color:#383747;">
+      <span class="material-symbols-outlined" style="font-size:21px;">home</span>
+      <span style="font-size:7.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;font-family:'Inter',sans-serif;">Start</span>
+    </a>
+    <div style="width:1px;background:rgba(255,255,255,0.045);margin:12px 0;flex-shrink:0;"></div>
+    <!-- Essen — AKTIV -->
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:rgba(255,197,108,0.08);">
+      <span class="material-symbols-outlined" style="font-size:21px;color:#ffc56c;font-variation-settings:'FILL' 1;filter:drop-shadow(0 0 7px rgba(255,197,108,0.45));">restaurant</span>
+      <span style="font-size:7.5px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:#ffc56c;font-family:'Inter',sans-serif;">Essen</span>
+    </div>
   </div>
 
-  <a href="training.html" class="flex flex-col items-center justify-center gap-0.5 px-3 -mt-4"
-     style="text-decoration:none;min-width:56px;">
-    <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#ffc56c,#cb9743);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(255,197,108,0.35);">
-      <span class="material-symbols-outlined" style="font-size:24px;color:#321f00;" aria-hidden="true">fitness_center</span>
+  <!-- Center Training FAB -->
+  <a href="training.html" style="flex:0 0 auto;pointer-events:auto;text-decoration:none;-webkit-tap-highlight-color:transparent;margin-bottom:6px;">
+    <div style="width:60px;height:60px;border-radius:20px;background:linear-gradient(150deg,#ffe07a 0%,#c07800 100%);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(255,197,108,0.52),0 2px 12px rgba(0,0,0,0.75),inset 0 1px 0 rgba(255,242,160,0.32);border:1px solid rgba(255,210,60,0.22);">
+      <span class="material-symbols-outlined" style="font-size:28px;color:#190d00;font-variation-settings:'FILL' 1;">fitness_center</span>
     </div>
-    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#ffc56c;">Training</span>
   </a>
 
-  <a href="fortschritt.html" class="flex flex-col items-center justify-center gap-0.5 px-3 pt-2"
-     style="color:#757481;text-decoration:none;min-width:56px;">
-    <span class="material-symbols-outlined" style="font-size:22px;">query_stats</span>
-    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Stats</span>
-  </a>
+  <!-- Right Island: Stats + Profil -->
+  <div style="flex:1;display:flex;height:60px;background:rgba(11,11,19,0.97);backdrop-filter:blur(32px);border:1px solid rgba(255,255,255,0.07);border-radius:22px;box-shadow:0 8px 40px rgba(0,0,0,0.8),inset 0 1px 0 rgba(255,255,255,0.055);overflow:hidden;pointer-events:auto;">
+    <a href="fortschritt.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-decoration:none;-webkit-tap-highlight-color:transparent;gap:2px;color:#383747;">
+      <span class="material-symbols-outlined" style="font-size:21px;">query_stats</span>
+      <span style="font-size:7.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;font-family:'Inter',sans-serif;">Stats</span>
+    </a>
+    <div style="width:1px;background:rgba(255,255,255,0.045);margin:12px 0;flex-shrink:0;"></div>
+    <a href="profil.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-decoration:none;-webkit-tap-highlight-color:transparent;gap:2px;color:#383747;">
+      <span class="material-symbols-outlined" style="font-size:21px;">person</span>
+      <span style="font-size:7.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;font-family:'Inter',sans-serif;">Profil</span>
+    </a>
+  </div>
 
-  <a href="profil.html" class="flex flex-col items-center justify-center gap-0.5 px-3 pt-2"
-     style="color:#757481;text-decoration:none;min-width:56px;">
-    <span class="material-symbols-outlined" style="font-size:22px;">person</span>
-    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Profil</span>
-  </a>
-
-</footer>
+</div>
 
 </div><!-- #main -->
 
@@ -1007,7 +1009,7 @@ async function syncTotals() {
 
 async function transferToCheckin() {
   await syncTotals(); showToast('Makros übertragen ✓')
-  setTimeout(() => window.location.href = 'checkin.html', 900)
+  setTimeout(() => window.location.href = 'checkin.html?mode=abend', 900)
 }
 
 // ── Plan Picker ────────────────────────────────────────
