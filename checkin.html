@@ -1,281 +1,583 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>90TC — Check-in</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#E8A317">
+  <meta name="theme-color" content="#ffc56c">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="90TC">
   <link rel="apple-touch-icon" href="icon.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Space+Grotesk:wght@900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            'background':              '#03030A',
+            'surface':                 '#0d0d17',
+            'surface-container':       '#191825',
+            'surface-container-low':   '#12121d',
+            'surface-container-high':  '#1f1e2c',
+            'surface-container-highest':'#252433',
+            'on-surface':              '#efecfb',
+            'on-surface-variant':      '#aca9b7',
+            'outline':                 '#757481',
+            'outline-variant':         '#484752',
+            'primary':                 '#ffc56c',
+            'primary-container':       '#cb9743',
+            'on-primary-container':    '#321f00',
+            'secondary':               '#89ceff',
+            'tertiary-dim':            '#11f080',
+            'error':                   '#ff7351',
+          },
+          fontFamily: { headline:['Space Grotesk'], body:['Inter'], label:['Inter'] },
+          borderRadius: { DEFAULT:'1rem', lg:'2rem', xl:'3rem', full:'9999px' },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    :root {
+      --accent:#ffc56c; --accent-dim:rgba(255,197,108,0.08); --accent-border:rgba(255,197,108,0.18);
+      --gold:#ffc56c; --bg:#03030A; --card-bg:#191825;
+      --text:#efecfb; --text2:#aca9b7; --muted:#757481;
+      --green2:#11f080; --green:rgba(17,240,128,0.15); --danger:#ff7351;
+    }
+    body { background:#03030A; color:#efecfb; font-family:'Inter',sans-serif; min-height:100dvh; }
+
+    .grainy-overlay {
+      pointer-events:none; position:fixed; inset:0; z-index:9999; opacity:0.035;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size:180px 180px;
+    }
+
+    /* Splash */
+    .splash { position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#03030A;z-index:200; }
+    .spinner { width:32px;height:32px;border:3px solid rgba(255,197,108,0.15);border-top-color:#ffc56c;border-radius:50%;animation:spin .7s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* Page */
+    #main { padding:max(84px,calc(env(safe-area-inset-top)+76px)) 16px 120px; max-width:640px; margin:0 auto; }
+
+    /* Glass card */
+    .stitch-card {
+      background:rgba(25,24,37,0.7); backdrop-filter:blur(16px);
+      border:1.5px solid rgba(72,71,82,0.35); border-radius:20px;
+      padding:20px; margin-bottom:16px; transition:border-color .3s;
+    }
+    .stitch-card-header {
+      display:flex; align-items:center; gap:12px; margin-bottom:20px;
+    }
+    .stitch-card-icon {
+      width:42px; height:42px; border-radius:14px; display:flex; align-items:center; justify-content:center;
+      font-size:20px; flex-shrink:0;
+    }
+    .stitch-card-title { font-family:'Space Grotesk',sans-serif; font-size:18px; font-weight:900; font-style:italic; text-transform:uppercase; letter-spacing:-0.02em; }
+    .stitch-card-sub { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:#aca9b7; margin-top:1px; }
+
+    /* Section title inside card */
+    .field-section {
+      font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em;
+      color:#aca9b7; margin:16px 0 8px; display:flex; align-items:center; gap:6px;
+    }
+    .field-section .material-symbols-outlined { font-size:14px; color:#ffc56c; }
+
+    /* Input grid */
+    .input-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .input-group { display:flex; flex-direction:column; gap:4px; }
+    .input-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.09em; color:#aca9b7; }
+    .input-with-unit { position:relative; }
+    .input-with-unit input, input[type="text"], input[type="number"], textarea {
+      background:#0d0d17; border:1px solid rgba(72,71,82,0.5); border-radius:12px;
+      color:#efecfb; font-family:'Space Grotesk',sans-serif; font-size:18px; font-weight:900; font-style:italic;
+      padding:11px 36px 11px 14px; width:100%; outline:none; transition:border-color .2s;
+    }
+    input[type="text"], textarea {
+      font-family:'Inter',sans-serif; font-size:14px; font-weight:500; font-style:normal;
+      padding:11px 14px;
+    }
+    textarea { resize:none; border-radius:12px; }
+    input:focus, textarea:focus { border-color:rgba(255,197,108,0.5); box-shadow:0 0 0 3px rgba(255,197,108,0.07); }
+    input::placeholder, textarea::placeholder { color:#484752; font-style:normal; }
+    .input-unit { position:absolute; right:12px; top:50%; transform:translateY(-50%); font-size:11px; font-weight:700; color:#757481; pointer-events:none; }
+
+    /* Energy grid */
+    .energie-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+    .energie-btn {
+      background:#12121d; border:1.5px solid rgba(72,71,82,0.4); border-radius:14px;
+      padding:10px 4px; display:flex; flex-direction:column; align-items:center; gap:4px;
+      cursor:pointer; transition:all .15s; font-family:'Inter',sans-serif;
+    }
+    .energie-btn:active { transform:scale(0.96); }
+    .energie-btn.active { background:rgba(255,197,108,0.1); border-color:#ffc56c; box-shadow:0 0 12px rgba(255,197,108,0.15); }
+    .energie-emoji { font-size:22px; }
+    .energie-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:#aca9b7; }
+    .energie-btn.active .energie-label { color:#ffc56c; }
+
+    /* Goals list */
+    .ziele-list { display:flex; flex-direction:column; gap:8px; }
+    .ziel-row { display:flex; align-items:center; gap:10px; }
+    .ziel-nr {
+      width:26px; height:26px; border-radius:50%; background:rgba(255,197,108,0.15);
+      border:1px solid rgba(255,197,108,0.3); color:#ffc56c; font-size:12px; font-weight:900;
+      font-family:'Space Grotesk',sans-serif; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    }
+    .ziel-row input { flex:1; }
+
+    /* Ja/Nein toggle */
+    .ja-nein-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .ja-btn, .nein-btn {
+      padding:12px; border-radius:14px; font-family:'Space Grotesk',sans-serif;
+      font-size:13px; font-weight:900; font-style:italic; text-transform:uppercase; letter-spacing:0.04em;
+      cursor:pointer; transition:all .15s; border:1.5px solid rgba(72,71,82,0.4); background:#12121d; color:#aca9b7;
+    }
+    .ja-btn.active { background:rgba(17,240,128,0.1); border-color:#11f080; color:#11f080; box-shadow:0 0 12px rgba(17,240,128,0.12); }
+    .nein-btn.active { background:rgba(255,115,81,0.1); border-color:#ff7351; color:#ff7351; box-shadow:0 0 12px rgba(255,115,81,0.1); }
+    .ja-btn:active, .nein-btn:active { transform:scale(0.97); }
+
+    /* Stimmung row */
+    .stimmung-row { display:flex; gap:8px; justify-content:space-between; }
+    .stimmung-btn {
+      flex:1; padding:10px 4px; border-radius:14px; font-size:22px;
+      background:#12121d; border:1.5px solid rgba(72,71,82,0.4);
+      cursor:pointer; transition:all .15s; display:flex; align-items:center; justify-content:center;
+    }
+    .stimmung-btn.active { background:rgba(255,197,108,0.1); border-color:#ffc56c; box-shadow:0 0 10px rgba(255,197,108,0.15); transform:scale(1.1); }
+    .stimmung-btn:active { transform:scale(0.95); }
+
+    /* Körpergefühl grid */
+    .koerper-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; }
+    .koerper-btn {
+      background:#12121d; border:1.5px solid rgba(72,71,82,0.4); border-radius:12px;
+      padding:8px 4px; display:flex; flex-direction:column; align-items:center; gap:3px;
+      cursor:pointer; transition:all .15s;
+    }
+    .koerper-btn.active { background:rgba(255,197,108,0.1); border-color:#ffc56c; box-shadow:0 0 10px rgba(255,197,108,0.12); }
+    .koerper-btn:active { transform:scale(0.95); }
+    .koerper-emoji { font-size:18px; }
+    .koerper-label { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:#757481; text-align:center; line-height:1.2; }
+    .koerper-btn.active .koerper-label { color:#ffc56c; }
+
+    /* Done banner */
+    #done-banner {
+      background:rgba(17,240,128,0.07); border:1px solid rgba(17,240,128,0.2);
+      border-radius:14px; padding:12px 16px; font-size:13px; font-weight:600;
+      color:#11f080; margin-bottom:16px; display:flex; align-items:center; gap:10px;
+    }
+
+    /* Gold gradient button */
+    .btn-save-gold {
+      width:100%; padding:18px; border-radius:16px; border:none;
+      background:linear-gradient(135deg,#ffc56c 0%,#cb9743 100%);
+      color:#321f00; font-family:'Space Grotesk',sans-serif; font-size:16px; font-weight:900;
+      font-style:italic; text-transform:uppercase; letter-spacing:0.04em; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; gap:10px;
+      box-shadow:0 12px 32px rgba(255,197,108,0.22); transition:transform .15s,box-shadow .15s;
+      margin-top:20px;
+    }
+    .btn-save-gold:active { transform:scale(0.98); box-shadow:0 6px 16px rgba(255,197,108,0.15); }
+    .btn-save-gold:disabled { opacity:0.6; cursor:not-allowed; transform:none; }
+
+    /* Score overlay */
+    .overlay {
+      position:fixed; inset:0; z-index:500;
+      background:rgba(0,0,0,0.85); backdrop-filter:blur(20px);
+      display:none; align-items:flex-end; justify-content:center;
+    }
+    .overlay.flex { display:flex; }
+    .score-popup {
+      width:100%; max-height:92vh; overflow-y:auto;
+      background:linear-gradient(180deg,#191825 0%,#0d0d17 100%);
+      border:1.5px solid rgba(255,197,108,0.2); border-bottom:none;
+      border-radius:28px 28px 0 0;
+      padding:0 24px max(28px,env(safe-area-inset-bottom));
+    }
+    .score-handle-wrap { padding:14px; display:flex; justify-content:center; }
+    .score-handle { width:40px; height:4px; background:rgba(255,197,108,0.3); border-radius:2px; }
+    .score-emoji { font-size:56px; display:block; text-align:center; margin-bottom:8px; }
+    .score-title { font-family:'Space Grotesk',sans-serif; font-size:26px; font-weight:900; font-style:italic; text-transform:uppercase; text-align:center; letter-spacing:-0.02em; margin-bottom:6px; }
+    .score-msg { font-size:14px; color:#aca9b7; text-align:center; margin-bottom:20px; font-weight:600; }
+    .score-ring-wrap { display:flex; justify-content:center; align-items:center; margin-bottom:12px; }
+    .score-nr { font-family:'Space Grotesk',sans-serif; font-size:64px; font-weight:900; font-style:italic; line-height:1; text-align:center; }
+    .score-of { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#aca9b7; text-align:center; margin-top:4px; }
+    .score-xp {
+      background:rgba(255,197,108,0.1); border:1px solid rgba(255,197,108,0.25);
+      border-radius:40px; padding:8px 20px; text-align:center;
+      font-family:'Space Grotesk',sans-serif; font-size:16px; font-weight:900; color:#ffc56c;
+      font-style:italic; letter-spacing:0.02em; margin:0 auto 20px; display:inline-block; width:auto;
+    }
+    .score-xp-wrap { text-align:center; margin-bottom:20px; }
+    .score-factors { display:flex; flex-direction:column; gap:6px; margin-bottom:20px; }
+    .factor-item {
+      display:flex; align-items:center; gap:10px; padding:10px 14px;
+      background:#12121d; border-radius:12px; font-size:13px; font-weight:600; color:#aca9b7;
+    }
+    .factor-icon { font-size:16px; flex-shrink:0; }
+
+    /* Reflexion section */
+    .reflexion-section {
+      border-top:1px solid rgba(72,71,82,0.3); margin-top:20px; padding-top:20px;
+    }
+    .reflexion-header { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+    .reflexion-q { font-size:12px; font-weight:700; color:#aca9b7; display:block; margin-bottom:6px; }
+
+    /* No scrollbar */
+    .no-scrollbar::-webkit-scrollbar { display:none; }
+    .no-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
+
+    .bnav { display:none !important; }
+  </style>
 </head>
-<body>
+<body class="dark font-body antialiased">
+
+<div class="grainy-overlay"></div>
+
+<!-- Top Nav -->
+<header class="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 py-4"
+        style="background:rgba(3,3,10,0.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(72,71,82,0.2);">
+  <a href="dashboard.html" class="flex items-center justify-center w-10 h-10 rounded-full"
+     style="background:rgba(255,197,108,0.08);border:1px solid rgba(255,197,108,0.15);text-decoration:none;">
+    <span class="material-symbols-outlined" style="font-size:20px;color:#ffc56c;">arrow_back</span>
+  </a>
+  <div class="text-center">
+    <p id="page-title" class="font-headline italic font-black text-xl uppercase tracking-tight" style="color:#ffc56c;letter-spacing:-0.02em;">CHECK-IN</p>
+    <p id="page-sub" class="text-[10px] font-bold uppercase tracking-widest" style="color:#aca9b7;">Tag ? von 90</p>
+  </div>
+  <div class="w-10 h-10"></div>
+</header>
+
 <div id="app">
   <div class="splash" id="loading"><div class="spinner"></div></div>
-  <div id="main" style="display:none">
-    <div class="page">
 
-      <!-- Header -->
-      <div class="page-header">
-        <a href="dashboard.html" class="page-back">←</a>
-        <div>
-          <div class="page-title" id="page-title">Check-in</div>
-          <div class="page-subtitle" id="page-sub">Tag ? von 90</div>
-        </div>
-        <div style="width:40px"></div>
-      </div>
+  <div id="main" class="no-scrollbar" style="display:none;">
 
-      <!-- Already done banner -->
-      <div id="done-banner" class="msg-success mb-12" style="display:none">
-        ✓ Heute bereits eingecheckt — du kannst anpassen & neu speichern.
-      </div>
-
-      <!-- ☀️ MORGEN SECTION -->
-      <div class="checkin-section" id="morgen-section">
-        <div class="checkin-section-header">
-          <span class="checkin-section-icon">☀️</span>
-          <div>
-            <div class="checkin-section-title">Morgen-Check-in</div>
-            <div class="checkin-section-sub">Körper · Energie · Tagesziele</div>
-          </div>
-        </div>
-
-        <!-- Gewicht & Schlaf -->
-        <div class="field-group">
-          <div class="input-row">
-            <div class="input-group">
-              <label class="input-label">Gewicht</label>
-              <div class="input-with-unit">
-                <input type="number" id="gewicht" placeholder="80.5" step="0.1" min="30" max="300">
-                <span class="input-unit">kg</span>
-              </div>
-            </div>
-            <div class="input-group">
-              <label class="input-label">Schlaf</label>
-              <div class="input-with-unit">
-                <input type="number" id="schlaf" placeholder="7.5" step="0.5" min="0" max="24">
-                <span class="input-unit">h</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Energie -->
-        <div class="field-group">
-          <label class="field-label">Energielevel heute</label>
-          <div class="energie-grid">
-            <button class="energie-btn" onclick="setEnergie(1,this)">
-              <span class="energie-emoji">😴</span>
-              <span class="energie-label">Müde</span>
-            </button>
-            <button class="energie-btn" onclick="setEnergie(2,this)">
-              <span class="energie-emoji">😐</span>
-              <span class="energie-label">Ok</span>
-            </button>
-            <button class="energie-btn" onclick="setEnergie(3,this)">
-              <span class="energie-emoji">⚡</span>
-              <span class="energie-label">Gut</span>
-            </button>
-            <button class="energie-btn" onclick="setEnergie(4,this)">
-              <span class="energie-emoji">🚀</span>
-              <span class="energie-label">Top!</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Tages-Intention -->
-        <div class="field-group">
-          <label class="field-label">Meine Intention für heute</label>
-          <input type="text" id="intention" placeholder="Ich bin heute..." maxlength="100">
-        </div>
-
-        <!-- 3 Tagesziele -->
-        <div class="field-group">
-          <label class="field-label">3 Dinge, die ich heute umsetze</label>
-          <div class="ziele-list">
-            <div class="ziel-row"><div class="ziel-nr">1</div><input type="text" id="z1" placeholder="Ziel 1..."></div>
-            <div class="ziel-row"><div class="ziel-nr">2</div><input type="text" id="z2" placeholder="Ziel 2..."></div>
-            <div class="ziel-row"><div class="ziel-nr">3</div><input type="text" id="z3" placeholder="Ziel 3..."></div>
-          </div>
-        </div>
-
-        <button class="btn btn-primary" onclick="saveMorgen()" id="btn-morgen">
-          ☀️ Morgen-Check-in speichern (+20 XP)
-        </button>
-      </div>
-
-      <!-- 🌙 ABEND SECTION -->
-      <div class="checkin-section" id="abend-section">
-        <div class="checkin-section-header">
-          <span class="checkin-section-icon">🌙</span>
-          <div>
-            <div class="checkin-section-title">Abend-Check-in</div>
-            <div class="checkin-section-sub">Ernährung · Training · Reflexion</div>
-          </div>
-        </div>
-
-        <!-- Kalorien & Makros -->
-        <div class="field-group">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-            <label class="field-label" style="margin-bottom:0">Ernährung heute</label>
-            <a href="essen.html" style="font-size:12px;color:var(--accent);text-decoration:none;background:rgba(232,163,23,0.12);padding:4px 10px;border-radius:20px;font-weight:600">🍽️ Tracker öffnen</a>
-          </div>
-          <div class="input-row">
-            <div class="input-group">
-              <label class="input-label">Kalorien</label>
-              <div class="input-with-unit">
-                <input type="number" id="kalorien" placeholder="2500" min="0" max="15000">
-                <span class="input-unit">kcal</span>
-              </div>
-            </div>
-            <div class="input-group">
-              <label class="input-label">Protein</label>
-              <div class="input-with-unit">
-                <input type="number" id="protein" placeholder="160" min="0" max="999">
-                <span class="input-unit">g</span>
-              </div>
-            </div>
-          </div>
-          <div class="input-row" style="margin-top:10px">
-            <div class="input-group">
-              <label class="input-label">Fett</label>
-              <div class="input-with-unit">
-                <input type="number" id="fett" placeholder="70" min="0" max="999">
-                <span class="input-unit">g</span>
-              </div>
-            </div>
-            <div class="input-group">
-              <label class="input-label">Carbs</label>
-              <div class="input-with-unit">
-                <input type="number" id="carbs" placeholder="280" min="0" max="999">
-                <span class="input-unit">g</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Wasser & Schritte -->
-        <div class="field-group">
-          <div class="input-row">
-            <div class="input-group">
-              <label class="input-label">Wasser</label>
-              <div class="input-with-unit">
-                <input type="number" id="wasser" placeholder="3.5" step="0.1" min="0" max="20">
-                <span class="input-unit">L</span>
-              </div>
-            </div>
-            <div class="input-group">
-              <label class="input-label">Schritte</label>
-              <input type="number" id="schritte" placeholder="10000" min="0" max="100000">
-            </div>
-          </div>
-        </div>
-
-        <!-- Training -->
-        <div class="field-group">
-          <label class="field-label">Training heute?</label>
-          <div class="ja-nein-row">
-            <button class="ja-btn" id="training-ja" onclick="setTraining(true)">✓ Ja</button>
-            <button class="nein-btn" id="training-nein" onclick="setTraining(false)">✗ Nein</button>
-          </div>
-        </div>
-
-        <!-- Progression (zeigt nur wenn Training = Ja) -->
-        <div class="field-group" id="prog-group" style="display:none">
-          <label class="field-label">Progression erzielt? (PR, mehr Gewicht, mehr Wdh.)</label>
-          <div class="ja-nein-row">
-            <button class="ja-btn" id="prog-ja" onclick="setProgression(true)">📈 Ja!</button>
-            <button class="nein-btn" id="prog-nein" onclick="setProgression(false)">Nicht heute</button>
-          </div>
-        </div>
-
-        <!-- Stimmung -->
-        <div class="field-group">
-          <label class="field-label">Stimmung heute</label>
-          <div class="stimmung-row">
-            <button class="stimmung-btn" onclick="setStimmung(1,this)">😞</button>
-            <button class="stimmung-btn" onclick="setStimmung(2,this)">😕</button>
-            <button class="stimmung-btn" onclick="setStimmung(3,this)">😐</button>
-            <button class="stimmung-btn" onclick="setStimmung(4,this)">🙂</button>
-            <button class="stimmung-btn" onclick="setStimmung(5,this)">😄</button>
-          </div>
-        </div>
-
-        <!-- Körpergefühl -->
-        <div class="field-group">
-          <label class="field-label">Körpergefühl heute</label>
-          <div class="koerper-grid">
-            <button class="koerper-btn" onclick="setKoerper(1,this)"><span class="koerper-emoji">😣</span><span class="koerper-label">Sehr schlecht</span></button>
-            <button class="koerper-btn" onclick="setKoerper(2,this)"><span class="koerper-emoji">😕</span><span class="koerper-label">Schlecht</span></button>
-            <button class="koerper-btn" onclick="setKoerper(3,this)"><span class="koerper-emoji">😐</span><span class="koerper-label">Ok</span></button>
-            <button class="koerper-btn" onclick="setKoerper(4,this)"><span class="koerper-emoji">💪</span><span class="koerper-label">Gut</span></button>
-            <button class="koerper-btn" onclick="setKoerper(5,this)"><span class="koerper-emoji">🚀</span><span class="koerper-label">Sehr gut</span></button>
-          </div>
-        </div>
-
-        <!-- 3 gute Dinge -->
-        <div class="field-group">
-          <label class="field-label">3 Dinge, die heute gut liefen</label>
-          <div class="ziele-list">
-            <div class="ziel-row"><div class="ziel-nr" style="background:var(--green)">1</div><input type="text" id="g1" placeholder="Was lief gut?"></div>
-            <div class="ziel-row"><div class="ziel-nr" style="background:var(--green)">2</div><input type="text" id="g2" placeholder="Was lief gut?"></div>
-            <div class="ziel-row"><div class="ziel-nr" style="background:var(--green)">3</div><input type="text" id="g3" placeholder="Was lief gut?"></div>
-          </div>
-        </div>
-
-        <!-- Wöchentliche Reflexion (nur Sonntags) -->
-        <div class="reflexion-section" id="reflexion-section" style="display:none">
-          <div class="checkin-section-header">
-            <span class="checkin-section-icon">🪞</span>
-            <div>
-              <div class="checkin-section-title">Wöchentliche Reflexion</div>
-              <div class="checkin-section-sub">Ende der Woche — kurz innehalten</div>
-            </div>
-          </div>
-          <div class="field-group">
-            <label class="reflexion-q">Was lief diese Woche richtig gut?</label>
-            <textarea id="ref-gut" placeholder="z.B. Ich habe alle Trainings absolviert..." rows="2"></textarea>
-          </div>
-          <div class="field-group">
-            <label class="reflexion-q">Was war schwierig oder frustrierend?</label>
-            <textarea id="ref-schwer" placeholder="z.B. Die Ernährung am Wochenende..." rows="2"></textarea>
-          </div>
-          <div class="field-group">
-            <label class="reflexion-q">Was ändere ich nächste Woche?</label>
-            <textarea id="ref-aenderung" placeholder="z.B. Ich bereite mein Essen vor..." rows="2"></textarea>
-          </div>
-        </div>
-
-        <button class="btn btn-primary" onclick="saveAbend()" id="btn-abend">
-          🌙 Abend-Check-in speichern (+30 XP)
-        </button>
-      </div>
-
-      <div style="height:32px"></div>
+    <!-- Done banner -->
+    <div id="done-banner" style="display:none;">
+      <span class="material-symbols-outlined" style="font-size:18px;flex-shrink:0;">check_circle</span>
+      Heute bereits eingecheckt — du kannst anpassen &amp; neu speichern.
     </div>
+
+    <!-- ☀️ MORGEN SECTION -->
+    <div class="stitch-card" id="morgen-section">
+      <div class="stitch-card-header">
+        <div class="stitch-card-icon" style="background:rgba(255,197,108,0.1);border:1px solid rgba(255,197,108,0.2);">☀️</div>
+        <div>
+          <div class="stitch-card-title">Morgen</div>
+          <div class="stitch-card-sub">Körper · Energie · Tagesziele</div>
+        </div>
+      </div>
+
+      <!-- Gewicht & Schlaf -->
+      <div class="field-section">
+        <span class="material-symbols-outlined">monitor_weight</span>
+        Körper
+      </div>
+      <div class="input-row">
+        <div class="input-group">
+          <label class="input-label">Gewicht</label>
+          <div class="input-with-unit">
+            <input type="number" id="gewicht" placeholder="80.5" step="0.1" min="30" max="300">
+            <span class="input-unit">kg</span>
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Schlaf</label>
+          <div class="input-with-unit">
+            <input type="number" id="schlaf" placeholder="7.5" step="0.5" min="0" max="24">
+            <span class="input-unit">h</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Energie -->
+      <div class="field-section">
+        <span class="material-symbols-outlined">bolt</span>
+        Energielevel heute
+      </div>
+      <div class="energie-grid">
+        <button class="energie-btn" onclick="setEnergie(1,this)">
+          <span class="energie-emoji">😴</span>
+          <span class="energie-label">Müde</span>
+        </button>
+        <button class="energie-btn" onclick="setEnergie(2,this)">
+          <span class="energie-emoji">😐</span>
+          <span class="energie-label">Ok</span>
+        </button>
+        <button class="energie-btn" onclick="setEnergie(3,this)">
+          <span class="energie-emoji">⚡</span>
+          <span class="energie-label">Gut</span>
+        </button>
+        <button class="energie-btn" onclick="setEnergie(4,this)">
+          <span class="energie-emoji">🚀</span>
+          <span class="energie-label">Top!</span>
+        </button>
+      </div>
+
+      <!-- Intention -->
+      <div class="field-section">
+        <span class="material-symbols-outlined">flag</span>
+        Meine Intention für heute
+      </div>
+      <input type="text" id="intention" placeholder="Ich bin heute…" maxlength="100" style="width:100%;">
+
+      <!-- 3 Ziele -->
+      <div class="field-section">
+        <span class="material-symbols-outlined">checklist</span>
+        3 Dinge, die ich heute umsetze
+      </div>
+      <div class="ziele-list">
+        <div class="ziel-row"><div class="ziel-nr">1</div><input type="text" id="z1" placeholder="Ziel 1…"></div>
+        <div class="ziel-row"><div class="ziel-nr">2</div><input type="text" id="z2" placeholder="Ziel 2…"></div>
+        <div class="ziel-row"><div class="ziel-nr">3</div><input type="text" id="z3" placeholder="Ziel 3…"></div>
+      </div>
+
+      <button class="btn-save-gold" onclick="saveMorgen()" id="btn-morgen">
+        <span class="material-symbols-outlined" style="font-size:20px;">wb_sunny</span>
+        <span>Morgen-Check-in (+20 XP)</span>
+      </button>
+    </div>
+
+    <!-- 🌙 ABEND SECTION -->
+    <div class="stitch-card" id="abend-section">
+      <div class="stitch-card-header">
+        <div class="stitch-card-icon" style="background:rgba(137,206,255,0.1);border:1px solid rgba(137,206,255,0.2);">🌙</div>
+        <div>
+          <div class="stitch-card-title">Abend</div>
+          <div class="stitch-card-sub">Ernährung · Training · Reflexion</div>
+        </div>
+      </div>
+
+      <!-- Ernährung -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div class="field-section" style="margin:0;">
+          <span class="material-symbols-outlined">restaurant</span>
+          Ernährung heute
+        </div>
+        <a href="essen.html" style="font-size:11px;font-weight:700;color:#ffc56c;text-decoration:none;background:rgba(255,197,108,0.08);border:1px solid rgba(255,197,108,0.2);padding:5px 10px;border-radius:20px;display:flex;align-items:center;gap:4px;">
+          <span class="material-symbols-outlined" style="font-size:14px;">open_in_new</span>Tracker
+        </a>
+      </div>
+      <div class="input-row" style="margin-bottom:10px;">
+        <div class="input-group">
+          <label class="input-label">Kalorien</label>
+          <div class="input-with-unit">
+            <input type="number" id="kalorien" placeholder="2500" min="0" max="15000">
+            <span class="input-unit">kcal</span>
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Protein</label>
+          <div class="input-with-unit">
+            <input type="number" id="protein" placeholder="160" min="0" max="999">
+            <span class="input-unit">g</span>
+          </div>
+        </div>
+      </div>
+      <div class="input-row">
+        <div class="input-group">
+          <label class="input-label">Fett</label>
+          <div class="input-with-unit">
+            <input type="number" id="fett" placeholder="70" min="0" max="999">
+            <span class="input-unit">g</span>
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Carbs</label>
+          <div class="input-with-unit">
+            <input type="number" id="carbs" placeholder="280" min="0" max="999">
+            <span class="input-unit">g</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Wasser & Schritte -->
+      <div class="field-section">
+        <span class="material-symbols-outlined">water_drop</span>
+        Wasser &amp; Schritte
+      </div>
+      <div class="input-row">
+        <div class="input-group">
+          <label class="input-label">Wasser</label>
+          <div class="input-with-unit">
+            <input type="number" id="wasser" placeholder="3.5" step="0.1" min="0" max="20">
+            <span class="input-unit">L</span>
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Schritte</label>
+          <input type="number" id="schritte" placeholder="10000" min="0" max="100000" style="padding-right:14px;">
+        </div>
+      </div>
+
+      <!-- Training -->
+      <div class="field-section">
+        <span class="material-symbols-outlined">fitness_center</span>
+        Training heute?
+      </div>
+      <div class="ja-nein-row">
+        <button class="ja-btn" id="training-ja" onclick="setTraining(true)">✓ Ja</button>
+        <button class="nein-btn" id="training-nein" onclick="setTraining(false)">✗ Nein</button>
+      </div>
+
+      <!-- Progression -->
+      <div id="prog-group" style="display:none;">
+        <div class="field-section" style="margin-top:14px;">
+          <span class="material-symbols-outlined">trending_up</span>
+          Progression erzielt?
+        </div>
+        <div class="ja-nein-row">
+          <button class="ja-btn" id="prog-ja" onclick="setProgression(true)">📈 Ja!</button>
+          <button class="nein-btn" id="prog-nein" onclick="setProgression(false)">Nicht heute</button>
+        </div>
+      </div>
+
+      <!-- Stimmung -->
+      <div class="field-section">
+        <span class="material-symbols-outlined">mood</span>
+        Stimmung heute
+      </div>
+      <div class="stimmung-row">
+        <button class="stimmung-btn" onclick="setStimmung(1,this)">😞</button>
+        <button class="stimmung-btn" onclick="setStimmung(2,this)">😕</button>
+        <button class="stimmung-btn" onclick="setStimmung(3,this)">😐</button>
+        <button class="stimmung-btn" onclick="setStimmung(4,this)">🙂</button>
+        <button class="stimmung-btn" onclick="setStimmung(5,this)">😄</button>
+      </div>
+
+      <!-- Körpergefühl -->
+      <div class="field-section">
+        <span class="material-symbols-outlined">self_improvement</span>
+        Körpergefühl heute
+      </div>
+      <div class="koerper-grid">
+        <button class="koerper-btn" onclick="setKoerper(1,this)"><span class="koerper-emoji">😣</span><span class="koerper-label">Sehr schlecht</span></button>
+        <button class="koerper-btn" onclick="setKoerper(2,this)"><span class="koerper-emoji">😕</span><span class="koerper-label">Schlecht</span></button>
+        <button class="koerper-btn" onclick="setKoerper(3,this)"><span class="koerper-emoji">😐</span><span class="koerper-label">Ok</span></button>
+        <button class="koerper-btn" onclick="setKoerper(4,this)"><span class="koerper-emoji">💪</span><span class="koerper-label">Gut</span></button>
+        <button class="koerper-btn" onclick="setKoerper(5,this)"><span class="koerper-emoji">🚀</span><span class="koerper-label">Sehr gut</span></button>
+      </div>
+
+      <!-- 3 gute Dinge -->
+      <div class="field-section">
+        <span class="material-symbols-outlined">thumb_up</span>
+        3 Dinge, die heute gut liefen
+      </div>
+      <div class="ziele-list">
+        <div class="ziel-row">
+          <div class="ziel-nr" style="background:rgba(17,240,128,0.15);border-color:rgba(17,240,128,0.3);color:#11f080;">1</div>
+          <input type="text" id="g1" placeholder="Was lief gut?">
+        </div>
+        <div class="ziel-row">
+          <div class="ziel-nr" style="background:rgba(17,240,128,0.15);border-color:rgba(17,240,128,0.3);color:#11f080;">2</div>
+          <input type="text" id="g2" placeholder="Was lief gut?">
+        </div>
+        <div class="ziel-row">
+          <div class="ziel-nr" style="background:rgba(17,240,128,0.15);border-color:rgba(17,240,128,0.3);color:#11f080;">3</div>
+          <input type="text" id="g3" placeholder="Was lief gut?">
+        </div>
+      </div>
+
+      <!-- Wöchentliche Reflexion (nur Sonntags) -->
+      <div class="reflexion-section" id="reflexion-section" style="display:none;">
+        <div class="reflexion-header">
+          <div class="stitch-card-icon" style="background:rgba(137,206,255,0.08);border:1px solid rgba(137,206,255,0.2);">🪞</div>
+          <div>
+            <div class="stitch-card-title" style="font-size:16px;">Wöchentliche Reflexion</div>
+            <div class="stitch-card-sub">Ende der Woche — kurz innehalten</div>
+          </div>
+        </div>
+        <label class="reflexion-q">Was lief diese Woche richtig gut?</label>
+        <textarea id="ref-gut" placeholder="z.B. Ich habe alle Trainings absolviert…" rows="2" style="width:100%;margin-bottom:12px;"></textarea>
+        <label class="reflexion-q">Was war schwierig oder frustrierend?</label>
+        <textarea id="ref-schwer" placeholder="z.B. Die Ernährung am Wochenende…" rows="2" style="width:100%;margin-bottom:12px;"></textarea>
+        <label class="reflexion-q">Was ändere ich nächste Woche?</label>
+        <textarea id="ref-aenderung" placeholder="z.B. Ich bereite mein Essen vor…" rows="2" style="width:100%;"></textarea>
+      </div>
+
+      <button class="btn-save-gold" onclick="saveAbend()" id="btn-abend"
+              style="background:linear-gradient(135deg,#89ceff 0%,#4fa8e8 100%);color:#003853;box-shadow:0 12px 32px rgba(137,206,255,0.2);">
+        <span class="material-symbols-outlined" style="font-size:20px;">nightlight</span>
+        <span>Abend-Check-in (+30 XP)</span>
+      </button>
+    </div>
+
+    <div style="height:16px;"></div>
   </div>
 </div>
 
 <!-- Score Overlay -->
-<div class="overlay" id="score-overlay" style="display:none" onclick="closeScore()">
+<div class="overlay" id="score-overlay" onclick="closeScore()">
   <div class="score-popup" onclick="event.stopPropagation()">
+    <div class="score-handle-wrap"><div class="score-handle"></div></div>
     <span class="score-emoji" id="score-emoji">🏆</span>
     <div class="score-title" id="score-title">Tag abgehakt!</div>
     <div class="score-msg" id="score-msg">Richtig stark!</div>
     <div class="score-ring-wrap">
       <div>
-        <div class="score-nr" id="score-nr" style="color:var(--accent)">0</div>
+        <div class="score-nr" id="score-nr" style="color:#ffc56c;">0</div>
         <div class="score-of">von 7 Faktoren</div>
       </div>
     </div>
-    <div class="score-xp" id="score-xp">+50 XP 🪙+50</div>
+    <div class="score-xp-wrap">
+      <span class="score-xp" id="score-xp">+50 XP 🪙+50</span>
+    </div>
     <div class="score-factors" id="score-factors"></div>
-    <button class="btn btn-primary" onclick="closeScore()">Weiter 🔥</button>
+    <button class="btn-save-gold" onclick="closeScore()" style="margin-bottom:0;">
+      <span class="material-symbols-outlined" style="font-size:20px;">local_fire_department</span>
+      Weiter
+    </button>
   </div>
 </div>
+
+<!-- Bottom Nav -->
+<footer class="fixed bottom-0 left-0 right-0 z-50 flex justify-around items-end pb-safe"
+        style="height:72px;background:rgba(13,13,20,0.92);backdrop-filter:blur(24px);border-top:1px solid rgba(72,71,82,0.2);">
+
+  <a href="dashboard.html" class="flex flex-col items-center justify-center gap-0.5 px-3 pt-2"
+     style="color:#757481;text-decoration:none;min-width:56px;">
+    <span class="material-symbols-outlined" style="font-size:22px;">home</span>
+    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Start</span>
+  </a>
+
+  <a href="essen.html" class="flex flex-col items-center justify-center gap-0.5 px-3 pt-2"
+     style="color:#757481;text-decoration:none;min-width:56px;">
+    <span class="material-symbols-outlined" style="font-size:22px;">restaurant</span>
+    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Essen</span>
+  </a>
+
+  <a href="training.html" class="flex flex-col items-center justify-center gap-0.5 px-3 -mt-4"
+     style="text-decoration:none;min-width:56px;">
+    <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#ffc56c,#cb9743);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(255,197,108,0.35);">
+      <span class="material-symbols-outlined" style="font-size:24px;color:#321f00;">fitness_center</span>
+    </div>
+    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#ffc56c;">Training</span>
+  </a>
+
+  <a href="fortschritt.html" class="flex flex-col items-center justify-center gap-0.5 px-3 pt-2"
+     style="color:#757481;text-decoration:none;min-width:56px;">
+    <span class="material-symbols-outlined" style="font-size:22px;">query_stats</span>
+    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Stats</span>
+  </a>
+
+  <a href="profil.html" class="flex flex-col items-center justify-center gap-0.5 px-3 pt-2"
+     style="color:#757481;text-decoration:none;min-width:56px;">
+    <span class="material-symbols-outlined" style="font-size:22px;">person</span>
+    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Profil</span>
+  </a>
+
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
@@ -317,7 +619,7 @@ function setKoerper(val, btn) {
 
 async function saveMorgen() {
   const btn = document.getElementById('btn-morgen')
-  btn.disabled = true; btn.textContent = 'Speichern...'
+  btn.disabled = true; btn.querySelector('span:last-child').textContent = 'Speichern...'
   const profile = currentProfile
   const today = getToday()
   const dayNr = calcDayNr(profile.startdatum)
@@ -332,7 +634,7 @@ async function saveMorgen() {
     checkin_morgen: true,
   }, {onConflict:'user_id,datum'})
 
-  if (error) { showToast(error.message, 'error'); btn.disabled=false; btn.textContent='☀️ Morgen-Check-in speichern (+20 XP)'; return }
+  if (error) { showToast(error.message, 'error'); btn.disabled=false; btn.querySelector('span:last-child').textContent='Morgen-Check-in (+20 XP)'; return }
 
   if (!alreadyMorgen) {
     await updateStreak(profile, XP.MORGEN)
@@ -342,14 +644,14 @@ async function saveMorgen() {
     showToast('Aktualisiert ✓')
   }
 
-  document.getElementById('morgen-section').style.borderColor = 'var(--green2)'
-  btn.textContent = '✓ Gespeichert'
-  setTimeout(() => { btn.disabled = false; btn.textContent = '☀️ Morgen-Check-in speichern (+20 XP)' }, 2000)
+  document.getElementById('morgen-section').style.borderColor = 'rgba(17,240,128,0.4)'
+  btn.querySelector('span:last-child').textContent = '✓ Gespeichert'
+  setTimeout(() => { btn.disabled = false; btn.querySelector('span:last-child').textContent = 'Morgen-Check-in (+20 XP)' }, 2000)
 }
 
 async function saveAbend() {
   const btn = document.getElementById('btn-abend')
-  btn.disabled = true; btn.textContent = 'Speichern...'
+  btn.disabled = true; btn.querySelector('span:last-child').textContent = 'Speichern...'
   const profile = currentProfile
   const today = getToday()
   const dayNr = calcDayNr(profile.startdatum)
@@ -367,7 +669,6 @@ async function saveAbend() {
     checkin_abend: true,
   }
 
-  // Get schlaf from morgen (needed for score)
   const { data: existing } = await sb.from('daily_entries')
     .select('schlaf_ist_h').eq('user_id', profile.id).eq('datum', today).maybeSingle()
   const fullEntry = { ...entry, schlaf_ist_h: existing?.schlaf_ist_h || (v('schlaf') ? parseFloat(v('schlaf')) : null) }
@@ -380,7 +681,7 @@ async function saveAbend() {
     user_id: profile.id, datum: today, tag_nr: dayNr, ...entry
   }, {onConflict:'user_id,datum'})
 
-  if (error) { showToast(error.message, 'error'); btn.disabled=false; btn.textContent='🌙 Abend-Check-in speichern (+30 XP)'; return }
+  if (error) { showToast(error.message, 'error'); btn.disabled=false; btn.querySelector('span:last-child').textContent='Abend-Check-in (+30 XP)'; return }
 
   let xpEarned = XP.ABEND
   if (score >= 7) xpEarned += XP.ALLE_7
@@ -391,7 +692,6 @@ async function saveAbend() {
     alreadyAbend = true
   }
 
-  // Wöchentliche Reflexion speichern (wenn ausgefüllt)
   const refGut = v('ref-gut'), refSchwer = v('ref-schwer'), refAenderung = v('ref-aenderung')
   if (refGut || refSchwer || refAenderung) {
     const wocheNr = Math.ceil(dayNr / 7)
@@ -404,9 +704,9 @@ async function saveAbend() {
   }
 
   showScoreOverlay(score, xpEarned, fullEntry, profile)
-  document.getElementById('abend-section').style.borderColor = 'var(--green2)'
+  document.getElementById('abend-section').style.borderColor = 'rgba(17,240,128,0.4)'
   btn.disabled = false
-  btn.textContent = '✓ Gespeichert'
+  btn.querySelector('span:last-child').textContent = '✓ Gespeichert'
 }
 
 function showScoreOverlay(score, xpEarned, entry, profile) {
@@ -425,20 +725,22 @@ function showScoreOverlay(score, xpEarned, entry, profile) {
   document.getElementById('score-title').textContent = `Tag abgehakt! (${score}/7)`
   document.getElementById('score-msg').textContent = msgs[score]
   document.getElementById('score-nr').textContent = score
-  document.getElementById('score-nr').style.color = score >= 7 ? 'var(--green2)' : score >= 5 ? 'var(--accent)' : score >= 3 ? 'var(--gold2)' : 'var(--text2)'
+  document.getElementById('score-nr').style.color = score >= 7 ? '#11f080' : score >= 5 ? '#ffc56c' : score >= 3 ? '#f0a500' : '#aca9b7'
   document.getElementById('score-xp').textContent = `+${xpEarned} XP 🪙+${xpEarned}`
 
   const { faktoren: fArr } = berechneScoreDetail(entry, profile)
-  const FAKTOR_LABELS_DISPLAY = ['Kalorien ±10%','Protein erreicht','Schlaf 7–8,5h','Wasser ≥ Ziel','Training','Progression','Schritte']
-  const FAKTOR_ICONS_DISPLAY  = ['🍽️','💪','😴','💧','🏋️','📈','👟']
-  const factors = FAKTOR_LABELS_DISPLAY.map((label, i) => ({ label, ok: fArr[i] }))
-  document.getElementById('score-factors').innerHTML = factors.map((f,i) =>
-    `<div class="factor-item"><span class="factor-icon">${f.ok ? '✅' : '⬜'}</span>${FAKTOR_ICONS_DISPLAY[i]} ${f.label}</div>`
+  const FAKTOR_LABELS = ['Kalorien ±10%','Protein erreicht','Schlaf 7–8,5h','Wasser ≥ Ziel','Training','Progression','Schritte']
+  const FAKTOR_ICONS  = ['🍽️','💪','😴','💧','🏋️','📈','👟']
+  document.getElementById('score-factors').innerHTML = FAKTOR_LABELS.map((label, i) =>
+    `<div class="factor-item" style="${fArr[i] ? 'background:rgba(17,240,128,0.07);border:1px solid rgba(17,240,128,0.15);color:#efecfb;' : ''}">
+      <span class="factor-icon">${fArr[i] ? '✅' : '⬜'}</span>
+      ${FAKTOR_ICONS[i]} ${label}
+    </div>`
   ).join('')
 
   document.getElementById('score-overlay').style.display = 'flex'
   if (score >= 7) {
-    setTimeout(() => confetti({ particleCount:150, spread:80, origin:{y:0.6}, colors:['#E8A317','#F0BA3A','#fbbf24','#fff'] }), 300)
+    setTimeout(() => confetti({ particleCount:150, spread:80, origin:{y:0.6}, colors:['#ffc56c','#f0ba3a','#fbbf24','#fff'] }), 300)
   }
 }
 
@@ -455,17 +757,15 @@ async function init() {
   currentProfile = profile
 
   const dayNr = calcDayNr(profile.startdatum)
-  document.getElementById('page-title').textContent = 'Check-in'
   document.getElementById('page-sub').textContent = `Tag ${dayNr} von 90 · ${new Date().toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'})}`
 
-  // Load existing entry
   const { data: entry } = await sb.from('daily_entries')
     .select('*').eq('user_id', user.id).eq('datum', getToday()).maybeSingle()
 
   if (entry) {
     if (entry.checkin_morgen) {
       alreadyMorgen = true
-      document.getElementById('done-banner').style.display = 'block'
+      document.getElementById('done-banner').style.display = 'flex'
       if (entry.gewicht_kg) document.getElementById('gewicht').value = entry.gewicht_kg
       if (entry.schlaf_ist_h) document.getElementById('schlaf').value = entry.schlaf_ist_h
       if (entry.intention) document.getElementById('intention').value = entry.intention
@@ -495,10 +795,8 @@ async function init() {
     }
   }
 
-  // Wöchentliche Reflexion: zeige jeden 7. Tag (Sonntags der Challenge)
   if (dayNr > 1 && dayNr % 7 === 0) {
     document.getElementById('reflexion-section').style.display = 'block'
-    // Lade vorhandene Reflexion
     const wocheNr = Math.ceil(dayNr / 7)
     const { data: ref } = await sb.from('weekly_reflections')
       .select('*').eq('user_id', user.id).eq('woche_nr', wocheNr).maybeSingle()
@@ -509,7 +807,6 @@ async function init() {
     }
   }
 
-  // Placeholder hints from profile
   if (profile.kalorien_ziel) document.getElementById('kalorien').placeholder = profile.kalorien_ziel
   if (profile.protein_ziel_g) document.getElementById('protein').placeholder = profile.protein_ziel_g
   if (profile.fett_ziel_g) document.getElementById('fett').placeholder = profile.fett_ziel_g
