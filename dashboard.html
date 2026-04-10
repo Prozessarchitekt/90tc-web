@@ -84,29 +84,39 @@
   <div class="absolute bottom-0 left-0 bg-gradient-to-r from-transparent via-amber-500/20 to-transparent h-[1px] w-full"></div>
 </nav>
 
-<main class="pt-28 pb-40 px-5 max-w-lg mx-auto space-y-4 relative">
+<main class="pt-24 pb-40 px-4 max-w-lg mx-auto space-y-3 relative">
 
   <!-- Boss Banner -->
-  <div id="boss-banner" style="display:none" class="bg-surface-container border border-error/30 rounded-[24px] p-5 flex items-center gap-4 shadow-[0_0_20px_rgba(255,115,81,0.1)]">
-    <span class="text-4xl">💀</span>
+  <div id="boss-banner" style="display:none" class="bg-surface-container border border-error/30 rounded-[20px] p-4 flex items-center gap-3 shadow-[0_0_20px_rgba(255,115,81,0.1)]">
+    <span class="text-3xl">💀</span>
     <div>
-      <div id="boss-title" class="font-headline font-black text-error text-base uppercase tracking-tight">BOSS-WOCHE</div>
-      <div id="boss-sub" class="text-on-surface-variant text-sm mt-0.5">Zeig was du drauf hast!</div>
+      <div id="boss-title" class="font-headline font-black text-error text-sm uppercase tracking-tight">BOSS-WOCHE</div>
+      <div id="boss-sub" class="text-on-surface-variant text-xs mt-0.5">Zeig was du drauf hast!</div>
     </div>
   </div>
 
-  <!-- Hero Section -->
-  <section class="space-y-1 relative">
-    <span class="font-headline font-bold text-primary tracking-[0.3em] text-[10px] uppercase opacity-80 block">WILLKOMMEN ZURÜCK</span>
-    <h1 class="font-headline font-black italic tracking-tighter uppercase" style="font-size:clamp(2rem,9vw,3.5rem);line-height:0.9">
-      Hey, <span class="text-primary" id="dash-greeting">Chris</span>!
-    </h1>
-    <div class="h-1.5 w-24 bg-primary rounded-full mt-3 shadow-[0_0_20px_rgba(240,165,0,0.8)]"></div>
-  </section>
-
-  <!-- Progress Ring -->
-  <section class="flex flex-col items-center gap-3">
-    <div class="relative flex items-center justify-center" style="width:min(160px,42vw);height:min(160px,42vw);">
+  <!-- Hero + Ring Row -->
+  <section class="flex items-center justify-between gap-4">
+    <!-- Greeting -->
+    <div class="flex-1 min-w-0">
+      <span class="font-headline font-bold text-primary tracking-[0.28em] text-[9px] uppercase opacity-70 block">WILLKOMMEN ZURÜCK</span>
+      <h1 class="font-headline font-black italic tracking-tighter uppercase" style="font-size:clamp(1.9rem,8.5vw,3.2rem);line-height:0.9">
+        Hey,<br><span class="text-primary" id="dash-greeting">Chris</span>!
+      </h1>
+      <div class="h-1 w-14 bg-primary rounded-full mt-2 shadow-[0_0_16px_rgba(240,165,0,0.8)]"></div>
+      <!-- XP Bar inside hero -->
+      <div id="xp-bar-wrap" class="mt-3" style="display:none">
+        <div class="flex justify-between text-[9px] text-on-surface-variant font-bold mb-1">
+          <span id="xp-level-lbl">Level 1</span>
+          <span id="xp-val-lbl">0 XP</span>
+        </div>
+        <div class="h-1 bg-white/5 rounded-full overflow-hidden">
+          <div id="xp-fill" class="h-full bg-primary shadow-[0_0_8px_rgba(240,165,0,0.5)] transition-all duration-700" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+    <!-- Progress Ring -->
+    <div class="relative flex items-center justify-center flex-shrink-0" style="width:min(124px,33vw);height:min(124px,33vw)">
       <svg class="w-full h-full -rotate-90" viewBox="0 0 256 256">
         <circle cx="128" cy="128" fill="transparent" r="110" stroke="rgba(255,255,255,0.07)" stroke-width="12"/>
         <circle id="ring-arc" class="progress-ring-glow" cx="128" cy="128" fill="transparent" r="110"
@@ -114,115 +124,99 @@
           style="stroke-dasharray:691;stroke-dashoffset:691;transition:stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1)"/>
       </svg>
       <div class="absolute inset-0 flex flex-col items-center justify-center">
-        <span id="ring-day" class="font-headline italic font-black text-primary leading-none" style="font-size:3rem">1</span>
-        <span class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mt-1">VON 90 TAGEN</span>
-      </div>
-    </div>
-
-    <!-- XP Bar -->
-    <div id="xp-bar-wrap" style="display:none;width:min(160px,42vw)">
-      <div class="flex justify-between text-[10px] text-on-surface-variant font-bold mb-1.5">
-        <span id="xp-level-lbl">Level 1</span>
-        <span id="xp-val-lbl">0 XP</span>
-      </div>
-      <div class="h-1.5 bg-white/5 rounded-full overflow-hidden">
-        <div id="xp-fill" class="h-full bg-primary shadow-[0_0_10px_rgba(240,165,0,0.5)] transition-all duration-700" style="width:0%"></div>
+        <span id="ring-day" class="font-headline italic font-black text-primary leading-none" style="font-size:2.4rem">1</span>
+        <span class="font-label text-[8px] uppercase tracking-widest text-on-surface-variant mt-0.5">VON 90</span>
       </div>
     </div>
   </section>
 
   <!-- Main CTA -->
   <section>
-    <a id="cta-btn" href="checkin.html" class="obsidian-gradient w-full py-3.5 rounded-2xl flex items-center justify-center gap-3 shadow-[0_12px_32px_rgba(255,197,108,0.2)] active:scale-[0.98] transition-transform">
-      <span id="cta-icon" class="material-symbols-outlined text-on-primary font-bold" style="font-variation-settings:'FILL' 1">rocket_launch</span>
-      <span class="font-headline italic font-black uppercase text-on-primary text-base tracking-tight" id="cta-text">Morgen-Check-in starten</span>
+    <a id="cta-btn" href="checkin.html" class="obsidian-gradient w-full py-3 rounded-2xl flex items-center justify-center gap-2 shadow-[0_8px_24px_rgba(255,197,108,0.2)] active:scale-[0.98] transition-transform">
+      <span id="cta-icon" class="material-symbols-outlined text-on-primary" style="font-variation-settings:'FILL' 1;font-size:20px">rocket_launch</span>
+      <span class="font-headline italic font-black uppercase text-on-primary text-sm tracking-tight" id="cta-text">Morgen-Check-in starten</span>
     </a>
   </section>
 
-  <!-- Weekly Reminder -->
-  <a href="maße.html" id="weekly-rem" style="display:none" class="flex items-center gap-3 bg-primary/10 border border-primary/20 rounded-2xl px-5 py-4 text-on-surface">
-    <span class="text-2xl">📏</span>
-    <div class="flex-1">
-      <div class="font-headline font-black text-sm uppercase">Zeit zum Messen!</div>
-      <div class="text-on-surface-variant text-xs mt-0.5">Wöchentlicher Check — Maße eintragen</div>
+  <!-- Mindset des Tages -->
+  <div class="flex items-start gap-3 px-1 py-1">
+    <span class="material-symbols-outlined text-primary/40 flex-shrink-0 mt-0.5" style="font-size:20px;font-variation-settings:'FILL' 1">format_quote</span>
+    <div class="min-w-0">
+      <span class="font-label text-[9px] uppercase tracking-widest text-primary/50 block mb-0.5">MINDSET DES TAGES</span>
+      <p id="quote-text" class="italic text-on-surface-variant leading-snug" style="font-size:12px">—</p>
+      <span id="quote-author" class="font-headline italic text-[9px] text-primary/50 uppercase tracking-widest mt-0.5 block"></span>
     </div>
-    <span class="material-symbols-outlined text-primary">chevron_right</span>
+  </div>
+
+  <!-- Weekly Reminder -->
+  <a href="maße.html" id="weekly-rem" style="display:none" class="flex items-center gap-3 bg-primary/10 border border-primary/20 rounded-[16px] px-4 py-3 text-on-surface">
+    <span class="text-lg">📏</span>
+    <div class="flex-1">
+      <div class="font-headline font-black text-xs uppercase">Zeit zum Messen!</div>
+      <div class="text-on-surface-variant text-[10px]">Wöchentlicher Check</div>
+    </div>
+    <span class="material-symbols-outlined text-primary text-lg">chevron_right</span>
   </a>
 
   <!-- Stats Bento Grid -->
-  <section class="grid grid-cols-2 gap-3">
-    <div class="bg-surface-container p-4 rounded-[20px] flex flex-col gap-1.5 border border-white/5">
-      <div class="flex items-center gap-2">
-        <span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings:'FILL' 1">local_fire_department</span>
-        <span class="font-label text-[10px] uppercase font-bold tracking-widest text-on-surface-variant">Streak</span>
+  <section class="grid grid-cols-2 gap-2.5">
+    <div class="bg-surface-container p-3.5 rounded-[18px] flex flex-col gap-1 border border-white/5">
+      <div class="flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-primary" style="font-size:16px;font-variation-settings:'FILL' 1">local_fire_department</span>
+        <span class="font-label text-[9px] uppercase font-bold tracking-widest text-on-surface-variant">Streak</span>
       </div>
       <div class="flex items-baseline gap-1">
-        <span id="s-streak" class="font-headline italic text-3xl font-black text-primary">0</span>
-        <span class="font-label text-xs text-on-surface-variant">TAG</span>
+        <span id="s-streak" class="font-headline italic text-2xl font-black text-primary">0</span>
+        <span class="font-label text-[10px] text-on-surface-variant">TAG</span>
       </div>
     </div>
-    <div class="bg-surface-container p-4 rounded-[20px] flex flex-col gap-1.5 border border-white/5">
-      <div class="flex items-center gap-2">
-        <span class="material-symbols-outlined text-secondary text-lg">restaurant</span>
-        <span class="font-label text-[10px] uppercase font-bold tracking-widest text-on-surface-variant">Kalorien</span>
+    <div class="bg-surface-container p-3.5 rounded-[18px] flex flex-col gap-1 border border-white/5">
+      <div class="flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-secondary" style="font-size:16px">restaurant</span>
+        <span class="font-label text-[9px] uppercase font-bold tracking-widest text-on-surface-variant">Kalorien</span>
       </div>
       <div class="flex items-baseline gap-1">
-        <span id="s-kcal" class="font-headline italic text-3xl font-black">—</span>
-        <span class="font-label text-xs text-on-surface-variant">KCAL</span>
+        <span id="s-kcal" class="font-headline italic text-2xl font-black">—</span>
+        <span class="font-label text-[10px] text-on-surface-variant">KCAL</span>
       </div>
     </div>
-    <div class="bg-surface-container p-4 rounded-[20px] flex flex-col gap-1.5 border border-white/5">
-      <div class="flex items-center gap-2">
-        <span class="material-symbols-outlined text-tertiary text-lg">fitness_center</span>
-        <span class="font-label text-[10px] uppercase font-bold tracking-widest text-on-surface-variant">Protein</span>
+    <div class="bg-surface-container p-3.5 rounded-[18px] flex flex-col gap-1 border border-white/5">
+      <div class="flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-tertiary" style="font-size:16px">fitness_center</span>
+        <span class="font-label text-[9px] uppercase font-bold tracking-widest text-on-surface-variant">Protein</span>
       </div>
       <div class="flex items-baseline gap-1">
-        <span id="s-prot" class="font-headline italic text-3xl font-black">—</span>
-        <span class="font-label text-xs text-on-surface-variant">G</span>
+        <span id="s-prot" class="font-headline italic text-2xl font-black">—</span>
+        <span class="font-label text-[10px] text-on-surface-variant">G</span>
       </div>
     </div>
-    <div id="stat-training" class="bg-surface-container p-4 rounded-[20px] flex flex-col gap-1.5 border border-white/5">
-      <div class="flex items-center gap-2">
-        <span class="material-symbols-outlined text-on-surface-variant text-lg">event_available</span>
-        <span class="font-label text-[10px] uppercase font-bold tracking-widest text-on-surface-variant">Training</span>
+    <div id="stat-training" class="bg-surface-container p-3.5 rounded-[18px] flex flex-col gap-1 border border-white/5">
+      <div class="flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-on-surface-variant" style="font-size:16px">event_available</span>
+        <span class="font-label text-[9px] uppercase font-bold tracking-widest text-on-surface-variant">Training</span>
       </div>
-      <div class="flex items-baseline gap-1">
-        <span id="s-train" class="font-headline italic text-xl font-black text-on-surface-variant uppercase">–</span>
-      </div>
-      <span id="s-train-sub" class="font-label text-[10px] text-on-surface-variant uppercase tracking-widest">Heute</span>
+      <span id="s-train" class="font-headline italic text-xl font-black text-on-surface-variant uppercase">–</span>
+      <span id="s-train-sub" class="font-label text-[9px] text-on-surface-variant uppercase tracking-widest">Heute</span>
     </div>
   </section>
 
   <!-- Check-in Status -->
-  <section class="grid grid-cols-2 gap-4">
-    <a id="pill-m" href="checkin.html" class="bg-surface-container-low border border-outline-variant/20 p-5 rounded-[24px] flex items-center justify-between transition-all">
+  <section class="grid grid-cols-2 gap-2.5">
+    <a id="pill-m" href="checkin.html" class="bg-surface-container-low border border-outline-variant/20 p-3.5 rounded-[18px] flex items-center justify-between transition-all">
       <div>
-        <p class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-1">Morgen</p>
+        <p class="font-label text-[9px] uppercase tracking-widest text-on-surface-variant mb-0.5">Morgen</p>
         <p id="pill-m-sub" class="font-headline font-bold text-sm">Ausstehend</p>
       </div>
-      <span class="material-symbols-outlined text-outline-variant pill-icon-el" id="pill-m-icon">pending</span>
+      <span class="material-symbols-outlined text-outline-variant pill-icon-el" id="pill-m-icon" style="font-size:20px">pending</span>
     </a>
-    <a id="pill-a" href="checkin.html" class="bg-surface-container-low border border-outline-variant/20 p-5 rounded-[24px] flex items-center justify-between transition-all">
+    <a id="pill-a" href="checkin.html" class="bg-surface-container-low border border-outline-variant/20 p-3.5 rounded-[18px] flex items-center justify-between transition-all">
       <div>
-        <p class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mb-1">Abend</p>
+        <p class="font-label text-[9px] uppercase tracking-widest text-on-surface-variant mb-0.5">Abend</p>
         <p id="pill-a-sub" class="font-headline font-bold text-sm">Gesperrt</p>
       </div>
-      <span class="material-symbols-outlined text-outline-variant opacity-30 pill-icon-el" id="pill-a-icon">lock</span>
+      <span class="material-symbols-outlined text-outline-variant opacity-30 pill-icon-el" id="pill-a-icon" style="font-size:20px">lock</span>
     </a>
   </section>
-
-  <!-- Motivation Quote -->
-  <div id="quote-card" style="display:none" class="glass-card p-6 rounded-[24px] relative overflow-hidden border border-white/5">
-    <div class="absolute -right-3 -top-3 opacity-5 pointer-events-none">
-      <span class="material-symbols-outlined" style="font-size:96px">format_quote</span>
-    </div>
-    <p id="quote-text" class="italic font-body text-on-surface leading-relaxed mb-4 relative z-10 text-sm"></p>
-    <div class="flex items-center gap-2">
-      <div class="h-[1px] w-8 bg-primary rounded-full"></div>
-      <span id="quote-label" class="font-headline italic text-xs uppercase text-primary tracking-widest">Mindset des Tages</span>
-    </div>
-    <span id="quote-author" class="block font-headline italic text-xs text-primary/60 mt-1 ml-10 uppercase tracking-widest"></span>
-  </div>
 
 </main>
 
@@ -293,30 +287,12 @@ async function init() {
   const arc = document.getElementById('ring-arc')
   setTimeout(() => { arc.style.strokeDashoffset = C - (C * pct / 100) }, 200)
 
-  // Motto as fallback quote
-  if (profile.motto) {
-    document.getElementById('quote-card').style.display = 'block'
-    document.getElementById('quote-text').textContent = '„' + profile.motto + '"'
-    document.getElementById('quote-label').textContent = 'Dein Motto'
-  }
-
-  // Daily quote
-  const quotes = typeof QUOTES !== 'undefined' ? QUOTES : []
-  if (quotes.length) {
-    let pool = dayNr <= 30
-      ? quotes.filter(q => q.phase === 'start' || !q.phase)
-      : dayNr <= 60
-        ? quotes.filter(q => q.phase === 'mitte' || !q.phase)
-        : quotes.filter(q => q.phase === 'ziel' || !q.phase)
-    if (!pool.length) pool = quotes
-    const q = pool[dayNr % pool.length]
+  // Mindset des Tages
+  if (typeof getQuoteForDay === 'function') {
+    const q = getQuoteForDay(dayNr)
     if (q) {
-      document.getElementById('quote-card').style.display = 'block'
-      document.getElementById('quote-text').textContent = q.text || q.quote || q
-      if (q.author) {
-        document.getElementById('quote-author').textContent = '— ' + q.author
-        document.getElementById('quote-label').textContent = 'Mindset des Tages'
-      }
+      document.getElementById('quote-text').textContent = q.text || '—'
+      if (q.author) document.getElementById('quote-author').textContent = '— ' + q.author
     }
   }
 
