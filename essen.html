@@ -290,6 +290,22 @@ tailwind.config = {
   <!-- Search Results -->
   <div id="search-results" style="display:none" class="-mt-4"></div>
 
+  <!-- Standardtag laden -->
+  <div id="load-plan-section" style="display:none">
+    <button onclick="loadStandardday()" class="w-full flex items-center justify-between px-5 py-4 rounded-[18px] border active:scale-[.98] transition-all" style="background:rgba(255,197,108,0.07);border-color:rgba(255,197,108,0.22);box-shadow:0 0 24px rgba(255,197,108,0.06);">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-[14px] flex items-center justify-center flex-shrink-0" style="background:rgba(255,197,108,0.15);border:1px solid rgba(255,197,108,0.25);">
+          <span class="material-symbols-outlined text-primary" style="font-size:20px;font-variation-settings:'FILL' 1;">calendar_today</span>
+        </div>
+        <div>
+          <div class="font-headline font-black italic uppercase text-sm text-primary" style="letter-spacing:-0.01em;">Standardtag laden</div>
+          <div class="font-label text-[9px] uppercase tracking-widest text-on-surface-variant">Deinen Plan als Basis eintragen</div>
+        </div>
+      </div>
+      <span class="material-symbols-outlined text-primary" style="font-size:20px;">arrow_forward_ios</span>
+    </button>
+  </div>
+
   <!-- ── Meal Sections ── -->
   <section class="space-y-8" id="meals-section">
     <div class="text-center py-16 opacity-40">
@@ -956,6 +972,29 @@ async function transferToCheckin() {
   setTimeout(() => window.location.href = 'checkin.html', 900)
 }
 
+// ── Standardtag laden ─────────────────────────────────
+async function loadStandardday() {
+  try {
+    const saved = localStorage.getItem('90tc_plan_v1')
+    if (!saved) { showToast('Kein Plan gespeichert', 'error'); return }
+    const plan = JSON.parse(saved)
+    const meals = Object.entries(plan)
+    let added = 0
+    for (const [mahlzeit, items] of meals) {
+      for (const item of items) {
+        const meal = { user_id:currentUser.id, datum:getToday(), mahlzeit, produkt_name:item.name, barcode:null, menge_g:item.amount,
+          kcal_100g:null, protein_100g:null, fett_100g:null, carbs_100g:null,
+          kalorien:item.kcal, protein_g:item.prot, fett_g:item.fett, carbs_g:item.carbs }
+        const { data } = await sb.from('meal_entries').insert(meal).select().single()
+        if (data) { todayMeals.push(data); added++ }
+      }
+    }
+    document.getElementById('load-plan-section').style.display = 'none'
+    renderMeals(); syncTotals()
+    showToast(`${added} Produkte aus Standardtag geladen ✓`)
+  } catch(e) { showToast('Fehler beim Laden', 'error') }
+}
+
 // ── Wire up ────────────────────────────────────────────
 document.getElementById('btn-scan').addEventListener('click', openScanner)
 document.getElementById('btn-close-scanner').addEventListener('click', stopScanner)
@@ -996,6 +1035,12 @@ async function init() {
     .select('*').eq('user_id',currentUser.id).eq('datum',getToday()).order('created_at')
   todayMeals = meals || []
   renderMeals()
+
+  // Show "Standardtag laden" if plan exists and no meals logged yet today
+  const hasPlan = !!localStorage.getItem('90tc_plan_v1')
+  if (hasPlan && todayMeals.length === 0) {
+    document.getElementById('load-plan-section').style.display = 'block'
+  }
 
   document.getElementById('splash').style.display = 'none'
   document.getElementById('main').style.display = 'block'
