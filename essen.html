@@ -790,41 +790,146 @@ function updateMacroRings(t) {
   setBar('bar-carbs', 'barval-carbs', carbs, cg, 'g')
 }
 
-// ── Open Food Facts ───────────────────────────────────────────
+// ── FatSecret OAuth2 Token ────────────────────────────────────
+let _fsToken = null
+let _fsTokenExp = 0
+
+async function getFSToken() {
+  if (_fsToken && Date.now() < _fsTokenExp) return _fsToken
+  try {
+    const r = await fetch('https://oauth.fatsecret.com/connect/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'client_credentials',
+        client_id: FATSECRET_CLIENT_ID,
+        client_secret: FATSECRET_CLIENT_SECRET,
+        scope: 'basic',
+      }),
+    })
+    const d = await r.json()
+    _fsToken   = d.access_token
+    _fsTokenExp = Date.now() + (d.expires_in - 60) * 1000
+    return _fsToken
+  } catch(e) { return null }
+}
+
+async function fsGet(params) {
+  const token = await getFSToken()
+  if (!token) return null
+  try {
+    const url = 'https://platform.fatsecret.com/rest/server.api?' + new URLSearchParams({ ...params, format: 'json' })
+    const r = await fetch(url, {
+      headers: { Authorization: 'Bearer ' + token },
+      signal: AbortSignal.timeout(6000),
+    })
+    return await r.json()
+  } catch(e) { return null }
+}
+
+// ── Barcode Lookup ─────────────────────────────────────────────
 async function lookupBarcode(code) {
-  // v2 API: besseres Datenmodell, schneller
-  const fields = 'product_name,product_name_de,generic_name_de,generic_name,brands,nutriments,image_small_url,image_front_small_url,code'
-  const urls = [
-    `https://world.openfoodfacts.org/api/v2/product/${code}?fields=${fields}`,
-    `https://de.openfoodfacts.org/api/v2/product/${code}?fields=${fields}`,
-  ]
-  for (const url of urls) {
+  // 1. FatSecret (90%+ Trefferquote für DE-Produkte)
+  const fs = await fsGet({ method: 'food.find_id_for_barcode', barcode: code })
+  if (fs?.food_id?.value) {
+    const detail = await fsGet({ method: 'food.get.v4', food_id: fs.food_id.value, include_food_images: true })
+    if (detail?.food) {
+      const p = parseFSProduct(detail.food)
+      if (p?.kcal100 != null) return p
+    }
+  }
+
+  // 2. Fallback: OpenFoodFacts
+  const fields = 'product_name,product_name_de,generic_name_de,generic_name,brands,nutriments,image_small_url,code'
+  for (const base of ['https://world.openfoodfacts.org', 'https://de.openfoodfacts.org']) {
     try {
-      const r = await fetch(url, { signal: AbortSignal.timeout(6000) })
+      const r = await fetch(`${base}/api/v2/product/${code}?fields=${fields}`, { signal: AbortSignal.timeout(6000) })
       const d = await r.json()
       if (d.status === 1 && d.product) {
-        const p = parseProduct(d.product)
-        if (p && p.kcal100 != null) return p   // nur zurückgeben wenn Nährwerte vorhanden
+        const p = parseOFFProduct(d.product)
+        if (p?.kcal100 != null) return p
       }
     } catch(e) {}
   }
   return null
 }
 
+// ── Textsuche ─────────────────────────────────────────────────
 async function searchProducts(query) {
+  // FatSecret Textsuche
+  const fs = await fsGet({ method: 'foods.search', search_expression: query, max_results: 20 })
+  if (fs?.foods?.food) {
+    const items = Array.isArray(fs.foods.food) ? fs.foods.food : [fs.foods.food]
+    const results = items.map(parseFSSearchItem).filter(p => p?.kcal100 != null)
+    if (results.length > 0) return results
+  }
+
+  // Fallback: OpenFoodFacts
   try {
-    const url = `https://world.openfoodfacts.org/cgi/search.pl?` + new URLSearchParams({
-      search_terms: query, action:'process', json:'1', page_size:'20',
-      fields:'product_name,product_name_de,brands,nutriments,image_small_url,image_front_small_url,code',
-      sort_by:'popularity', countries_tags:'en:germany',
+    const url = 'https://world.openfoodfacts.org/cgi/search.pl?' + new URLSearchParams({
+      search_terms: query, action: 'process', json: '1', page_size: '20',
+      fields: 'product_name,product_name_de,brands,nutriments,image_small_url,code',
+      sort_by: 'popularity', countries_tags: 'en:germany',
     })
     const r = await fetch(url)
     const d = await r.json()
-    return (d.products || []).filter(p => p.product_name || p.product_name_de).map(parseProduct)
+    return (d.products || []).filter(p => p.product_name || p.product_name_de).map(parseOFFProduct).filter(p => p?.kcal100 != null)
   } catch(e) { return [] }
 }
 
-function parseProduct(p) {
+// ── FatSecret Parser ──────────────────────────────────────────
+function parseFSProduct(food) {
+  // Nimm die "100g" Serving oder berechne aus erster Serving
+  const servings = food.servings?.serving
+  if (!servings) return null
+  const list = Array.isArray(servings) ? servings : [servings]
+  const s100 = list.find(s => parseFloat(s.metric_serving_amount) === 100 && s.metric_serving_unit === 'g')
+    || list.find(s => s.metric_serving_unit === 'g')
+    || list[0]
+  if (!s100) return null
+
+  const factor = s100.metric_serving_unit === 'g'
+    ? 100 / parseFloat(s100.metric_serving_amount || 100)
+    : 1
+
+  const img = food.food_images?.food_image?.[0]?.image_url
+    || food.food_images?.food_image?.image_url
+    || null
+
+  return {
+    name:    food.food_name || '—',
+    brand:   food.brand_name || '',
+    barcode: '',
+    image:   img,
+    kcal100:    s100.calories    != null ? Math.round(s100.calories    * factor) : null,
+    protein100: s100.protein     != null ? Math.round(s100.protein     * factor * 10) / 10 : null,
+    fett100:    s100.fat         != null ? Math.round(s100.fat         * factor * 10) / 10 : null,
+    carbs100:   s100.carbohydrate!= null ? Math.round(s100.carbohydrate* factor * 10) / 10 : null,
+  }
+}
+
+function parseFSSearchItem(food) {
+  // food.food_description: "Per 100g - Calories: 357kcal | Fat: 6.90g | Carbs: 58.70g | Protein: 12.60g"
+  const desc = food.food_description || ''
+  const get = (key) => {
+    const m = desc.match(new RegExp(key + '[:\\s]+([0-9.]+)', 'i'))
+    return m ? parseFloat(m[1]) : null
+  }
+  return {
+    name:       food.food_name || '—',
+    brand:      food.brand_name || '',
+    barcode:    '',
+    image:      null,
+    kcal100:    get('Calories'),
+    protein100: get('Protein'),
+    fett100:    get('Fat'),
+    carbs100:   get('Carbs'),
+    _fsId:      food.food_id,   // für spätere Detail-Abfrage
+  }
+}
+
+// ── OpenFoodFacts Parser ──────────────────────────────────────
+function parseOFFProduct(p) {
   const n = p.nutriments || {}
   const raw = n['energy-kcal_100g'] ?? n['energy-kcal_value'] ?? n['energy-kcal'] ?? null
   const kcal = raw ?? (n['energy_100g'] ? Math.round(n['energy_100g'] / 4.184) : null)
@@ -832,8 +937,8 @@ function parseProduct(p) {
   return {
     name:    name.charAt(0).toUpperCase() + name.slice(1),
     brand:   (p.brands || '').split(',')[0].trim(),
-    barcode: p.code || p._id || '',
-    image:   p.image_small_url || p.image_front_small_url || null,
+    barcode: p.code || '',
+    image:   p.image_small_url || null,
     kcal100:    kcal != null ? Math.round(kcal) : null,
     protein100: n.proteins_100g != null ? Math.round(n.proteins_100g * 10) / 10 : null,
     fett100:    n.fat_100g      != null ? Math.round(n.fat_100g      * 10) / 10 : null,

@@ -657,33 +657,54 @@ function confirmMenge() {
   updateBars()
 }
 
-// ── OpenFoodFacts ──────────────────────────────────────
-async function searchProducts(query) {
+// ── Suche (FatSecret + OFF Fallback) ───────────────────
+// Token-Cache aus essen.html wird hier neu implementiert (eigene Seite)
+let _fsToken2 = null, _fsTokenExp2 = 0
+
+async function getFSToken() {
+  if (_fsToken2 && Date.now() < _fsTokenExp2) return _fsToken2
   try {
-    const url = `https://world.openfoodfacts.org/cgi/search.pl?` + new URLSearchParams({
-      search_terms: query, action:'process', json:'1', page_size:'20',
-      fields:'product_name,product_name_de,brands,nutriments,image_small_url,code',
-      sort_by:'popularity', countries_tags:'en:germany',
+    const r = await fetch('https://oauth.fatsecret.com/connect/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ grant_type:'client_credentials', client_id:FATSECRET_CLIENT_ID, client_secret:FATSECRET_CLIENT_SECRET, scope:'basic' }),
     })
-    const r = await fetch(url)
     const d = await r.json()
-    return (d.products || []).filter(p => p.product_name || p.product_name_de).map(parseProduct)
-  } catch(e) { return [] }
+    _fsToken2 = d.access_token
+    _fsTokenExp2 = Date.now() + (d.expires_in - 60) * 1000
+    return _fsToken2
+  } catch(e) { return null }
 }
 
-function parseProduct(p) {
-  const n = p.nutriments || {}
-  const raw = n['energy-kcal_100g'] ?? n['energy-kcal'] ?? null
-  const kcal = raw ?? (n['energy_100g'] ? Math.round(n['energy_100g'] / 4.184) : null)
-  return {
-    name:     p.product_name_de || p.product_name || '—',
-    brand:    (p.brands || '').split(',')[0].trim(),
-    image:    p.image_small_url || null,
-    kcal100:    kcal != null ? Math.round(kcal) : null,
-    protein100: n.proteins_100g != null ? Math.round(n.proteins_100g * 10) / 10 : null,
-    fett100:    n.fat_100g != null ? Math.round(n.fat_100g * 10) / 10 : null,
-    carbs100:   n.carbohydrates_100g != null ? Math.round(n.carbohydrates_100g * 10) / 10 : null,
+async function searchProducts(query) {
+  const token = await getFSToken()
+  if (token) {
+    try {
+      const url = 'https://platform.fatsecret.com/rest/server.api?' + new URLSearchParams({ method:'foods.search', search_expression:query, max_results:20, format:'json' })
+      const r = await fetch(url, { headers:{ Authorization:'Bearer '+token }, signal:AbortSignal.timeout(6000) })
+      const d = await r.json()
+      if (d?.foods?.food) {
+        const items = Array.isArray(d.foods.food) ? d.foods.food : [d.foods.food]
+        const results = items.map(f => {
+          const desc = f.food_description || ''
+          const get = k => { const m = desc.match(new RegExp(k+'[:\\s]+([0-9.]+)','i')); return m ? parseFloat(m[1]) : null }
+          return { name:f.food_name||'—', brand:f.brand_name||'', image:null, kcal100:get('Calories'), protein100:get('Protein'), fett100:get('Fat'), carbs100:get('Carbs') }
+        }).filter(p => p.kcal100 != null)
+        if (results.length > 0) return results
+      }
+    } catch(e) {}
   }
+  // Fallback: OpenFoodFacts
+  try {
+    const url = 'https://world.openfoodfacts.org/cgi/search.pl?' + new URLSearchParams({ search_terms:query, action:'process', json:'1', page_size:'20', fields:'product_name,product_name_de,brands,nutriments,image_small_url,code', sort_by:'popularity', countries_tags:'en:germany' })
+    const r = await fetch(url)
+    const d = await r.json()
+    return (d.products||[]).map(p => {
+      const n = p.nutriments||{}; const raw = n['energy-kcal_100g']??n['energy-kcal']??null
+      const kcal = raw??(n['energy_100g']?Math.round(n['energy_100g']/4.184):null)
+      return { name:(p.product_name_de||p.product_name||'—'), brand:(p.brands||'').split(',')[0].trim(), image:p.image_small_url||null, kcal100:kcal!=null?Math.round(kcal):null, protein100:n.proteins_100g!=null?Math.round(n.proteins_100g*10)/10:null, fett100:n.fat_100g!=null?Math.round(n.fat_100g*10)/10:null, carbs100:n.carbohydrates_100g!=null?Math.round(n.carbohydrates_100g*10)/10:null }
+    }).filter(p => p.kcal100 != null)
+  } catch(e) { return [] }
 }
 
 // ── Speichern ──────────────────────────────────────────
