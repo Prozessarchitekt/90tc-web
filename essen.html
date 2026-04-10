@@ -264,14 +264,23 @@ tailwind.config = {
     </div>
   </section>
 
-  <!-- ── Search + Scan ── -->
-  <section class="flex gap-3">
-    <div class="flex-1 flex items-center gap-3 px-4 rounded-[18px] border" style="background:rgba(18,18,26,0.8);backdrop-filter:blur(16px);border-color:rgba(72,71,82,0.35);height:52px;">
-      <span class="material-symbols-outlined text-on-surface-variant" onclick="doSearch()" style="cursor:pointer;font-size:20px;flex-shrink:0">search</span>
-      <input class="bg-transparent border-none focus:ring-0 font-medium w-full outline-none p-0 rounded-none" id="search-input" placeholder="Lebensmittel finden…" type="text" style="background:transparent;border:none;border-radius:0;padding:0;color:#efecfb;font-family:'Inter',sans-serif;font-size:16px;"/>
+  <!-- ── Search ── -->
+  <section class="flex flex-col gap-3">
+    <!-- Search bar with submit arrow -->
+    <div class="flex items-center rounded-[18px] border overflow-hidden" style="background:rgba(18,18,26,0.8);backdrop-filter:blur(16px);border-color:rgba(72,71,82,0.35);height:54px;">
+      <span class="material-symbols-outlined text-on-surface-variant px-4 flex-shrink-0" style="font-size:20px;">search</span>
+      <input class="bg-transparent border-none focus:ring-0 font-medium w-full outline-none p-0" id="search-input" placeholder="Lebensmittel suchen…" type="text" style="background:transparent;border:none;padding:0;color:#efecfb;font-family:'Inter',sans-serif;font-size:16px;"/>
+      <button onclick="doSearch()" class="flex items-center justify-center flex-shrink-0 active:scale-90 transition-all" style="width:52px;height:54px;background:linear-gradient(135deg,rgba(255,197,108,0.2),rgba(255,197,108,0.08));border-left:1px solid rgba(255,197,108,0.2);">
+        <span class="material-symbols-outlined text-primary" style="font-size:22px;">arrow_forward</span>
+      </button>
     </div>
-    <button id="btn-scan" class="flex items-center justify-center rounded-[18px] active:scale-95 transition-all flex-shrink-0" style="width:52px;height:52px;background:linear-gradient(135deg,#ffc56c,#cb9743);box-shadow:0 6px 20px rgba(255,197,108,0.3);">
-      <span class="material-symbols-outlined" style="font-size:22px;color:#321f00;font-weight:700;">barcode_scanner</span>
+    <!-- Scan button separate -->
+    <button id="btn-scan" class="flex items-center justify-between px-5 rounded-[18px] border active:scale-[0.98] transition-all" style="height:52px;background:rgba(18,18,26,0.8);backdrop-filter:blur(16px);border-color:rgba(72,71,82,0.35);width:100%;">
+      <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined" style="font-size:20px;color:#ffc56c;font-variation-settings:'FILL' 1;">barcode_scanner</span>
+        <span style="font-size:14px;font-weight:700;color:#aca9b7;font-family:'Inter',sans-serif;">Barcode scannen</span>
+      </div>
+      <span class="material-symbols-outlined text-on-surface-variant" style="font-size:18px;">photo_camera</span>
     </button>
   </section>
 
@@ -577,18 +586,18 @@ async function searchProducts(query) {
     return null
   })()
 
-  // OpenFoodFacts: German locale, sort by scan count (most scanned = most relevant)
+  // OpenFoodFacts: no locale filter so German product names still found globally
   const offPromise = (async () => {
     const fields = 'product_name,product_name_de,generic_name,generic_name_de,brands,nutriments,image_small_url,code'
     const urls = [
-      // v2 with German locale + popularity
-      `https://world.openfoodfacts.org/api/v2/search?q=${encodeURIComponent(query)}&lc=de&fields=${fields}&page_size=30&sort_by=unique_scans_n`,
-      // legacy search with German locale
-      `https://world.openfoodfacts.org/cgi/search.pl?` + new URLSearchParams({ search_terms:query, action:'process', json:'1', page_size:'30', fields, sort_by:'unique_scans_n', lc:'de' }),
+      // Legacy CGI — most reliable, no locale restriction
+      `https://world.openfoodfacts.org/cgi/search.pl?` + new URLSearchParams({ search_terms:query, action:'process', json:'1', page_size:'30', fields, sort_by:'unique_scans_n' }),
+      // v2 fallback
+      `https://world.openfoodfacts.org/api/v2/search?q=${encodeURIComponent(query)}&fields=${fields}&page_size=30&sort_by=unique_scans_n`,
     ]
     for (const url of urls) {
       try {
-        const r = await fetch(url, { signal:AbortSignal.timeout(6000) })
+        const r = await fetch(url, { signal:AbortSignal.timeout(7000) })
         const d = await r.json()
         const prods = d.products || []
         let parsed = prods
@@ -597,7 +606,7 @@ async function searchProducts(query) {
           .filter(p => p?.kcal100 != null)
         if (parsed.length === 0) continue
 
-        // Sort: products whose name starts with query first, then contains, then rest
+        // Sort: name starts with query > name contains query > rest
         parsed.sort((a, b) => {
           const na = (a.name || '').toLowerCase(), nb = (b.name || '').toLowerCase()
           const aStarts = na.startsWith(q), bStarts = nb.startsWith(q)
