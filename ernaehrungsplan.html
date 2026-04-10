@@ -156,7 +156,7 @@ tailwind.config = {
      ONBOARDING
 ══════════════════════════════════════════ -->
 <div id="onboarding" style="display:none">
-  <div class="px-4 max-w-lg mx-auto pb-12" style="padding-top:max(170px,calc(env(safe-area-inset-top)+154px))">
+  <div class="px-4 max-w-lg mx-auto pb-12" style="padding-top:180px">
 
     <!-- Step 1: Ziel -->
     <div class="ob-step" id="ob-step-1">
@@ -278,7 +278,7 @@ tailwind.config = {
      PLAN BUILDER
 ══════════════════════════════════════════ -->
 <div id="plan-builder" style="display:none">
-  <div class="px-4 max-w-lg mx-auto pb-12" style="padding-top:max(170px,calc(env(safe-area-inset-top)+154px))">
+  <div class="px-4 max-w-lg mx-auto pb-12" style="padding-top:180px">
 
     <!-- Plan Tabs -->
     <div class="mb-5">
@@ -903,6 +903,15 @@ async function init() {
 
   document.getElementById('splash').style.display = 'none'
   document.getElementById('app-wrap').style.display = 'block'
+
+  // Measure actual header height and apply to content containers
+  requestAnimationFrame(() => {
+    const hdr = document.querySelector('header')
+    const h = hdr ? hdr.getBoundingClientRect().bottom + 16 : 180
+    document.querySelectorAll('#onboarding > div, #plan-builder > div').forEach(el => {
+      el.style.paddingTop = Math.max(h, 180) + 'px'
+    })
+  })
 
   if (!targets.kcal) {
     // No targets set → onboarding
