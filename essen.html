@@ -53,7 +53,7 @@ tailwind.config = {
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     opacity: 0.04; pointer-events: none; z-index: 100;
   }
-  .text-huge { font-size: clamp(3rem, 15vw, 5.5rem); line-height: 0.85; letter-spacing: -0.05em; }
+  .text-huge { font-size: clamp(2rem, 10vw, 3.6rem); line-height: 0.88; letter-spacing: -0.04em; }
   .text-glow-gold  { text-shadow: 0 0 20px rgba(240,165,0,0.6); }
   .text-glow-blue  { text-shadow: 0 0 20px rgba(0,162,230,0.6); }
   .text-glow-green { text-shadow: 0 0 20px rgba(0,237,125,0.6); }
@@ -133,18 +133,18 @@ tailwind.config = {
 
   /* Menge Presets */
   .menge-preset {
-    padding:8px 14px;border-radius:50px;
-    border:1.5px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);
-    color:rgba(255,255,255,.6);font-size:13px;font-weight:700;cursor:pointer;
+    padding:9px 15px;border-radius:50px;
+    border:1.5px solid rgba(72,71,82,0.4);background:rgba(18,18,26,0.8);
+    color:rgba(255,255,255,.55);font-size:13px;font-weight:700;cursor:pointer;
     transition:all .15s;font-family:inherit;
   }
   .menge-preset:active { background:rgba(255,197,108,.12);border-color:#ffc56c;color:#ffc56c; }
 
   /* Mahlzeit tabs */
   .mahlzeit-tab {
-    padding:12px 8px;border-radius:14px;
-    border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);
-    color:rgba(255,255,255,.5);font-size:13px;font-weight:700;cursor:pointer;
+    padding:12px 8px;border-radius:16px;
+    border:1.5px solid rgba(72,71,82,0.35);background:rgba(18,18,26,0.8);
+    color:rgba(255,255,255,.45);font-size:13px;font-weight:700;cursor:pointer;
     transition:all .15s;font-family:inherit;text-align:center;
   }
   .mahlzeit-tab.active { background:rgba(255,197,108,.1);border-color:#ffc56c;color:#ffc56c; }
@@ -152,11 +152,11 @@ tailwind.config = {
   /* Search results */
   .result-item {
     display:flex;align-items:center;gap:12px;
-    background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
-    border-radius:16px;padding:12px 14px;margin-bottom:8px;cursor:pointer;
+    background:rgba(18,18,26,0.8);border:1.5px solid rgba(72,71,82,0.3);
+    border-radius:18px;padding:12px 14px;margin-bottom:8px;cursor:pointer;
     transition:all .15s;
   }
-  .result-item:active { background:rgba(255,255,255,.08);transform:scale(.98); }
+  .result-item:active { background:rgba(255,197,108,0.06);border-color:rgba(255,197,108,0.2);transform:scale(.98); }
   .result-img {
     width:48px;height:48px;border-radius:12px;object-fit:cover;
     background:rgba(255,255,255,.08);flex-shrink:0;
@@ -183,85 +183,93 @@ tailwind.config = {
   <div class="absolute bottom-0 left-0 bg-gradient-to-r from-transparent via-amber-500/20 to-transparent h-[1px] w-full"></div>
 </nav>
 
-<main class="pt-28 pb-28 px-4 max-w-2xl mx-auto space-y-6 relative">
+<main class="pt-28 pb-28 px-4 max-w-lg mx-auto space-y-5 relative">
 
   <!-- ── Hero Header ── -->
-  <header class="space-y-0 relative">
-    <span class="font-headline font-bold text-primary tracking-[0.3em] text-[10px] uppercase opacity-80 mb-2 block" id="page-sub">TAG — · PHASE I</span>
+  <header class="relative">
+    <span class="font-headline font-bold text-primary tracking-[0.28em] text-[9px] uppercase opacity-70 mb-1 block" id="page-sub">TAG — · PHASE I</span>
     <h1 class="text-huge font-headline font-black text-on-background tracking-tighter uppercase italic">
       ERNÄH<span class="text-primary">RUNG</span>
     </h1>
-    <div class="h-1.5 w-32 bg-primary rounded-full mt-4 shadow-[0_0_20px_rgba(240,165,0,0.8)]"></div>
+    <div class="h-1 w-14 bg-primary rounded-full mt-2 shadow-[0_0_16px_rgba(240,165,0,0.8)]"></div>
   </header>
 
   <!-- ── Macro Stats Grid ── -->
-  <section class="grid grid-cols-2 gap-4 relative">
-    <div class="absolute inset-0 light-leak -z-10 blur-3xl scale-150"></div>
+  <section class="grid grid-cols-2 gap-2.5">
 
     <!-- Kcal -->
-    <div class="bg-surface-container-low p-6 rounded-[24px] border border-white/5 shadow-2xl relative group overflow-hidden">
-      <div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-      <span class="text-[10px] font-headline font-bold uppercase tracking-widest text-on-surface-variant">Daily Kcal</span>
-      <div class="mt-2 flex items-baseline gap-1">
-        <span class="text-4xl font-headline font-black text-primary text-glow-gold" id="val-kcal">0</span>
+    <div class="p-3.5 rounded-[18px] flex flex-col gap-1 border border-white/5" style="background:rgba(18,18,26,0.75);backdrop-filter:blur(16px);">
+      <div class="flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-primary" style="font-size:15px;font-variation-settings:'FILL' 1">local_fire_department</span>
+        <span class="font-label text-[9px] uppercase font-bold tracking-widest text-on-surface-variant">Kalorien</span>
       </div>
-      <div class="mt-4 h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-        <div class="h-full bg-primary shadow-[0_0_10px_rgba(240,165,0,0.5)] transition-all duration-700" id="bar-kcal-bento" style="width:0%"></div>
+      <div class="flex items-baseline gap-1">
+        <span class="font-headline italic font-black text-primary" style="font-size:1.7rem;line-height:1" id="val-kcal">0</span>
+        <span class="font-label text-[10px] text-on-surface-variant">KCAL</span>
       </div>
-      <span class="text-[9px] mt-2 block text-on-surface-variant font-medium" id="sub-kcal">kein Ziel</span>
+      <div class="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+        <div class="h-full bg-primary shadow-[0_0_8px_rgba(240,165,0,0.5)] transition-all duration-700" id="bar-kcal-bento" style="width:0%"></div>
+      </div>
+      <span class="text-[9px] text-on-surface-variant font-medium" id="sub-kcal">kein Ziel</span>
     </div>
 
     <!-- Protein -->
-    <div class="bg-surface-container-low p-6 rounded-[24px] border border-white/5 shadow-2xl relative group overflow-hidden">
-      <div class="absolute inset-0 bg-gradient-to-br from-secondary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-      <span class="text-[10px] font-headline font-bold uppercase tracking-widest text-secondary">Protein</span>
-      <div class="mt-2 flex items-baseline gap-1">
-        <span class="text-4xl font-headline font-black text-secondary text-glow-blue" id="val-prot">0</span>
-        <span class="text-xs text-on-surface-variant font-bold">g</span>
+    <div class="p-3.5 rounded-[18px] flex flex-col gap-1 border border-white/5" style="background:rgba(18,18,26,0.75);backdrop-filter:blur(16px);">
+      <div class="flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-secondary" style="font-size:15px">exercise</span>
+        <span class="font-label text-[9px] uppercase font-bold tracking-widest text-secondary">Protein</span>
       </div>
-      <div class="mt-4 h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-        <div class="h-full bg-secondary shadow-[0_0_10px_rgba(0,162,230,0.5)] transition-all duration-700" id="bar-prot-bento" style="width:0%"></div>
+      <div class="flex items-baseline gap-1">
+        <span class="font-headline italic font-black text-secondary" style="font-size:1.7rem;line-height:1" id="val-prot">0</span>
+        <span class="font-label text-[10px] text-on-surface-variant">G</span>
       </div>
-      <span class="text-[9px] mt-2 block text-on-surface-variant font-medium" id="sub-prot">kein Ziel</span>
+      <div class="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+        <div class="h-full bg-secondary shadow-[0_0_8px_rgba(0,162,230,0.5)] transition-all duration-700" id="bar-prot-bento" style="width:0%"></div>
+      </div>
+      <span class="text-[9px] text-on-surface-variant font-medium" id="sub-prot">kein Ziel</span>
     </div>
 
     <!-- Carbs -->
-    <div class="bg-surface-container-low p-6 rounded-[24px] border border-white/5 shadow-2xl relative group overflow-hidden">
-      <div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-      <span class="text-[10px] font-headline font-bold uppercase tracking-widest text-on-surface-variant">Carbs</span>
-      <div class="mt-2 flex items-baseline gap-1">
-        <span class="text-4xl font-headline font-black text-on-background" id="val-carbs">0</span>
-        <span class="text-xs text-on-surface-variant font-bold">g</span>
+    <div class="p-3.5 rounded-[18px] flex flex-col gap-1 border border-white/5" style="background:rgba(18,18,26,0.75);backdrop-filter:blur(16px);">
+      <div class="flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-on-surface-variant" style="font-size:15px">grain</span>
+        <span class="font-label text-[9px] uppercase font-bold tracking-widest text-on-surface-variant">Carbs</span>
       </div>
-      <div class="mt-4 h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+      <div class="flex items-baseline gap-1">
+        <span class="font-headline italic font-black text-on-surface" style="font-size:1.7rem;line-height:1" id="val-carbs">0</span>
+        <span class="font-label text-[10px] text-on-surface-variant">G</span>
+      </div>
+      <div class="h-1 w-full bg-white/5 rounded-full overflow-hidden">
         <div class="h-full bg-on-surface-variant/40 transition-all duration-700" id="bar-carbs-bento" style="width:0%"></div>
       </div>
-      <span class="text-[9px] mt-2 block text-on-surface-variant font-medium" id="sub-carbs">kein Ziel</span>
+      <span class="text-[9px] text-on-surface-variant font-medium" id="sub-carbs">kein Ziel</span>
     </div>
 
     <!-- Fett -->
-    <div class="bg-surface-container-low p-6 rounded-[24px] border border-white/5 shadow-2xl relative group overflow-hidden">
-      <div class="absolute inset-0 bg-gradient-to-br from-tertiary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-      <span class="text-[10px] font-headline font-bold uppercase tracking-widest text-tertiary">Fett</span>
-      <div class="mt-2 flex items-baseline gap-1">
-        <span class="text-4xl font-headline font-black text-tertiary text-glow-green" id="val-fett">0</span>
-        <span class="text-xs text-on-surface-variant font-bold">g</span>
+    <div class="p-3.5 rounded-[18px] flex flex-col gap-1 border border-white/5" style="background:rgba(18,18,26,0.75);backdrop-filter:blur(16px);">
+      <div class="flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-tertiary" style="font-size:15px">water_drop</span>
+        <span class="font-label text-[9px] uppercase font-bold tracking-widest text-tertiary">Fett</span>
       </div>
-      <div class="mt-4 h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-        <div class="h-full bg-tertiary shadow-[0_0_10px_rgba(0,237,125,0.5)] transition-all duration-700" id="bar-fett-bento" style="width:0%"></div>
+      <div class="flex items-baseline gap-1">
+        <span class="font-headline italic font-black text-tertiary" style="font-size:1.7rem;line-height:1" id="val-fett">0</span>
+        <span class="font-label text-[10px] text-on-surface-variant">G</span>
       </div>
-      <span class="text-[9px] mt-2 block text-on-surface-variant font-medium" id="sub-fett">kein Ziel</span>
+      <div class="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+        <div class="h-full bg-tertiary shadow-[0_0_8px_rgba(0,237,125,0.5)] transition-all duration-700" id="bar-fett-bento" style="width:0%"></div>
+      </div>
+      <span class="text-[9px] text-on-surface-variant font-medium" id="sub-fett">kein Ziel</span>
     </div>
   </section>
 
   <!-- ── Search + Scan ── -->
   <section class="flex gap-3">
-    <div class="flex-1 bg-surface-container-high/60 backdrop-blur-xl rounded-2xl p-4 flex items-center gap-3 border border-white/5 shadow-inner">
-      <span class="material-symbols-outlined text-on-surface-variant" onclick="doSearch()" style="cursor:pointer">search</span>
-      <input class="bg-transparent border-none focus:ring-0 text-sm font-medium w-full placeholder:text-on-surface-variant/30 outline-none p-0 rounded-none" id="search-input" placeholder="LEBENSMITTEL FINDEN..." type="text" style="background:transparent;border:none;border-radius:0;padding:0"/>
+    <div class="flex-1 flex items-center gap-3 px-4 rounded-[18px] border" style="background:rgba(18,18,26,0.8);backdrop-filter:blur(16px);border-color:rgba(72,71,82,0.35);height:52px;">
+      <span class="material-symbols-outlined text-on-surface-variant" onclick="doSearch()" style="cursor:pointer;font-size:20px;flex-shrink:0">search</span>
+      <input class="bg-transparent border-none focus:ring-0 text-sm font-medium w-full outline-none p-0 rounded-none" id="search-input" placeholder="Lebensmittel finden…" type="text" style="background:transparent;border:none;border-radius:0;padding:0;color:#efecfb;font-family:'Inter',sans-serif;"/>
     </div>
-    <button id="btn-scan" class="bg-primary text-on-primary h-14 w-14 rounded-2xl flex items-center justify-center shadow-[0_8px_20px_rgba(240,165,0,0.3)] active:scale-95 transition-all flex-shrink-0">
-      <span class="material-symbols-outlined font-bold">barcode_scanner</span>
+    <button id="btn-scan" class="flex items-center justify-center rounded-[18px] active:scale-95 transition-all flex-shrink-0" style="width:52px;height:52px;background:linear-gradient(135deg,#ffc56c,#cb9743);box-shadow:0 6px 20px rgba(255,197,108,0.3);">
+      <span class="material-symbols-outlined" style="font-size:22px;color:#321f00;font-weight:700;">barcode_scanner</span>
     </button>
   </section>
 
@@ -279,18 +287,22 @@ tailwind.config = {
 
   <!-- Transfer CTA -->
   <div id="transfer-section" style="display:none">
-    <button id="btn-transfer" class="w-full py-4 bg-gradient-to-r from-primary-container to-primary text-on-primary rounded-2xl font-headline font-black uppercase tracking-widest text-sm shadow-[0_8px_20px_rgba(240,165,0,0.3)]">
-      ✅ Makros in Check-in übertragen
+    <button id="btn-transfer" class="w-full flex items-center justify-center gap-3 rounded-[18px] font-headline font-black italic uppercase tracking-wide active:scale-[0.98] transition-all" style="padding:17px;font-size:16px;background:linear-gradient(135deg,#ffc56c,#cb9743);color:#321f00;box-shadow:0 8px 28px rgba(255,197,108,0.28);">
+      <span class="material-symbols-outlined" style="font-size:20px;font-variation-settings:'FILL' 1">check_circle</span>
+      Makros in Check-in speichern
     </button>
   </div>
 
   <!-- Ernährungsplan Link -->
-  <div class="flex justify-center">
-    <a href="ernaehrungsplan.html" class="flex items-center gap-2 bg-surface-container-low border border-outline-variant/20 rounded-2xl px-5 py-3 text-primary font-headline font-bold text-sm uppercase tracking-widest">
-      <span class="material-symbols-outlined text-sm">menu_book</span>
-      Ernährungsplan
-    </a>
-  </div>
+  <a href="ernaehrungsplan.html" class="flex items-center justify-between px-4 py-3.5 rounded-[18px] border" style="background:rgba(18,18,26,0.75);backdrop-filter:blur(16px);border-color:rgba(72,71,82,0.3);text-decoration:none;">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-[12px] flex items-center justify-center" style="background:rgba(255,197,108,0.1);border:1px solid rgba(255,197,108,0.2);">
+        <span class="material-symbols-outlined text-primary" style="font-size:18px;font-variation-settings:'FILL' 1">menu_book</span>
+      </div>
+      <span class="font-headline font-black italic uppercase text-sm text-primary tracking-tight">Ernährungsplan</span>
+    </div>
+    <span class="material-symbols-outlined text-on-surface-variant" style="font-size:20px;">chevron_right</span>
+  </a>
 
 </main>
 
