@@ -6,59 +6,320 @@
   <title>90TC — Körpermaße</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#E8A317">
+  <meta name="theme-color" content="#ffc56c">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="90TC">
   <link rel="apple-touch-icon" href="icon.svg">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Space+Grotesk:wght@900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            'background':              '#03030A',
+            'surface':                 '#0d0d17',
+            'surface-container':       '#191825',
+            'surface-container-low':   '#12121d',
+            'surface-container-high':  '#1f1e2c',
+            'surface-container-highest':'#252433',
+            'surface-bright':          '#2b2b3a',
+            'on-surface':              '#efecfb',
+            'on-surface-variant':      '#aca9b7',
+            'outline':                 '#757481',
+            'outline-variant':         '#484752',
+            'primary':                 '#ffc56c',
+            'primary-container':       '#cb9743',
+            'on-primary-container':    '#321f00',
+            'secondary':               '#89ceff',
+            'tertiary-dim':            '#11f080',
+            'error':                   '#ff7351',
+          },
+          fontFamily: {
+            headline: ['Space Grotesk'],
+            body:     ['Inter'],
+            label:    ['Inter'],
+          },
+          borderRadius: {
+            DEFAULT: '1rem',
+            lg:      '2rem',
+            xl:      '3rem',
+            full:    '9999px',
+          },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    /* Override old CSS vars */
+    :root {
+      --accent:        #ffc56c;
+      --accent-dim:    rgba(255,197,108,0.08);
+      --accent-border: rgba(255,197,108,0.18);
+      --gold:          #ffc56c;
+      --bg:            #03030A;
+      --bg2:           #0d0d17;
+      --card-bg:       #191825;
+      --text:          #efecfb;
+      --text2:         #aca9b7;
+      --muted:         #757481;
+      --green2:        #11f080;
+      --danger:        #ff7351;
+    }
+
+    body {
+      background: #03030A;
+      color: #efecfb;
+      font-family: 'Inter', sans-serif;
+      min-height: 100dvh;
+    }
+
+    /* Grain overlay */
+    .grainy-overlay {
+      pointer-events: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      opacity: 0.035;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 180px 180px;
+    }
+
+    /* Page layout */
+    .page {
+      padding: max(84px, calc(env(safe-area-inset-top) + 76px)) 16px 120px !important;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    /* Hide old bnav / splash handled inline */
+    .bnav { display: none !important; }
+
+    /* Input styling */
+    .maß-input-wrap {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .maß-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #aca9b7;
+    }
+    .maß-label-hint {
+      font-size: 10px;
+      color: #757481;
+      margin-top: -2px;
+    }
+    .maß-input {
+      background: #12121d;
+      border: 1px solid rgba(72,71,82,0.5);
+      border-radius: 12px;
+      color: #efecfb;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px;
+      font-weight: 900;
+      font-style: italic;
+      padding: 10px 36px 10px 14px;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .maß-input:focus {
+      border-color: rgba(255,197,108,0.5);
+      box-shadow: 0 0 0 3px rgba(255,197,108,0.08);
+    }
+    .maß-input::placeholder { color: #484752; }
+    .maß-unit {
+      position: absolute;
+      right: 12px;
+      bottom: 11px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #757481;
+      pointer-events: none;
+    }
+    .maße-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    /* Weight inputs */
+    .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .input-group { display: flex; flex-direction: column; gap: 4px; }
+    .input-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #aca9b7; }
+    .input-with-unit { position: relative; }
+    .input-with-unit input {
+      background: #12121d;
+      border: 1px solid rgba(72,71,82,0.5);
+      border-radius: 12px;
+      color: #efecfb;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 22px;
+      font-weight: 900;
+      font-style: italic;
+      padding: 12px 44px 12px 14px;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .input-with-unit input:focus { border-color: rgba(255,197,108,0.5); box-shadow: 0 0 0 3px rgba(255,197,108,0.08); }
+    .input-with-unit input::placeholder { color: #484752; }
+    .input-with-unit input[readonly] { opacity: 0.45; cursor: not-allowed; }
+    .input-unit { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 11px; font-weight: 700; color: #757481; }
+
+    /* Compare rows */
+    .compare-row { display: grid; grid-template-columns: 1fr 60px 60px 60px; gap: 4px; padding: 8px 0; border-bottom: 1px solid rgba(72,71,82,0.3); font-size: 13px; align-items: center; }
+    .compare-row:last-child { border-bottom: none; }
+    .compare-label { color: #aca9b7; font-weight: 600; }
+    .compare-prev, .compare-curr { text-align: center; color: #efecfb; font-family: 'Space Grotesk', sans-serif; font-style: italic; font-weight: 900; }
+    .compare-delta { text-align: center; }
+    .delta-neg { color: #11f080; font-weight: 700; }
+    .delta-pos { color: #ff7351; font-weight: 700; }
+    .delta-zero { color: #757481; font-weight: 700; }
+
+    /* Error message */
+    .msg-error { background: rgba(255,115,81,0.12); border: 1px solid rgba(255,115,81,0.3); border-radius: 12px; color: #ff7351; font-size: 13px; padding: 10px 14px; }
+
+    /* Gold gradient button */
+    .btn-save-gold {
+      width: 100%;
+      padding: 18px;
+      border-radius: 16px;
+      border: none;
+      background: linear-gradient(135deg, #ffc56c 0%, #cb9743 100%);
+      color: #321f00;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+      font-weight: 900;
+      font-style: italic;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 12px 32px rgba(255,197,108,0.22);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn-save-gold:active { transform: scale(0.98); box-shadow: 0 6px 16px rgba(255,197,108,0.15); }
+    .btn-save-gold:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    /* Stitch glass card */
+    .stitch-card {
+      background: rgba(25,24,37,0.7);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(72,71,82,0.35);
+      border-radius: 20px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .stitch-card-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #aca9b7;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .stitch-card-title .material-symbols-outlined {
+      font-size: 16px;
+      color: #ffc56c;
+    }
+
+    /* No scrollbar */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
 </head>
-<body>
+<body class="dark font-body antialiased">
+
+<!-- Grain overlay -->
+<div class="grainy-overlay"></div>
+
+<!-- Top nav -->
+<header class="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 py-4"
+        style="background:rgba(3,3,10,0.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(72,71,82,0.2);">
+  <a href="dashboard.html" class="flex items-center justify-center w-10 h-10 rounded-full"
+     style="background:rgba(255,197,108,0.08);border:1px solid rgba(255,197,108,0.15);">
+    <span class="material-symbols-outlined text-primary" style="font-size:20px;color:#ffc56c;">arrow_back</span>
+  </a>
+  <div class="text-center">
+    <p class="font-headline italic font-black text-xl uppercase tracking-tight" style="color:#ffc56c;letter-spacing:-0.02em;">KÖRPERMASSE</p>
+    <p class="text-[10px] font-bold uppercase tracking-widest" style="color:#aca9b7;" id="page-sub">Woche ? von 13</p>
+  </div>
+  <div class="w-10 h-10"></div>
+</header>
+
 <div id="app">
-  <div class="splash" id="loading"><div class="spinner"></div></div>
+  <div class="splash" id="loading" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#03030A;z-index:100;">
+    <div class="spinner" style="width:32px;height:32px;border:3px solid rgba(255,197,108,0.2);border-top-color:#ffc56c;border-radius:50%;animation:spin 0.7s linear infinite;"></div>
+    <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+  </div>
   <div id="main" style="display:none">
-    <div class="page">
-      <div class="page-header">
-        <a href="dashboard.html" class="page-back">←</a>
-        <div>
-          <div class="page-title">📏 Körpermaße</div>
-          <div class="page-subtitle" id="page-sub">Woche ? von 13</div>
-        </div>
-        <div style="width:40px"></div>
-      </div>
+    <div class="page no-scrollbar">
 
       <!-- Info Card -->
-      <div class="card" style="background:var(--accent-dim);border-color:var(--accent-border);margin-bottom:16px">
-        <div style="font-size:14px;line-height:1.6;color:var(--text2)">
-          📌 <strong style="color:var(--text)">Messung immer morgens</strong>, nüchtern, vor dem Essen.<br>
-          Maßband eng anliegen — nicht einschneiden.
+      <div class="stitch-card" style="background:rgba(255,197,108,0.06);border-color:rgba(255,197,108,0.18);margin-bottom:16px;">
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <span class="material-symbols-outlined" style="font-size:20px;color:#ffc56c;flex-shrink:0;margin-top:1px;" aria-hidden="true">info</span>
+          <div style="font-size:13px;line-height:1.6;color:#aca9b7;">
+            <strong style="color:#efecfb;">Messung immer morgens</strong>, nüchtern, vor dem Essen.<br>
+            Maßband eng anliegen — nicht einschneiden.
+          </div>
         </div>
       </div>
 
       <!-- Gewicht -->
-      <div class="card mb-12">
-        <div class="card-title">Körpergewicht (gleitender Schnitt)</div>
+      <div class="stitch-card">
+        <div class="stitch-card-title">
+          <span class="material-symbols-outlined">monitor_weight</span>
+          Körpergewicht
+        </div>
         <div class="input-row">
           <div class="input-group">
-            <label class="input-label">Gewicht diese Woche</label>
+            <label class="input-label">Diese Woche</label>
             <div class="input-with-unit">
               <input type="number" id="gewicht" placeholder="80.0" step="0.1" min="30" max="300">
               <span class="input-unit">kg</span>
             </div>
           </div>
           <div class="input-group">
-            <label class="input-label">Vorwoche (auto)</label>
+            <label class="input-label">Vorwoche</label>
             <div class="input-with-unit">
-              <input type="number" id="gewicht-prev" placeholder="—" readonly style="opacity:0.5">
+              <input type="number" id="gewicht-prev" placeholder="—" readonly>
               <span class="input-unit">kg</span>
             </div>
           </div>
         </div>
-        <div id="gewicht-delta" style="font-size:13px;color:var(--text2);margin-top:8px"></div>
+        <div id="gewicht-delta" style="font-size:13px;color:#aca9b7;margin-top:10px;font-weight:600;"></div>
       </div>
 
       <!-- Körpermaße -->
-      <div class="card mb-12">
-        <div class="card-title">Umfänge in cm</div>
+      <div class="stitch-card">
+        <div class="stitch-card-title">
+          <span class="material-symbols-outlined">straighten</span>
+          Umfänge in cm
+        </div>
         <div class="maße-grid">
 
           <div class="maß-input-wrap">
@@ -129,47 +390,67 @@
       </div>
 
       <!-- Vergleich zur Vorwoche -->
-      <div class="card mb-12" id="compare-card" style="display:none">
-        <div class="card-title">Vergleich zur Vorwoche</div>
-        <div style="display:grid;grid-template-columns:1fr 60px 60px 60px;gap:4px;font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.06em;padding:0 0 8px">
-          <span>Maß</span><span style="text-align:center">Vorher</span><span style="text-align:center">Jetzt</span><span style="text-align:center">Δ</span>
+      <div class="stitch-card" id="compare-card" style="display:none">
+        <div class="stitch-card-title">
+          <span class="material-symbols-outlined">compare_arrows</span>
+          Vergleich Vorwoche
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 60px 60px 60px;gap:4px;font-size:10px;color:#757481;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;padding-bottom:8px;border-bottom:1px solid rgba(72,71,82,0.3);">
+          <span>Maß</span><span style="text-align:center;">Vorher</span><span style="text-align:center;">Jetzt</span><span style="text-align:center;">Δ</span>
         </div>
         <div id="compare-rows"></div>
       </div>
 
-      <div id="save-error" class="msg-error mb-12" style="display:none"></div>
+      <div id="save-error" class="msg-error" style="display:none;margin-bottom:16px;"></div>
 
-      <button class="btn btn-primary" onclick="save()" id="btn-save">
-        📏 Maße speichern (+60 XP)
+      <button class="btn-save-gold" onclick="save()" id="btn-save">
+        <span class="material-symbols-outlined" style="font-size:20px;">straighten</span>
+        <span id="btn-save-text">Maße speichern (+60 XP)</span>
       </button>
 
-      <div style="height:88px"></div>
+      <div style="height:16px"></div>
     </div>
   </div>
 </div>
 
-<nav class="bnav">
-  <a href="dashboard.html" class="bnav-item">
-    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-    Start
+<!-- Bottom Nav (consistent across all pages) -->
+<footer class="fixed bottom-0 left-0 right-0 z-50 flex justify-around items-end pb-safe"
+        style="height:72px;background:rgba(13,13,20,0.92);backdrop-filter:blur(24px);border-top:1px solid rgba(72,71,82,0.2);">
+
+  <a href="dashboard.html" class="flex flex-col items-center justify-center gap-0.5 px-3 pt-2"
+     style="color:#757481;text-decoration:none;min-width:56px;">
+    <span class="material-symbols-outlined" style="font-size:22px;">home</span>
+    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Start</span>
   </a>
-  <a href="essen.html" class="bnav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
-    Ernährung
+
+  <a href="essen.html" class="flex flex-col items-center justify-center gap-0.5 px-3 pt-2"
+     style="color:#757481;text-decoration:none;min-width:56px;">
+    <span class="material-symbols-outlined" style="font-size:22px;">restaurant</span>
+    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Essen</span>
   </a>
-  <a href="training.html" class="bnav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="4" height="8" rx="1"/><rect x="18" y="8" width="4" height="8" rx="1"/><line x1="6" y1="12" x2="10" y2="12"/><line x1="14" y1="12" x2="18" y2="12"/><rect x="10" y="9" width="4" height="6" rx="1"/></svg>
-    Training
+
+  <!-- FAB: Training -->
+  <a href="training.html" class="flex flex-col items-center justify-center gap-0.5 px-3 -mt-4"
+     style="text-decoration:none;min-width:56px;">
+    <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#ffc56c,#cb9743);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(255,197,108,0.35);">
+      <span class="material-symbols-outlined" style="font-size:24px;color:#321f00;" aria-hidden="true">fitness_center</span>
+    </div>
+    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#ffc56c;">Training</span>
   </a>
-  <a href="fortschritt.html" class="bnav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-    Statistik
+
+  <a href="fortschritt.html" class="flex flex-col items-center justify-center gap-0.5 px-3 pt-2"
+     style="color:#757481;text-decoration:none;min-width:56px;">
+    <span class="material-symbols-outlined" style="font-size:22px;">query_stats</span>
+    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Stats</span>
   </a>
-  <a href="profil.html" class="bnav-item active">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    Profil
+
+  <a href="profil.html" class="flex flex-col items-center justify-center gap-0.5 px-3 pt-2"
+     style="color:#757481;text-decoration:none;min-width:56px;">
+    <span class="material-symbols-outlined" style="font-size:22px;">person</span>
+    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Profil</span>
   </a>
-</nav>
+
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js"></script>
@@ -188,7 +469,8 @@ function gv(id) { const v = document.getElementById(id)?.value; return v ? parse
 
 async function save() {
   const btn = document.getElementById('btn-save')
-  btn.disabled = true; btn.textContent = 'Speichern...'
+  const btnText = document.getElementById('btn-save-text')
+  btn.disabled = true; btnText.textContent = 'Speichern...'
   const errEl = document.getElementById('save-error')
   errEl.style.display = 'none'
 
@@ -205,7 +487,7 @@ async function save() {
 
   if (error) {
     errEl.textContent = error.message; errEl.style.display = 'block'
-    btn.disabled = false; btn.textContent = '📏 Maße speichern (+60 XP)'
+    btn.disabled = false; btnText.textContent = 'Maße speichern (+60 XP)'
     return
   }
 
@@ -238,8 +520,8 @@ async function save() {
   }
 
   showToast('+60 XP — Gespeichert! 📏' + macroToast)
-  btn.textContent = '✓ Gespeichert'
-  setTimeout(() => { btn.disabled = false; btn.textContent = '📏 Maße speichern (+60 XP)' }, 2000)
+  btnText.textContent = '✓ Gespeichert'
+  setTimeout(() => { btn.disabled = false; btnText.textContent = 'Maße speichern (+60 XP)' }, 2000)
 }
 
 async function init() {
@@ -275,7 +557,7 @@ async function init() {
         const deltaEl = document.getElementById('gewicht-delta')
         const sign = delta > 0 ? '+' : ''
         deltaEl.textContent = `Veränderung: ${sign}${delta.toFixed(1)} kg`
-        deltaEl.style.color = delta < 0 ? 'var(--green2)' : delta > 0 ? 'var(--danger)' : 'var(--text2)'
+        deltaEl.style.color = delta < 0 ? '#11f080' : delta > 0 ? '#ff7351' : '#aca9b7'
       }
     }
 

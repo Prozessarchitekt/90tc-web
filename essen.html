@@ -106,12 +106,12 @@ tailwind.config = {
   .produkt-inner {
     width:100%;max-height:92vh;overflow-y:auto;
     background:linear-gradient(180deg,#14141f 0%,#0d0d1a 100%);
-    border:1px solid rgba(255,255,255,.08);
+    border:1px solid rgba(255,197,108,0.2); border-bottom:none;
     border-radius:28px 28px 0 0;
     padding:0 0 max(24px,env(safe-area-inset-bottom));
   }
   .sheet-handle-wrap { padding:14px;display:flex;justify-content:center; }
-  .sheet-handle { width:40px;height:4px;background:rgba(255,255,255,.18);border-radius:2px; }
+  .sheet-handle { width:40px;height:4px;background:rgba(255,197,108,0.4);border-radius:2px; }
 
   /* Inputs */
   input[type="number"], input[type="text"], select {
@@ -417,6 +417,13 @@ let currentMahlzeit = 'mittagessen'
 let tagNr = 1
 
 const ICONS = { frühstück:'🌅', mittagessen:'☀️', abendessen:'🌙', snack:'🍎' }
+const MEAL_PHOTOS = {
+  frühstück: 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=500&q=70',
+  mittagessen: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=70',
+  abendessen: 'https://images.unsplash.com/photo-1559847844-5315695dadae?w=500&q=70',
+  snack: 'https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?w=500&q=70',
+}
+const MEAL_ICONS_MS = { frühstück:'free_breakfast', mittagessen:'restaurant', abendessen:'nights_stay', snack:'nutrition' }
 const MEAL_COLORS = {
   frühstück:  { bg:'rgba(255,197,108,.08)', border:'rgba(255,197,108,.2)',  accent:'#ffc56c' },
   mittagessen:{ bg:'rgba(255,197,108,.06)', border:'rgba(255,197,108,.15)', accent:'#f0a500' },
@@ -775,31 +782,32 @@ function renderMeals() {
     if (!items.length) return
     const catKcal = items.reduce((s,m) => s+(m.kalorien||0), 0)
     const c = MEAL_COLORS[cat]
-    html += `<div class="premium-card-border rounded-[32px] overflow-hidden" style="background:${c.bg};border-color:${c.border}">
-      <div class="p-8 space-y-6">
-        <div class="flex items-center justify-between">
-          <div>
-            <h3 class="font-headline font-black text-3xl uppercase tracking-tighter">${names[cat]}</h3>
-          </div>
+    html += `<div class="relative overflow-hidden rounded-[28px] shadow-2xl group premium-card-border">
+      <img alt="${names[cat]}" class="absolute inset-0 w-full h-full object-cover grayscale brightness-[0.4] contrast-125 group-hover:scale-105 transition-transform duration-700" src="${MEAL_PHOTOS[cat]}" loading="lazy">
+      <div class="absolute inset-0 bg-gradient-to-t from-[#03030A] via-[#03030A]/65 to-transparent"></div>
+      <div class="relative p-6 flex flex-col gap-4">
+        <div class="flex justify-between items-start">
+          <h3 class="font-headline font-black italic text-3xl tracking-tighter uppercase drop-shadow-lg">${names[cat]}</h3>
           <div class="text-right">
-            <p class="font-headline font-black text-3xl leading-none" style="color:${c.accent}">${Math.round(catKcal)}</p>
-            <p class="text-[10px] font-bold uppercase" style="color:${c.accent}">kcal</p>
+            <span class="font-headline font-black italic text-2xl block leading-none drop-shadow" style="color:${c.accent}">${Math.round(catKcal)}</span>
+            <span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">KCAL</span>
           </div>
         </div>
-        <div class="bg-black/40 backdrop-blur-md rounded-2xl p-4 border border-white/5 space-y-3">
+        <div class="bg-black/50 backdrop-blur-xl rounded-2xl px-4 py-3 border border-white/5 space-y-2">
           ${items.map(m => `
-            <div class="flex justify-between items-center">
-              <div class="flex-1 min-w-0 mr-3">
-                <div class="text-sm font-medium truncate">${m.produkt_name}</div>
-                <div class="text-[10px] text-on-surface-variant mt-0.5">${m.menge_g}g · P${m.protein_g??'—'} F${m.fett_g??'—'} C${m.carbs_g??'—'}</div>
+            <div class="flex justify-between items-center gap-2">
+              <div class="flex-1 min-w-0">
+                <div class="text-[11px] font-bold truncate">${m.produkt_name}${m.menge_g?` (${m.menge_g}g)`:''}</div>
               </div>
-              <div class="flex items-center gap-3">
-                <span class="text-on-surface-variant text-xs">${m.kalorien??'—'} kcal</span>
-                <button onclick="deleteMeal('${m.id}')" class="text-on-surface-variant/40 hover:text-error transition-colors text-lg">🗑</button>
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <span class="text-[11px] font-bold" style="color:${c.accent}">${m.kalorien??'—'} kcal</span>
+                <button onclick="event.stopPropagation();deleteMeal('${m.id}')" class="text-on-surface-variant/40 hover:text-error transition-colors leading-none">
+                  <span class="material-symbols-outlined" style="font-size:16px">close</span>
+                </button>
               </div>
             </div>`).join('')}
         </div>
-        <button onclick="openAddForCat('${cat}')" class="w-full py-4 bg-white/5 hover:bg-primary hover:text-on-primary rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all border border-white/10">
+        <button onclick="openAddForCat('${cat}')" class="w-full py-3 bg-gradient-to-r from-primary-container/80 to-primary/80 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-on-primary shadow-[0_4px_12px_rgba(240,165,0,0.25)] active:scale-95 transition-all">
           Eintrag hinzufügen
         </button>
       </div>
@@ -813,15 +821,23 @@ function renderMeals() {
     html += `<div class="space-y-4">`
     emptyCats.forEach(cat => {
       const c = MEAL_COLORS[cat]
-      html += `<div class="bg-surface-container-high/60 backdrop-blur-xl rounded-[24px] p-6 border border-white/5 flex items-center justify-between group cursor-pointer hover:bg-white/5 transition-colors" onclick="openAddForCat('${cat}')">
-        <div class="flex items-center gap-5">
-          <div class="w-12 h-12 rounded-full flex items-center justify-center text-2xl" style="background:${c.bg};border:1px solid ${c.border}">${ICONS[cat]}</div>
+      html += `<div class="bg-surface-container-low rounded-2xl p-4 flex items-center justify-between border border-outline-variant/10 cursor-pointer active:bg-white/5 transition-colors" onclick="openAddForCat('${cat}')">
+        <div class="flex items-center gap-4">
+          <div class="relative w-12 h-12 flex items-center justify-center">
+            <svg class="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 48 48">
+              <circle fill="transparent" cx="24" cy="24" r="20" stroke="rgba(255,255,255,0.06)" stroke-width="4"></circle>
+              <circle fill="transparent" cx="24" cy="24" r="20" stroke="${c.accent}" stroke-dasharray="125" stroke-dashoffset="125" stroke-width="4" stroke-linecap="round" opacity="0.4"></circle>
+            </svg>
+            <span class="material-symbols-outlined text-on-surface" style="font-size:18px">${MEAL_ICONS_MS[cat]}</span>
+          </div>
           <div>
-            <h4 class="font-headline font-bold text-xl uppercase tracking-tighter">${names[cat]}</h4>
-            <p class="text-[10px] font-bold text-on-surface-variant tracking-widest uppercase opacity-60">Keine Einträge</p>
+            <h4 class="font-headline font-black italic text-sm uppercase tracking-tight">${names[cat]}</h4>
+            <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Keine Einträge</p>
           </div>
         </div>
-        <span class="material-symbols-outlined text-primary text-3xl group-hover:scale-110 transition-transform" style="font-variation-settings:'FILL' 1">add_circle</span>
+        <button class="text-primary active:scale-90 transition-transform">
+          <span class="material-symbols-outlined text-4xl" style="font-variation-settings:'FILL' 1">add_circle</span>
+        </button>
       </div>`
     })
     html += `</div>`

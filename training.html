@@ -12,7 +12,37 @@
   <meta name="apple-mobile-web-app-title" content="90TC">
   <link rel="apple-touch-icon" href="icon.svg">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+  tailwind.config = {
+    darkMode:"class",
+    theme:{extend:{colors:{"surface-container":"#191825","surface-container-low":"#0D0D14","surface-container-highest":"#34343f","outline-variant":"#484752","primary":"#ffc56c","primary-container":"#cb9743","on-primary":"#442c00","secondary":"#89ceff","tertiary":"#00ed7d","on-surface":"#e4e1ef","on-surface-variant":"#aca9b7","background":"#03030A","error":"#ff7351"},fontFamily:{"headline":["Space Grotesk"],"body":["Inter"]}}}
+  }
+  </script>
   <style>
+    :root {
+      --bg:#03030A; --card:#0D0D14; --card2:#12121A; --card-alt:#191825;
+      --text:#e4e1ef; --text2:#aca9b7;
+      --accent:#ffc56c; --accent2:#f0a500; --gold:#ffc56c; --gold2:#f0a500;
+      --accent-dim:rgba(255,197,108,0.08); --accent-glow:rgba(255,197,108,0.25);
+      --accent-border:rgba(255,197,108,0.3);
+      --border:rgba(255,255,255,0.08); --border2:rgba(255,255,255,0.15);
+      --green:#22c55e; --green2:#00ed7d; --green-dim:rgba(34,197,94,0.08);
+      --gold-dim:rgba(255,197,108,0.08); --purple:#a855f7; --danger:#ef4444;
+    }
+    .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; }
+    .grainy-overlay { position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:0.04;pointer-events:none;z-index:100; }
+    .no-scrollbar::-webkit-scrollbar { display:none; }
+    .no-scrollbar { -ms-overflow-style:none;scrollbar-width:none; }
+    .active-day-glow { box-shadow:0 0 20px rgba(255,197,108,0.15); }
+    .day-card-stitch { position:relative;flex-shrink:0;width:120px;aspect-ratio:3/4;background:#191825;border-radius:16px;padding:14px;display:flex;flex-direction:column;justify-content:space-between;border:1px solid rgba(255,255,255,0.08);opacity:0.65;transition:opacity 0.2s;overflow:hidden;cursor:pointer; }
+    .day-card-stitch.active { border:2px solid #ffc56c;opacity:1;box-shadow:0 0 20px rgba(255,197,108,0.15); }
+    .day-card-stitch.rest-day { background:#0D0D14;opacity:0.35;border:1px solid rgba(255,255,255,0.04); }
+    .page { padding:max(84px,calc(env(safe-area-inset-top) + 76px)) 16px 120px;min-height:100vh; }
     .week-dots { display:flex; gap:5px; flex-wrap:wrap; margin-top:10px; }
     .week-dot {
       width:20px; height:20px; border-radius:50%;
@@ -242,7 +272,18 @@
     .plan-opt-sub { font-size:12px; color:var(--text2); margin-top:3px; }
   </style>
 </head>
-<body>
+<body class="font-body antialiased">
+<div class="grainy-overlay"></div>
+
+<!-- Top Nav -->
+<nav class="fixed top-0 w-full z-50 bg-neutral-950/80 backdrop-blur-xl flex justify-between items-center px-6 py-4 shadow-[0_8px_32px_rgba(0,0,0,0.8)]">
+  <div class="flex items-center gap-2">
+    <span class="material-symbols-outlined text-amber-500" style="font-variation-settings:'FILL' 1">workspace_premium</span>
+    <span class="text-xl font-black tracking-tighter text-amber-500 italic font-headline uppercase">90TC</span>
+  </div>
+  <span id="topbar-day-train" class="font-headline tracking-tighter uppercase font-bold text-amber-500 text-sm"></span>
+  <div class="absolute bottom-0 left-0 bg-gradient-to-r from-transparent via-amber-500/20 to-transparent h-[1px] w-full"></div>
+</nav>
 
 <!-- Training Onboarding Overlay -->
 <div class="ob-overlay hidden" id="ob-overlay">
@@ -434,12 +475,12 @@
     <div class="page">
 
       <!-- Header -->
-      <div class="dash-header">
-        <div>
-          <div style="font-size:12px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:0.5px" id="header-plan-label">Training</div>
-          <div class="dash-name" style="font-size:22px">Trainingsplan 💪</div>
+      <div style="margin-bottom:20px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:4px">
+          <h2 style="font-family:'Space Grotesk',sans-serif;font-size:clamp(2rem,10vw,3rem);font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:-0.04em;color:#e4e1ef;line-height:1">Trainingsplan</h2>
+          <span id="week-badge" style="font-family:'Space Grotesk',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#ffc56c;padding-bottom:4px">—</span>
         </div>
-        <div id="week-badge" style="background:var(--accent-dim);border:1.5px solid var(--accent-border);color:var(--accent);padding:6px 12px;border-radius:20px;font-size:13px;font-weight:800">W–</div>
+        <p id="header-plan-label" style="font-size:13px;color:#aca9b7;font-weight:500"></p>
       </div>
 
       <!-- Plan Banner -->
@@ -454,14 +495,14 @@
       </div>
 
       <!-- Wochenübersicht -->
-      <div class="card glass mb-12">
+      <div style="margin-bottom:14px;background:#0D0D14;border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:16px">
         <div style="display:flex;justify-content:space-between;align-items:flex-start">
           <div>
-            <div style="font-size:12px;color:var(--text2);font-weight:600;margin-bottom:2px">AKTUELLE WOCHE</div>
-            <div id="week-title" style="font-size:17px;font-weight:800">—</div>
-            <div id="week-sub" style="font-size:12px;color:var(--text2);margin-top:2px">—</div>
+            <div style="font-size:10px;color:#aca9b7;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">AKTUELLE WOCHE</div>
+            <div id="week-title" style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:900;font-style:italic">—</div>
+            <div id="week-sub" style="font-size:12px;color:#aca9b7;margin-top:2px">—</div>
           </div>
-          <div id="deload-pill" style="display:none;background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.4);color:var(--purple);padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700">DELOAD</div>
+          <div id="deload-pill" style="display:none;background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.4);color:#c084fc;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700">DELOAD</div>
         </div>
         <div class="week-dots" id="week-dots"></div>
       </div>
@@ -476,8 +517,8 @@
       </div>
 
       <!-- Tag-Auswahl -->
-      <div class="section-title mb-8">TRAININGSTAGE</div>
-      <div class="day-scroll mb-16" id="day-tabs"></div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#aca9b7;margin-bottom:12px">TRAININGSTAGE</div>
+      <div class="day-scroll no-scrollbar" style="margin-bottom:20px" id="day-tabs"></div>
 
       <!-- Workout Content -->
       <div id="workout-content"></div>
@@ -501,28 +542,32 @@
   </div>
 </div>
 
-<nav class="bnav">
-  <a href="dashboard.html" class="bnav-item">
-    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-    Start
+<!-- Bottom Nav — consistent across all tabs -->
+<footer class="fixed bottom-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-neutral-950/90 backdrop-blur-2xl rounded-t-[32px] border-t border-white/5 shadow-[0_-10px_40px_rgba(0,0,0,0.9)]">
+  <a href="dashboard.html" class="flex flex-col items-center justify-center text-neutral-500 hover:text-amber-200 transition-colors p-2">
+    <span class="material-symbols-outlined text-2xl">home</span>
+    <span class="font-headline text-[10px] uppercase tracking-[0.05em] font-bold">Start</span>
   </a>
-  <a href="essen.html" class="bnav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
-    Ernährung
+  <a href="essen.html" class="flex flex-col items-center justify-center text-neutral-500 hover:text-amber-200 transition-colors p-2">
+    <span class="material-symbols-outlined text-2xl">restaurant</span>
+    <span class="font-headline text-[10px] uppercase tracking-[0.05em] font-bold">Ernährung</span>
   </a>
-  <a href="training.html" class="bnav-item active">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="4" height="8" rx="1"/><rect x="18" y="8" width="4" height="8" rx="1"/><line x1="6" y1="12" x2="10" y2="12"/><line x1="14" y1="12" x2="18" y2="12"/><rect x="10" y="9" width="4" height="6" rx="1"/></svg>
-    Training
+  <!-- Elevated Gold FAB (active — training page) -->
+  <div class="relative -top-10">
+    <div class="absolute inset-0 bg-primary blur-2xl opacity-60 rounded-full"></div>
+    <div class="relative w-16 h-16 bg-gradient-to-tr from-primary-container to-primary rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(240,165,0,0.8)] scale-110">
+      <span class="material-symbols-outlined text-on-primary text-4xl" style="font-variation-settings:'FILL' 1">fitness_center</span>
+    </div>
+  </div>
+  <a href="fortschritt.html" class="flex flex-col items-center justify-center text-neutral-500 hover:text-amber-200 transition-colors p-2">
+    <span class="material-symbols-outlined text-2xl">query_stats</span>
+    <span class="font-headline text-[10px] uppercase tracking-[0.05em] font-bold">Stats</span>
   </a>
-  <a href="fortschritt.html" class="bnav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-    Statistik
+  <a href="profil.html" class="flex flex-col items-center justify-center text-neutral-500 hover:text-amber-200 transition-colors p-2">
+    <span class="material-symbols-outlined text-2xl">person</span>
+    <span class="font-headline text-[10px] uppercase tracking-[0.05em] font-bold">Profil</span>
   </a>
-  <a href="profil.html" class="bnav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    Profil
-  </a>
-</nav>
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js"></script>
@@ -981,6 +1026,9 @@ function renderPlanBanner(planId) {
   document.getElementById('plan-banner-sub').textContent =
     `${plan.tage}×/Woche · ${plan.ort === 'gym' ? 'Studio' : 'Homefit'}`;
   document.getElementById('plan-banner').style.display = 'flex';
+  // Update header label
+  const lbl = document.getElementById('header-plan-label')
+  if (lbl) lbl.textContent = `${plan.split} · ${plan.ort === 'gym' ? 'Studio' : 'Homefit'} · ${plan.tage}×/Woche`
 }
 
 // ── Helpers ──────────────────────────────────────────────────────
@@ -1110,8 +1158,19 @@ async function init() {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('main').style.display = 'block';
 
+  // Topbar day
+  const dayNrTrain = calcDayNr ? calcDayNr(profile.startdatum) : 1
+  const topDayEl = document.getElementById('topbar-day-train')
+  if (topDayEl) topDayEl.textContent = `TAG ${dayNrTrain} 🔥`
+
+  // Plan label in header
+  const planLabel = document.getElementById('header-plan-label')
+  if (planLabel) planLabel.textContent = savedPlanId
+    ? (PLAN_DB.find(p=>p.id===savedPlanId)?.split || 'Training')
+    : 'Training'
+
   // Week badge
-  document.getElementById('week-badge').textContent = 'W' + currentWeek;
+  document.getElementById('week-badge').textContent = 'Woche ' + currentWeek + ' von 12';
   document.getElementById('week-title').textContent = getWeekName(currentWeek);
   document.getElementById('week-sub').textContent = getWeekSub(currentWeek);
   if (currentWeek === 7) {
@@ -1208,19 +1267,35 @@ async function checkTodaySession() {
 }
 
 // ── Day Tabs ─────────────────────────────────────────────────────
+function getTagIconMS(tag) {
+  const k = (tag.kurz || '').toLowerCase()
+  if (k.includes('pause') || k.includes('rest')) return 'hotel'
+  if (k.includes('push')) return 'arrow_upward'
+  if (k.includes('pull')) return 'arrow_downward'
+  if (k.includes('uk') || k.includes('bein') || k.includes('leg')) return 'directions_run'
+  if (k.includes('ok') || k.includes('ober')) return 'horizontal_distribute'
+  return 'fitness_center'
+}
+
 function renderDayTabs() {
-  const el = document.getElementById('day-tabs');
-  el.innerHTML = '';
+  const el = document.getElementById('day-tabs')
+  el.innerHTML = ''
   TAGE.forEach((tag, i) => {
-    const div = document.createElement('div');
-    div.className = 'day-card' + (i === selectedDay ? ' active' : '');
-    div.innerHTML = `<div class="day-card-nr">${tag.label}</div>
-      <div class="day-card-icon">${tag.icon}</div>
-      <div class="day-card-type">${tag.kurz}</div>
-      <div class="day-card-sub">${tag.typ}</div>`;
-    div.onclick = () => { selectedDay = i; renderDayTabs(); renderWorkout(); };
-    el.appendChild(div);
-  });
+    const isActive = i === selectedDay
+    const isRest = (tag.kurz || '').toLowerCase().includes('pause') || (tag.typ || '').toLowerCase().includes('pause')
+    const icon = getTagIconMS(tag)
+    const div = document.createElement('div')
+    div.className = 'day-card-stitch' + (isActive ? ' active' : '') + (isRest ? ' rest-day' : '')
+    div.innerHTML = `
+      ${isActive ? '<div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,197,108,0.12),transparent);pointer-events:none"></div>' : ''}
+      <span class="material-symbols-outlined" style="font-size:26px;color:${isActive?'#ffc56c':'#aca9b7'}">${icon}</span>
+      <div>
+        <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:${isActive?'rgba(255,197,108,0.8)':'#aca9b7'};margin-bottom:2px">${tag.label}</p>
+        <p style="font-family:'Space Grotesk',sans-serif;font-weight:900;font-style:italic;font-size:14px;line-height:1.1;text-transform:uppercase;color:#e4e1ef">${tag.kurz}</p>
+      </div>`
+    div.onclick = () => { selectedDay = i; renderDayTabs(); renderWorkout() }
+    el.appendChild(div)
+  })
 }
 
 // ── Workout Content ───────────────────────────────────────────────
@@ -1244,11 +1319,14 @@ function renderWorkout() {
 
   // Start button if no active session today
   if (!activeSession && !isDone) {
-    html += `<div class="card glass" style="text-align:center;padding:20px;margin-bottom:16px">
-      <div style="font-size:13px;color:var(--text2);margin-bottom:4px">Bereit für heute?</div>
-      <div style="font-size:16px;font-weight:800;margin-bottom:4px">${tag.typ}</div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:16px">${tag.muster.length} Bewegungsmuster · ${getRIRLabel(getRIR(currentWeek))}</div>
-      <button class="start-workout-btn" onclick="startSession('${tag.id}')">Training starten 🚀</button>
+    html += `<div style="border-radius:20px;padding:20px;margin-bottom:16px;background:linear-gradient(135deg,rgba(255,197,108,0.05),rgba(0,0,0,0));border:1px solid rgba(255,197,108,0.12)">
+      <p style="font-size:10px;color:#aca9b7;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Bereit für heute?</p>
+      <p style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:900;font-style:italic;text-transform:uppercase;margin-bottom:2px">${tag.typ}</p>
+      <p style="font-size:12px;color:#aca9b7;margin-bottom:16px">${tag.muster.length} Bewegungsmuster · ${getRIRLabel(getRIR(currentWeek))}</p>
+      <button onclick="startSession('${tag.id}')" style="width:100%;padding:18px 24px;border-radius:16px;border:none;background:linear-gradient(135deg,#ffc56c,#cb9743);color:#321f00;font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:0.05em;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 8px 32px rgba(255,197,108,0.25);transition:transform 0.15s" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
+        <span class="material-symbols-outlined" style="font-size:22px;font-variation-settings:'FILL' 1">rocket_launch</span>
+        Training starten
+      </button>
     </div>`;
   } else if (activeSession && todayTag !== tag.id && !isDone) {
     // Different day was done
