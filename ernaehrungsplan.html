@@ -125,6 +125,8 @@ tailwind.config = {
   .gender-btn { flex:1;padding:14px;border-radius:16px;cursor:pointer;transition:all .15s;border:1.5px solid rgba(72,71,82,0.35);background:rgba(18,18,26,0.8);color:#aca9b7;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:900;font-style:italic;text-transform:uppercase;text-align:center; }
   .gender-btn.selected { border-color:rgba(255,197,108,0.5);background:rgba(255,197,108,0.1);color:#ffc56c; }
 
+  .no-scrollbar::-webkit-scrollbar { display:none; }
+  .no-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
   #toast { position:fixed;bottom:88px;left:50%;transform:translateX(-50%) translateY(12px);background:#12121a;color:#e4e1ef;border:1px solid rgba(255,255,255,.12);padding:10px 20px;border-radius:9999px;font-size:13px;font-weight:600;z-index:500;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;white-space:nowrap; }
   #toast.show { opacity:1;transform:translateX(-50%) translateY(0); }
 </style>
@@ -278,6 +280,14 @@ tailwind.config = {
 <div id="plan-builder" style="display:none">
   <div class="px-4 max-w-lg mx-auto pb-12" style="padding-top:max(96px,calc(env(safe-area-inset-top)+80px))">
 
+    <!-- Plan Tabs -->
+    <div class="mb-5">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="font-label text-[9px] uppercase tracking-widest text-on-surface-variant font-bold">Meine Pläne</span>
+      </div>
+      <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar" id="plan-tabs" style="-webkit-overflow-scrolling:touch;"></div>
+    </div>
+
     <!-- Macro Rings -->
     <section class="flex flex-col items-center mb-6">
       <div class="relative" style="width:220px;height:220px;">
@@ -411,10 +421,15 @@ let profile = null
 let selectedGoal = null
 let selectedGender = 'm'
 let targets = { kcal:0, prot:0, fett:0, carbs:0 }
-let plan = { frühstück:[], mittagessen:[], abendessen:[], snack:[] }
+let plans = []          // [{ id, name, meals:{frühstück:[],mittagessen:[],abendessen:[],snack:[]} }]
+let activePlanId = null
 let activeMeal = null
 let pendingProduct = null
 let _srPlan = []
+
+function emptyMeals() { return { frühstück:[], mittagessen:[], abendessen:[], snack:[] } }
+function getActivePlan() { return plans.find(p => p.id === activePlanId) || plans[0] }
+function cm() { return getActivePlan()?.meals || emptyMeals() } // current meals shorthand
 
 const MEAL_META = {
   frühstück:  { label:'Frühstück',  icon:'free_breakfast', color:'#ffc56c', border:'rgba(255,197,108,0.28)', bg:'rgba(255,197,108,0.07)', photo:'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=600&q=70' },
@@ -508,12 +523,60 @@ function setupBuilder() {
   document.getElementById('stat-prot-t').textContent = targets.prot
   document.getElementById('stat-fett-t').textContent = targets.fett
   document.getElementById('stat-carbs-t').textContent = targets.carbs
+  renderPlanTabs()
   renderMealCards()
   updateRings()
 }
 
+function renderPlanTabs() {
+  const wrap = document.getElementById('plan-tabs')
+  wrap.innerHTML = plans.map(p => {
+    const active = p.id === activePlanId
+    const total = Object.values(p.meals).flat().reduce((s,f)=>s+(f.kcal||0),0)
+    return `<button onclick="switchPlan('${p.id}')" oncontextmenu="renamePlan('${p.id}');return false"
+      style="flex-shrink:0;padding:10px 16px;border-radius:50px;border:1.5px solid ${active?'rgba(255,197,108,0.5)':'rgba(72,71,82,0.35)'};background:${active?'rgba(255,197,108,0.1)':'rgba(18,18,26,0.8)'};color:${active?'#ffc56c':'#aca9b7'};font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:900;font-style:italic;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:all .15s;">
+      ${p.name}${total?`<span style="font-size:10px;opacity:0.7;margin-left:6px;">${total} kcal</span>`:''}
+    </button>`
+  }).join('') + `
+  <button onclick="addNewPlan()" style="flex-shrink:0;padding:10px 14px;border-radius:50px;border:1.5px dashed rgba(72,71,82,0.4);background:rgba(18,18,26,0.5);color:#757481;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:900;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px;">
+    <span class="material-symbols-outlined" style="font-size:16px;">add</span> Neuer Plan
+  </button>`
+}
+
+function switchPlan(id) {
+  activePlanId = id
+  localStorage.setItem('90tc_active_plan_id', id)
+  renderPlanTabs()
+  renderMealCards()
+  updateRings()
+}
+
+function addNewPlan() {
+  const name = prompt('Name für den neuen Plan:', 'Plan ' + (plans.length + 1))
+  if (!name) return
+  const id = Date.now().toString(36)
+  plans.push({ id, name: name.trim(), meals: emptyMeals() })
+  activePlanId = id
+  savePlans()
+  renderPlanTabs()
+  renderMealCards()
+  updateRings()
+  showToast(`"${name}" erstellt ✓`)
+}
+
+function renamePlan(id) {
+  const p = plans.find(x => x.id === id)
+  if (!p) return
+  const newName = prompt('Plan umbenennen:', p.name)
+  if (!newName || newName === p.name) return
+  p.name = newName.trim()
+  savePlans()
+  renderPlanTabs()
+  showToast('Umbenannt ✓')
+}
+
 function planTotals() {
-  return Object.values(plan).flat().reduce((a, f) => ({
+  return Object.values(cm()).flat().reduce((a, f) => ({
     kcal: a.kcal + (f.kcal||0),
     prot: a.prot + (f.prot||0),
     fett: a.fett + (f.fett||0),
@@ -550,8 +613,9 @@ function updateRings() {
 
 function renderMealCards() {
   const wrap = document.getElementById('meal-cards-wrap')
+  const meals = cm()
   wrap.innerHTML = Object.entries(MEAL_META).map(([key, m]) => {
-    const items = plan[key] || []
+    const items = meals[key] || []
     const mealKcal = items.reduce((s,f) => s+(f.kcal||0), 0)
     const mealProt = items.reduce((s,f) => s+(f.prot||0), 0)
     const mealFett = items.reduce((s,f) => s+(f.fett||0), 0)
@@ -608,19 +672,20 @@ function renderMealCards() {
 }
 
 function removeFood(meal, idx) {
-  plan[meal].splice(idx, 1)
+  cm()[meal].splice(idx, 1)
   renderMealCards()
   updateRings()
-  autoSave()
+  savePlans()
 }
 
 function savePlan() {
-  localStorage.setItem('90tc_plan_v1', JSON.stringify(plan))
-  showToast('Standardtag gespeichert ✓')
+  savePlans()
+  showToast(`"${getActivePlan()?.name || 'Plan'}" gespeichert ✓`)
 }
 
-function autoSave() {
-  localStorage.setItem('90tc_plan_v1', JSON.stringify(plan))
+function savePlans() {
+  localStorage.setItem('90tc_plans_v2', JSON.stringify(plans))
+  localStorage.setItem('90tc_active_plan_id', activePlanId || '')
 }
 
 // ── Search ─────────────────────────────────────
@@ -706,7 +771,7 @@ function confirmAdd() {
   if (!pendingProduct || !activeMeal) return
   const g = parseFloat(document.getElementById('menge-val').value) || 100
   const f = g/100, p = pendingProduct
-  plan[activeMeal].push({
+  cm()[activeMeal].push({
     name: p.name,
     amount: g,
     kcal: p.kcal100!=null ? Math.round(p.kcal100*f) : 0,
@@ -717,7 +782,7 @@ function confirmAdd() {
   closeMenge()
   renderMealCards()
   updateRings()
-  autoSave()
+  savePlans()
   showToast(`${MEAL_META[activeMeal].label}: ${p.name} hinzugefügt ✓`)
 }
 
@@ -766,12 +831,15 @@ async function searchProducts(query) {
 
 // ── Reset ──────────────────────────────────────
 document.getElementById('btn-reset').addEventListener('click', () => {
-  if (!confirm('Plan zurücksetzen? Alle Mahlzeiten werden gelöscht.')) return
-  plan = { frühstück:[], mittagessen:[], abendessen:[], snack:[] }
-  localStorage.removeItem('90tc_plan_v1')
+  const p = getActivePlan()
+  if (!p) return
+  if (!confirm(`"${p.name}" leeren? Alle Mahlzeiten werden gelöscht.`)) return
+  p.meals = emptyMeals()
+  savePlans()
+  renderPlanTabs()
   renderMealCards()
   updateRings()
-  showToast('Plan zurückgesetzt')
+  showToast(`"${p.name}" geleert`)
 })
 
 // ── Init ───────────────────────────────────────
@@ -786,8 +854,24 @@ async function init() {
     carbs: profile.carbs_ziel_g   || 0,
   }
 
-  // Load saved plan
-  try { const saved = localStorage.getItem('90tc_plan_v1'); if (saved) plan = JSON.parse(saved) } catch(e) {}
+  // Load saved plans (v2 multi-plan format)
+  try {
+    const saved = localStorage.getItem('90tc_plans_v2')
+    if (saved) {
+      plans = JSON.parse(saved)
+    } else {
+      // Migrate from old single-plan format
+      const oldPlan = localStorage.getItem('90tc_plan_v1')
+      const meals = oldPlan ? JSON.parse(oldPlan) : emptyMeals()
+      plans = [{ id: 'default', name: 'Standardtag', meals }]
+    }
+    // Restore active plan
+    const savedId = localStorage.getItem('90tc_active_plan_id')
+    activePlanId = (savedId && plans.find(p => p.id === savedId)) ? savedId : plans[0]?.id
+  } catch(e) {
+    plans = [{ id: 'default', name: 'Standardtag', meals: emptyMeals() }]
+    activePlanId = 'default'
+  }
 
   document.getElementById('splash').style.display = 'none'
   document.getElementById('app-wrap').style.display = 'block'

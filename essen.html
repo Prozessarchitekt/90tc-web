@@ -290,20 +290,29 @@ tailwind.config = {
   <!-- Search Results -->
   <div id="search-results" style="display:none" class="-mt-4"></div>
 
-  <!-- Standardtag laden -->
+  <!-- Plan laden -->
   <div id="load-plan-section" style="display:none">
-    <button onclick="loadStandardday()" class="w-full flex items-center justify-between px-5 py-4 rounded-[18px] border active:scale-[.98] transition-all" style="background:rgba(255,197,108,0.07);border-color:rgba(255,197,108,0.22);box-shadow:0 0 24px rgba(255,197,108,0.06);">
+    <button onclick="openPlanPicker()" class="w-full flex items-center justify-between px-5 py-4 rounded-[18px] border active:scale-[.98] transition-all" style="background:rgba(255,197,108,0.07);border-color:rgba(255,197,108,0.22);box-shadow:0 0 24px rgba(255,197,108,0.06);">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-[14px] flex items-center justify-center flex-shrink-0" style="background:rgba(255,197,108,0.15);border:1px solid rgba(255,197,108,0.25);">
           <span class="material-symbols-outlined text-primary" style="font-size:20px;font-variation-settings:'FILL' 1;">calendar_today</span>
         </div>
         <div>
-          <div class="font-headline font-black italic uppercase text-sm text-primary" style="letter-spacing:-0.01em;">Standardtag laden</div>
-          <div class="font-label text-[9px] uppercase tracking-widest text-on-surface-variant">Deinen Plan als Basis eintragen</div>
+          <div class="font-headline font-black italic uppercase text-sm text-primary" style="letter-spacing:-0.01em;">Plan laden</div>
+          <div class="font-label text-[9px] uppercase tracking-widest text-on-surface-variant" id="plan-count-label">Deinen Standardtag als Basis eintragen</div>
         </div>
       </div>
       <span class="material-symbols-outlined text-primary" style="font-size:20px;">arrow_forward_ios</span>
     </button>
+  </div>
+
+  <!-- Plan Picker Sheet -->
+  <div id="plan-picker-overlay" onclick="closePlanPicker()" style="display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,0.8);backdrop-filter:blur(16px);align-items:flex-end;">
+    <div onclick="event.stopPropagation()" style="width:100%;background:linear-gradient(180deg,#191825,#0d0d17);border:1.5px solid rgba(255,197,108,0.15);border-bottom:none;border-radius:28px 28px 0 0;padding:0 20px max(28px,env(safe-area-inset-bottom));">
+      <div style="padding:14px;display:flex;justify-content:center;"><div style="width:40px;height:4px;background:rgba(255,197,108,0.3);border-radius:2px;"></div></div>
+      <p class="font-headline font-black italic uppercase text-primary mb-4" style="font-size:1.1rem;letter-spacing:-0.02em;">Plan wählen</p>
+      <div id="plan-picker-list"></div>
+    </div>
   </div>
 
   <!-- ── Meal Sections ── -->
@@ -972,27 +981,88 @@ async function transferToCheckin() {
   setTimeout(() => window.location.href = 'checkin.html', 900)
 }
 
-// ── Standardtag laden ─────────────────────────────────
-async function loadStandardday() {
+// ── Plan Picker ────────────────────────────────────────
+function getPlans() {
   try {
-    const saved = localStorage.getItem('90tc_plan_v1')
-    if (!saved) { showToast('Kein Plan gespeichert', 'error'); return }
-    const plan = JSON.parse(saved)
-    const meals = Object.entries(plan)
+    const v2 = localStorage.getItem('90tc_plans_v2')
+    if (v2) return JSON.parse(v2)
+    // migrate v1 → v2
+    const v1 = localStorage.getItem('90tc_plan_v1')
+    if (v1) {
+      const old = JSON.parse(v1)
+      const migrated = [{ id: 'default', name: 'Standardtag', meals: old }]
+      localStorage.setItem('90tc_plans_v2', JSON.stringify(migrated))
+      return migrated
+    }
+  } catch(e) {}
+  return []
+}
+
+function openPlanPicker() {
+  const plans = getPlans()
+  const list = document.getElementById('plan-picker-list')
+  if (!plans.length) {
+    list.innerHTML = '<p style="color:#757481;font-size:13px;text-align:center;padding:20px 0 12px;">Noch keine Pläne erstellt.<br>Erstelle zuerst einen Ernährungsplan.</p>' +
+      '<a href="ernaehrungsplan.html" style="display:block;width:100%;text-align:center;padding:12px;border-radius:14px;background:rgba(255,197,108,0.12);color:#ffc56c;font-size:14px;font-weight:700;letter-spacing:0.04em;margin-bottom:16px;" class="font-headline uppercase italic">Plan erstellen →</a>'
+  } else {
+    list.innerHTML = plans.map(p => {
+      const allItems = Object.values(p.meals || {}).flat()
+      const total = allItems.reduce((s, f) => s + (f.kcal || 0), 0)
+      const count = allItems.length
+      return `<button onclick="loadPlan('${p.id}')" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-radius:16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,197,108,0.12);margin-bottom:10px;text-align:left;cursor:pointer;active:background:rgba(255,197,108,0.1);">
+        <div>
+          <div style="color:#e8e0f0;font-size:15px;font-weight:700;font-family:'Space Grotesk',sans-serif;">${p.name}</div>
+          <div style="color:#757481;font-size:12px;margin-top:2px;">${count} Produkte · ${Math.round(total)} kcal</div>
+        </div>
+        <span class="material-symbols-outlined" style="color:#ffc56c;font-size:20px;">chevron_right</span>
+      </button>`
+    }).join('') +
+    `<a href="ernaehrungsplan.html" style="display:block;width:100%;text-align:center;padding:11px;border-radius:14px;border:1px dashed rgba(255,197,108,0.2);color:#757481;font-size:12px;font-weight:600;letter-spacing:0.04em;margin-top:4px;margin-bottom:16px;">+ Neuen Plan erstellen</a>`
+  }
+  document.getElementById('plan-picker-overlay').style.display = 'flex'
+}
+
+function closePlanPicker() {
+  document.getElementById('plan-picker-overlay').style.display = 'none'
+}
+
+async function loadPlan(planId) {
+  closePlanPicker()
+  const plans = getPlans()
+  const plan = plans.find(p => p.id === planId)
+  if (!plan) { showToast('Plan nicht gefunden', 'error'); return }
+  try {
+    const meals = plan.meals || {}
     let added = 0
-    for (const [mahlzeit, items] of meals) {
-      for (const item of items) {
-        const meal = { user_id:currentUser.id, datum:getToday(), mahlzeit, produkt_name:item.name, barcode:null, menge_g:item.amount,
-          kcal_100g:null, protein_100g:null, fett_100g:null, carbs_100g:null,
-          kalorien:item.kcal, protein_g:item.prot, fett_g:item.fett, carbs_g:item.carbs }
-        const { data } = await sb.from('meal_entries').insert(meal).select().single()
+    for (const [mahlzeit, items] of Object.entries(meals)) {
+      for (const item of (items || [])) {
+        const entry = {
+          user_id: currentUser.id, datum: getToday(), mahlzeit,
+          produkt_name: item.name, barcode: null, menge_g: item.amount || item.menge_g || 100,
+          kcal_100g: null, protein_100g: null, fett_100g: null, carbs_100g: null,
+          kalorien: item.kcal || item.kalorien, protein_g: item.prot || item.protein_g,
+          fett_g: item.fett || item.fett_g, carbs_g: item.carbs || item.carbs_g
+        }
+        const { data } = await sb.from('meal_entries').insert(entry).select().single()
         if (data) { todayMeals.push(data); added++ }
       }
     }
     document.getElementById('load-plan-section').style.display = 'none'
     renderMeals(); syncTotals()
-    showToast(`${added} Produkte aus Standardtag geladen ✓`)
+    showToast(`${added} Produkte aus "${plan.name}" geladen ✓`)
   } catch(e) { showToast('Fehler beim Laden', 'error') }
+}
+
+// kept for backward compat (old HTML button still calls this)
+async function loadStandardday() {
+  const plans = getPlans()
+  if (plans.length === 1) {
+    await loadPlan(plans[0].id)
+  } else if (plans.length > 1) {
+    openPlanPicker()
+  } else {
+    showToast('Kein Plan gespeichert', 'error')
+  }
 }
 
 // ── Wire up ────────────────────────────────────────────
@@ -1036,10 +1106,14 @@ async function init() {
   todayMeals = meals || []
   renderMeals()
 
-  // Show "Standardtag laden" if plan exists and no meals logged yet today
-  const hasPlan = !!localStorage.getItem('90tc_plan_v1')
-  if (hasPlan && todayMeals.length === 0) {
+  // Show "Standardtag laden" if plan(s) exist and no meals logged yet today
+  const savedPlans = getPlans()
+  if (savedPlans.length > 0 && todayMeals.length === 0) {
     document.getElementById('load-plan-section').style.display = 'block'
+    const lbl = document.getElementById('plan-count-label')
+    if (lbl) lbl.textContent = savedPlans.length === 1
+      ? savedPlans[0].name
+      : `${savedPlans.length} Pläne verfügbar`
   }
 
   document.getElementById('splash').style.display = 'none'
