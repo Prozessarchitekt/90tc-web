@@ -907,9 +907,9 @@ async function init() {
   // Measure actual header height and apply to content containers
   requestAnimationFrame(() => {
     const hdr = document.querySelector('header')
-    const h = hdr ? hdr.getBoundingClientRect().bottom + 16 : 180
+    const h = hdr ? hdr.getBoundingClientRect().bottom + 8 : 120
     document.querySelectorAll('#onboarding > div, #plan-builder > div').forEach(el => {
-      el.style.paddingTop = Math.max(h, 180) + 'px'
+      el.style.paddingTop = h + 'px'
     })
   })
 
