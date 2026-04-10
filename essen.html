@@ -608,7 +608,7 @@ async function searchProducts(query) {
     const parsed = prods
       .filter(p => p.product_name || p.product_name_de || p.generic_name_de || p.generic_name)
       .map(parseOFFProduct)
-      .filter(p => p?.kcal100 != null)
+      .filter(p => p != null)
     parsed.sort((a, b) => {
       const na = (a.name||'').toLowerCase(), nb = (b.name||'').toLowerCase()
       const aS = na.startsWith(q), bS = nb.startsWith(q)
@@ -672,12 +672,20 @@ function parseFSSearchItem(food) {
 
 function parseOFFProduct(p) {
   const n = p.nutriments||{}
-  const raw = n['energy-kcal_100g']??n['energy-kcal_value']??n['energy-kcal']??null
-  const kcal = raw??(n['energy_100g'] ? Math.round(n['energy_100g']/4.184) : null)
+  const raw = n['energy-kcal_100g']??n['energy-kcal_value']??n['energy-kcal']
+               ??n['energy-kcal_serving']??null
+  const kcal = raw != null ? raw : (n['energy_100g'] ? Math.round(n['energy_100g']/4.184) : null)
   const name = p.product_name_de||p.product_name||p.generic_name_de||p.generic_name||'—'
-  return { name:name.charAt(0).toUpperCase()+name.slice(1), brand:(p.brands||'').split(',')[0].trim(), barcode:p.code||'', image:p.image_small_url||null,
-    kcal100:kcal!=null?Math.round(kcal):null, protein100:n.proteins_100g!=null?Math.round(n.proteins_100g*10)/10:null,
-    fett100:n.fat_100g!=null?Math.round(n.fat_100g*10)/10:null, carbs100:n.carbohydrates_100g!=null?Math.round(n.carbohydrates_100g*10)/10:null }
+  return {
+    name: name.charAt(0).toUpperCase()+name.slice(1),
+    brand: (p.brands||'').split(',')[0].trim(),
+    barcode: p.code||'',
+    image: p.image_small_url||null,
+    kcal100: kcal != null ? Math.round(kcal) : null,
+    protein100: n.proteins_100g != null ? Math.round(n.proteins_100g*10)/10 : null,
+    fett100: n.fat_100g != null ? Math.round(n.fat_100g*10)/10 : null,
+    carbs100: n.carbohydrates_100g != null ? Math.round(n.carbohydrates_100g*10)/10 : null
+  }
 }
 
 // ── Scanner ────────────────────────────────────────────
