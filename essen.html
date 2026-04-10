@@ -164,7 +164,7 @@ tailwind.config = {
   }
 </style>
 </head>
-<body class="text-on-surface font-body selection:bg-primary/30 antialiased overflow-x-hidden">
+<body class="text-on-surface font-body selection:bg-primary/30 antialiased overflow-x-hidden" style="overflow-x:hidden;max-width:100vw;">
 
 <div class="grainy-overlay"></div>
 <div id="splash"><div class="spinner"></div></div>
@@ -183,7 +183,7 @@ tailwind.config = {
   <div class="absolute bottom-0 left-0 bg-gradient-to-r from-transparent via-amber-500/20 to-transparent h-[1px] w-full"></div>
 </nav>
 
-<main class="pt-28 pb-28 px-4 max-w-lg mx-auto space-y-5 relative">
+<main class="pt-28 pb-28 px-4 max-w-lg mx-auto space-y-5 relative" style="overflow-x:hidden;">
 
   <!-- ── Hero Header ── -->
   <header class="relative">
@@ -538,11 +538,11 @@ async function lookupBarcode(code) {
     return null
   })()
 
-  // OpenFoodFacts: parallel race (DE first, world fallback)
+  // OpenFoodFacts: world first (fastest), DE as fallback
   const offPromise = (async () => {
-    for (const base of ['https://de.openfoodfacts.org','https://world.openfoodfacts.org']) {
+    for (const base of ['https://world.openfoodfacts.org','https://de.openfoodfacts.org']) {
       try {
-        const r = await fetch(`${base}/api/v2/product/${code}?fields=${fields}`, { signal:AbortSignal.timeout(4000) })
+        const r = await fetch(`${base}/api/v2/product/${code}?fields=${fields}`, { signal:AbortSignal.timeout(5000) })
         const d = await r.json()
         if (d.status === 1 && d.product) { const p = parseOFFProduct(d.product); if (p?.kcal100 != null) return p }
       } catch(e) {}
@@ -562,18 +562,44 @@ async function lookupBarcode(code) {
 }
 
 async function searchProducts(query) {
-  const fs = await fsGet({ method:'foods.search', search_expression:query, max_results:20 })
-  if (fs?.foods?.food) {
-    const items = Array.isArray(fs.foods.food) ? fs.foods.food : [fs.foods.food]
-    const results = items.map(parseFSSearchItem).filter(p => p?.kcal100 != null)
-    if (results.length > 0) return results
-  }
-  try {
-    const url = 'https://world.openfoodfacts.org/cgi/search.pl?' + new URLSearchParams({ search_terms:query, action:'process', json:'1', page_size:'20', fields:'product_name,product_name_de,brands,nutriments,image_small_url,code', sort_by:'popularity', countries_tags:'en:germany' })
-    const r = await fetch(url)
-    const d = await r.json()
-    return (d.products||[]).filter(p => p.product_name||p.product_name_de).map(parseOFFProduct).filter(p => p?.kcal100 != null)
-  } catch(e) { return [] }
+  // Try FatSecret first (may fail due to CORS in browser, silent fallback)
+  const fsPromise = (async () => {
+    const fs = await fsGet({ method:'foods.search', search_expression:query, max_results:20 })
+    if (fs?.foods?.food) {
+      const items = Array.isArray(fs.foods.food) ? fs.foods.food : [fs.foods.food]
+      const results = items.map(parseFSSearchItem).filter(p => p?.kcal100 != null)
+      if (results.length > 0) return results
+    }
+    return null
+  })()
+
+  // OpenFoodFacts: try v2 API (better, no country filter) and legacy in parallel
+  const offPromise = (async () => {
+    const fields = 'product_name,product_name_de,generic_name,generic_name_de,brands,nutriments,image_small_url,code'
+    const attempts = [
+      // OFF v2 search — global, no country restriction
+      fetch(`https://world.openfoodfacts.org/api/v2/search?search_terms=${encodeURIComponent(query)}&fields=${fields}&page_size=20&sort_by=popularity`, { signal:AbortSignal.timeout(5000) }),
+      // OFF legacy — no country filter
+      fetch(`https://world.openfoodfacts.org/cgi/search.pl?` + new URLSearchParams({ search_terms:query, action:'process', json:'1', page_size:'20', fields, sort_by:'popularity' }), { signal:AbortSignal.timeout(5000) }),
+    ]
+    for (const req of attempts) {
+      try {
+        const r = await req
+        const d = await r.json()
+        const prods = d.products || d.foods || []
+        const parsed = prods
+          .filter(p => p.product_name || p.product_name_de || p.generic_name_de)
+          .map(parseOFFProduct)
+          .filter(p => p?.kcal100 != null)
+        if (parsed.length > 0) return parsed
+      } catch(e) {}
+    }
+    return null
+  })()
+
+  const fsResult = await fsPromise
+  if (fsResult) return fsResult
+  return await offPromise || []
 }
 
 function parseFSProduct(food) {
