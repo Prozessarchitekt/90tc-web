@@ -1,605 +1,432 @@
 <!DOCTYPE html>
-<html lang="de">
+<html class="dark" lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>90TC — Profil</title>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#ffc56c">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="90TC">
-  <link rel="apple-touch-icon" href="icon.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>90TC — Profil</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#ffc56c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "on-secondary-fixed": "#001e2f",
+        "on-error-container": "#ffdad6",
+        "surface-container-highest": "#34343f",
+        "on-tertiary-fixed": "#00210c",
+        "tertiary-fixed-dim": "#00e478",
+        "surface-container-lowest": "#0d0d17",
+        "on-tertiary-fixed-variant": "#005227",
+        "surface-container-high": "#292934",
+        "secondary-container": "#00a2e6",
+        "surface": "#13121c",
+        "surface-container-low": "#1b1b25",
+        "on-tertiary-container": "#005126",
+        "on-primary-fixed-variant": "#614000",
+        "inverse-on-surface": "#302f3a",
+        "on-error": "#690005",
+        "on-primary-container": "#5f3f00",
+        "primary-fixed": "#ffddaf",
+        "on-secondary-fixed-variant": "#004c6e",
+        "inverse-primary": "#805600",
+        "surface-variant": "#34343f",
+        "on-secondary": "#00344d",
+        "on-primary": "#442c00",
+        "on-surface-variant": "#d6c4ac",
+        "tertiary": "#00ed7d",
+        "surface-dim": "#13121c",
+        "error": "#ffb4ab",
+        "surface-bright": "#393843",
+        "surface-container": "#1f1f29",
+        "inverse-surface": "#e4e1ef",
+        "secondary": "#89ceff",
+        "on-secondary-container": "#00344e",
+        "on-tertiary": "#003919",
+        "surface-tint": "#ffba44",
+        "on-background": "#e4e1ef",
+        "on-primary-fixed": "#281800",
+        "secondary-fixed-dim": "#89ceff",
+        "secondary-fixed": "#c9e6ff",
+        "primary": "#ffc56c",
+        "outline-variant": "#514533",
+        "on-surface": "#e4e1ef",
+        "tertiary-fixed": "#60ff98",
+        "primary-container": "#f0a500",
+        "outline": "#9f8e79",
+        "background": "#13121c",
+        "error-container": "#93000a",
+        "tertiary-container": "#00ce6c",
+        "primary-fixed-dim": "#ffba44"
+      },
+      borderRadius: {
+        "DEFAULT": "0.25rem",
+        "lg": "0.5rem",
+        "xl": "0.75rem",
+        "full": "9999px"
+      },
+      fontFamily: {
+        "headline": ["Space Grotesk"],
+        "body": ["Inter"],
+        "label": ["Inter"]
+      }
+    }
+  }
+}
+</script>
+<style>
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+  .grainy-overlay {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.03;
+    pointer-events: none;
+  }
+  body { min-height: max(884px, 100dvh); }
 
-    :root {
-      --bg:       #0e0d16;
-      --surface:  #171624;
-      --card:     #1c1b2e;
-      --border:   rgba(255,255,255,.07);
-      --gold:     #ffc56c;
-      --gold-dk:  #f0a500;
-      --green:    #00ed7d;
-      --blue:     #89ceff;
-      --orange:   #ff9f43;
-      --danger:   #ff4d6d;
-      --muted:    #4a4866;
-      --text1:    #f0edf8;
-      --text2:    #9994b0;
-    }
+  /* Splash */
+  #splash {
+    position: fixed; inset: 0; z-index: 9999;
+    background: #13121c;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .spinner {
+    width: 40px; height: 40px;
+    border: 3px solid #2a2838; border-top-color: #ffc56c;
+    border-radius: 50%; animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
-    body {
-      background: var(--bg);
-      color: var(--text1);
-      font-family: 'Inter', sans-serif;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
+  /* Toast */
+  #toast {
+    position: fixed; bottom: 88px; left: 50%;
+    transform: translateX(-50%) translateY(12px);
+    background: #1b1b25; color: #e4e1ef;
+    border: 1px solid rgba(255,255,255,.12);
+    padding: 10px 20px; border-radius: 9999px;
+    font-size: 13px; font-weight: 600; z-index: 200;
+    opacity: 0; transition: opacity .25s, transform .25s;
+    pointer-events: none; white-space: nowrap;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #toast.error { border-color: #ffb4ab; color: #ffb4ab; }
 
-    /* Grain */
-    body::after {
-      content: '';
-      position: fixed; inset: 0; z-index: 0; pointer-events: none;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
-      background-size: 180px;
-    }
-
-    /* ── Splash ── */
-    #splash {
-      position: fixed; inset: 0; z-index: 9999;
-      background: var(--bg);
-      display: flex; align-items: center; justify-content: center;
-    }
-    .spinner {
-      width: 40px; height: 40px;
-      border: 3px solid #2a2838;
-      border-top-color: var(--gold);
-      border-radius: 50%;
-      animation: spin .8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ── Scroll container ── */
-    #main { position: relative; z-index: 1; max-width: 430px; margin: 0 auto; padding-bottom: 90px; }
-
-    /* ── Top bar ── */
-    .topbar {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 52px 20px 16px;
-    }
-    .topbar-logo {
-      font-family: 'Space Grotesk', sans-serif;
-      font-weight: 900; font-size: 20px; color: var(--gold);
-      letter-spacing: .04em;
-    }
-    .topbar-stats {
-      display: flex; align-items: center; gap: 14px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 6px 14px; font-size: 13px; font-weight: 700;
-    }
-    .topbar-stat { display: flex; align-items: center; gap: 5px; }
-
-    /* ── Hero ── */
-    .hero {
-      padding: 8px 20px 24px;
-      display: flex; flex-direction: column; align-items: center; gap: 4px;
-      position: relative;
-    }
-    .hero-orb {
-      position: absolute; border-radius: 50%; filter: blur(90px); pointer-events: none; z-index: 0;
-    }
-    .hero-avatar-wrap {
-      position: relative; z-index: 1; cursor: pointer; margin-bottom: 20px;
-    }
-    .hero-avatar {
-      width: 96px; height: 96px;
-      border-radius: 18px;
-      background: #232235;
-      border: 2px solid var(--gold);
-      box-shadow: 0 0 30px rgba(255,197,108,.35), 0 0 60px rgba(255,197,108,.15);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 42px; overflow: hidden;
-    }
-    .hero-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 16px; }
-    .hero-level-chip {
-      position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%);
-      background: var(--gold); color: #0e0d16;
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 11px; font-weight: 800; letter-spacing: .06em;
-      padding: 4px 10px; border-radius: 999px; white-space: nowrap;
-    }
-    .hero-avatar-cam {
-      position: absolute; top: -6px; right: -6px;
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 50%; width: 26px; height: 26px;
-      display: flex; align-items: center; justify-content: center; font-size: 13px;
-    }
-    .hero-elite {
-      font-size: 11px; font-weight: 700; letter-spacing: .16em;
-      color: var(--text2); text-transform: uppercase; z-index: 1;
-    }
-    .hero-level-num {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 58px; font-weight: 900; line-height: 1;
-      color: var(--gold); z-index: 1;
-      text-shadow: 0 0 40px rgba(255,197,108,.4);
-    }
-    .hero-divider {
-      font-size: 22px; color: var(--muted); z-index: 1; margin: -4px 0;
-    }
-    .hero-title {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 32px; font-weight: 800; letter-spacing: .04em; z-index: 1;
-    }
-
-    /* ── XP Bar ── */
-    .xp-section {
-      margin: 0 16px 16px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px; padding: 12px 16px;
-    }
-    .xp-label-row {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 8px;
-      font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
-    }
-    .xp-label { color: var(--text2); }
-    .xp-val   { color: var(--gold); }
-    .xp-track {
-      height: 6px; background: #2a2838; border-radius: 999px; overflow: hidden;
-    }
-    .xp-fill {
-      height: 100%; border-radius: 999px;
-      background: linear-gradient(90deg, var(--gold), var(--gold-dk));
-      transition: width .8s cubic-bezier(.4,0,.2,1);
-    }
-
-    /* ── Macro Bento ── */
-    .section { margin: 0 16px 16px; }
-    .macro-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
-    }
-    .macro-cell {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px; padding: 16px 14px;
-      position: relative; overflow: hidden;
-    }
-    .macro-cell::before {
-      content: ''; position: absolute;
-      top: 0; left: 0; right: 0; height: 2px;
-      border-radius: 16px 16px 0 0;
-    }
-    .macro-cell.energy::before  { background: var(--gold); }
-    .macro-cell.protein::before { background: var(--green); }
-    .macro-cell.carbs::before   { background: var(--blue); }
-    .macro-cell.fat::before     { background: var(--orange); }
-    .macro-label {
-      font-size: 10px; font-weight: 700; letter-spacing: .1em;
-      text-transform: uppercase; color: var(--text2); margin-bottom: 6px;
-    }
-    .macro-val {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 28px; font-weight: 800; line-height: 1;
-    }
-    .macro-unit { font-size: 12px; font-weight: 600; opacity: .7; margin-left: 2px; }
-    .macro-cell.energy  .macro-val { color: var(--gold); }
-    .macro-cell.protein .macro-val { color: var(--green); }
-    .macro-cell.carbs   .macro-val { color: var(--blue); }
-    .macro-cell.fat     .macro-val { color: var(--orange); }
-
-    /* ── Section Header ── */
-    .sec-head {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 12px;
-    }
-    .sec-title {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 16px; font-weight: 800; letter-spacing: .02em;
-    }
-    .sec-action {
-      font-size: 12px; font-weight: 700; color: var(--gold);
-      background: rgba(255,197,108,.1); border: 1px solid rgba(255,197,108,.2);
-      border-radius: 8px; padding: 4px 10px; cursor: pointer;
-      font-family: inherit;
-    }
-
-    /* ── Badges ── */
-    .badge-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
-    }
-    .badge-item {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 14px; padding: 14px 8px 10px;
-      text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px;
-    }
-    .badge-item.earned {
-      border-color: rgba(255,197,108,.3);
-      box-shadow: 0 0 20px rgba(255,197,108,.12);
-    }
-    .badge-item.locked { opacity: .4; filter: grayscale(.8); }
-    .badge-icon {
-      width: 44px; height: 44px; border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 24px;
-    }
-    .badge-item.earned .badge-icon {
-      background: rgba(255,197,108,.15);
-      box-shadow: 0 0 16px rgba(255,197,108,.25);
-    }
-    .badge-item.locked .badge-icon { background: #1f1e30; }
-    .badge-name {
-      font-size: 9px; font-weight: 700; letter-spacing: .07em;
-      text-transform: uppercase; color: var(--text2); line-height: 1.2;
-    }
-
-    /* ── Settings ── */
-    .settings-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px; overflow: hidden;
-    }
-    .setting-row {
-      display: flex; align-items: center; gap: 14px;
-      padding: 15px 16px; text-decoration: none; color: var(--text1);
-      border-bottom: 1px solid var(--border); cursor: pointer;
-      transition: background .15s;
-    }
-    .setting-row:last-child { border-bottom: none; }
-    .setting-row:active { background: rgba(255,255,255,.04); }
-    .setting-ico {
-      width: 36px; height: 36px; border-radius: 10px;
-      background: #232235;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 17px; flex-shrink: 0;
-    }
-    .setting-lbl { flex: 1; font-size: 14px; font-weight: 600; }
-    .setting-arr { color: var(--muted); font-size: 18px; font-weight: 300; }
-    .setting-row.danger .setting-lbl { color: var(--danger); }
-    .setting-row.danger .setting-ico { background: rgba(255,77,109,.12); }
-    .setting-row.danger .setting-arr { color: var(--danger); }
-
-    /* ── Edit Sheet ── */
-    .edit-sheet {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px; padding: 16px; margin: 0 16px 16px;
-    }
-    .input-row { display: flex; gap: 10px; }
-    .input-row > * { flex: 1; }
-    .field { margin-bottom: 12px; }
-    .field label {
-      display: block; font-size: 11px; font-weight: 700; color: var(--text2);
-      letter-spacing: .07em; text-transform: uppercase; margin-bottom: 6px;
-    }
-    input[type="number"], input[type="text"], input[type="date"], select {
-      width: 100%; background: #13121e; border: 1px solid rgba(255,255,255,.1);
-      border-radius: 12px; color: var(--text1); padding: 10px 14px;
-      font-family: inherit; font-size: 14px; outline: none;
-    }
-    input:focus, select:focus { border-color: var(--gold); }
-    .input-unit-wrap { position: relative; }
-    .input-unit-wrap input { padding-right: 36px; }
-    .input-unit { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 12px; color: var(--muted); pointer-events: none; }
-
-    .btn-primary {
-      flex: 2; background: linear-gradient(135deg, var(--gold), var(--gold-dk));
-      border: none; border-radius: 12px; color: #0e0d16;
-      padding: 13px; font-weight: 800; cursor: pointer; font-family: 'Space Grotesk', sans-serif;
-      font-size: 14px;
-    }
-    .btn-ghost {
-      flex: 1; background: #232235; border: 1px solid rgba(255,255,255,.1);
-      border-radius: 12px; color: var(--text2);
-      padding: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
-    }
-    .tabellen-hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
-    .divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
-
-    /* ── Bottom Nav ── */
-    .bnav {
-      position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
-      background: rgba(14,13,22,.92); backdrop-filter: blur(24px);
-      border-top: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: space-around;
-      padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
-    }
-    .bnav-item {
-      display: flex; flex-direction: column; align-items: center; gap: 3px;
-      font-size: 10px; font-weight: 700; color: var(--muted);
-      text-decoration: none; letter-spacing: .04em; min-width: 48px;
-      transition: color .15s;
-    }
-    .bnav-item svg { width: 22px; height: 22px; }
-    .bnav-item.active { color: var(--gold); }
-
-    /* ── Toast ── */
-    #toast {
-      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(16px);
-      background: var(--card); color: var(--text1);
-      border: 1px solid rgba(255,255,255,.12);
-      padding: 10px 20px; border-radius: 999px;
-      font-size: 13px; font-weight: 600; z-index: 200;
-      opacity: 0; transition: opacity .25s, transform .25s; pointer-events: none; white-space: nowrap;
-    }
-    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-    #toast.error { border-color: var(--danger); color: var(--danger); }
-
-    /* ── Reset Modal ── */
-    #reset-modal {
-      position: fixed; inset: 0; z-index: 100;
-      background: rgba(0,0,0,.82); backdrop-filter: blur(10px);
-      display: none; align-items: flex-end; padding: 16px;
-    }
-    .reset-sheet {
-      width: 100%; max-width: 430px; margin: 0 auto;
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 24px; padding: 24px;
-    }
-    .reset-title { font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 800; margin-bottom: 6px; }
-    .reset-sub   { font-size: 14px; color: var(--text2); margin-bottom: 20px; }
-    .reset-btn {
-      width: 100%; border-radius: 14px; padding: 14px 16px;
-      text-align: left; cursor: pointer; margin-bottom: 10px;
-      font-family: inherit; border: 1px solid rgba(255,255,255,.1);
-      background: #232235; color: var(--text1);
-    }
-    .reset-btn.red { background: rgba(255,77,109,.1); border-color: rgba(255,77,109,.3); color: var(--danger); }
-    .reset-btn-title { font-weight: 700; }
-    .reset-btn-sub   { font-size: 12px; opacity: .7; margin-top: 2px; }
-    .reset-cancel    { width: 100%; background: transparent; border: 1px solid var(--border); border-radius: 14px; color: var(--text2); padding: 12px; cursor: pointer; font-family: inherit; font-weight: 600; }
-
-    @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:none; } }
-    .fade-up { animation: fadeUp .45s ease both; }
-    .d1 { animation-delay: .08s; } .d2 { animation-delay: .16s; } .d3 { animation-delay: .24s; }
-  </style>
+  /* Edit sheet inputs */
+  input[type="number"], input[type="text"], input[type="date"], select {
+    width: 100%; background: #0d0d17;
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 12px; color: #e4e1ef;
+    padding: 10px 14px; font-family: 'Inter', sans-serif;
+    font-size: 14px; outline: none;
+  }
+  input:focus, select:focus { border-color: #ffc56c; }
+  .input-unit-wrap { position: relative; }
+  .input-unit-wrap input { padding-right: 36px; }
+  .input-unit-abs {
+    position: absolute; right: 12px; top: 50%;
+    transform: translateY(-50%); font-size: 12px;
+    color: #514533; pointer-events: none;
+  }
+  input[type="checkbox"] { width: 18px; height: 18px; accent-color: #ffc56c; }
+</style>
 </head>
-<body>
+<body class="bg-background text-on-background font-body selection:bg-primary selection:text-on-primary overflow-x-hidden pb-32">
 
+<!-- Splash -->
 <div id="splash"><div class="spinner"></div></div>
+
+<!-- Grain -->
+<div class="fixed inset-0 grainy-overlay z-[100]"></div>
 
 <div id="main" style="display:none">
 
-  <!-- ── Top Bar ── -->
-  <div class="topbar fade-up">
-    <div class="topbar-logo">90TC</div>
-    <div class="topbar-stats">
-      <div class="topbar-stat">
-        <span id="top-streak" style="color:#ff6b6b">0</span>
-        <span>🔥</span>
-      </div>
-      <div style="width:1px;height:14px;background:var(--border)"></div>
-      <div class="topbar-stat">
-        <span id="top-xp" style="color:var(--gold)">0</span>
-        <span style="color:var(--text2);font-size:11px">XP</span>
-      </div>
+<!-- ── TopAppBar ── -->
+<header class="fixed top-0 w-full z-50 bg-slate-950/70 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.8)]">
+  <div class="flex justify-between items-center px-6 py-4 w-full">
+    <div class="flex items-center gap-3">
+      <span class="material-symbols-outlined text-amber-400" style="font-variation-settings:'FILL' 1">workspace_premium</span>
+      <h1 class="font-headline font-black italic text-xl text-amber-400 tracking-tighter">90TC</h1>
+    </div>
+    <div class="bg-surface-container-high px-4 py-1.5 rounded-full border border-outline-variant/20 shadow-inner">
+      <span class="text-amber-400 font-headline font-bold text-sm tracking-widest" id="topbar-stats">0 🔥 0 XP</span>
     </div>
   </div>
+  <div class="bg-gradient-to-b from-amber-500/10 to-transparent h-[1px] w-full absolute bottom-0"></div>
+</header>
 
-  <!-- ── Hero ── -->
-  <div class="hero fade-up d1">
-    <div class="hero-orb" style="width:250px;height:250px;background:rgba(255,197,108,.12);top:-80px;right:-60px"></div>
-    <div class="hero-orb" style="width:180px;height:180px;background:rgba(0,237,125,.06);bottom:-40px;left:-40px"></div>
+<main class="relative">
 
-    <div class="hero-avatar-wrap" onclick="document.getElementById('avatar-input').click()">
-      <div class="hero-avatar" id="p-avatar">🏋️</div>
-      <div class="hero-level-chip" id="p-level-chip">LEVEL 1</div>
-      <div class="hero-avatar-cam">📷</div>
+  <!-- ── Hero Section ── -->
+  <section class="relative h-[530px] w-full overflow-hidden">
+    <div class="absolute inset-0 z-0">
+      <!-- Hero bg: CSS fallback if user has no avatar bg -->
+      <div id="hero-bg" class="w-full h-full" style="background: radial-gradient(ellipse at 70% 30%, rgba(240,165,0,0.18) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, rgba(0,237,125,0.08) 0%, transparent 50%), linear-gradient(180deg, #0a0910 0%, #13121c 100%)"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"></div>
+      <div class="absolute inset-0 bg-gradient-to-r from-background/80 via-transparent to-transparent"></div>
     </div>
-    <input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
 
-    <div class="hero-elite">Elite Status</div>
-    <div class="hero-level-num" id="p-level-num">1</div>
-    <div class="hero-divider">—</div>
-    <div class="hero-title" id="p-name">—</div>
-  </div>
+    <div class="relative z-10 h-full flex flex-col justify-end px-6 pb-12 pt-24">
+      <div class="flex items-end gap-6 mb-4">
+        <!-- Avatar -->
+        <div class="relative cursor-pointer flex-shrink-0" onclick="document.getElementById('avatar-input').click()">
+          <div class="w-32 h-32 rounded-3xl overflow-hidden border-2 border-primary/30 shadow-[0_0_40px_rgba(240,165,0,0.2)] bg-surface-container-high flex items-center justify-center" id="p-avatar">
+            <span class="material-symbols-outlined text-5xl text-on-surface-variant" style="font-variation-settings:'FILL' 1">person</span>
+          </div>
+          <div class="absolute -bottom-3 -right-3 bg-primary-container text-on-primary-container px-3 py-1 rounded-xl font-headline font-black text-xs shadow-lg" id="p-level-chip">
+            LEVEL 1
+          </div>
+        </div>
+        <input type="file" id="avatar-input" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
 
-  <!-- ── XP Progress ── -->
-  <div class="xp-section fade-up d1">
-    <div class="xp-label-row">
-      <span class="xp-label">XP Progress</span>
-      <span class="xp-val" id="xp-label-val">0 / 500 XP</span>
-    </div>
-    <div class="xp-track"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
-  </div>
+        <!-- Name & Level -->
+        <div class="flex flex-col">
+          <span class="text-primary font-headline font-medium tracking-[0.2em] text-xs uppercase mb-1">Elite Status</span>
+          <h2 class="font-headline text-[3.5rem] leading-[0.9] font-black italic tracking-tighter text-on-surface uppercase drop-shadow-2xl" id="p-hero-headline">
+            LEVEL 1 <span class="text-primary">—</span> <span id="p-level-name">ROOKIE</span>
+          </h2>
+        </div>
+      </div>
 
-  <!-- ── Makros ── -->
-  <div class="section fade-up d2">
-    <div class="sec-head">
-      <div class="sec-title">Energie & Makros</div>
-      <button class="sec-action" id="btn-edit-toggle">Bearbeiten</button>
-    </div>
-    <div class="macro-grid" id="macro-view">
-      <div class="macro-cell energy">
-        <div class="macro-label">Energie</div>
-        <div class="macro-val" id="m-kcal">—<span class="macro-unit">kcal</span></div>
-      </div>
-      <div class="macro-cell protein">
-        <div class="macro-label">Proteine</div>
-        <div class="macro-val" id="m-prot">—<span class="macro-unit">g</span></div>
-      </div>
-      <div class="macro-cell carbs">
-        <div class="macro-label">Carbs</div>
-        <div class="macro-val" id="m-carbs">—<span class="macro-unit">g</span></div>
-      </div>
-      <div class="macro-cell fat">
-        <div class="macro-label">Fette</div>
-        <div class="macro-val" id="m-fett">—<span class="macro-unit">g</span></div>
+      <!-- XP Power Meter -->
+      <div class="w-full mt-6">
+        <div class="flex justify-between items-end mb-2">
+          <span class="font-headline font-bold text-xs tracking-widest text-on-surface-variant uppercase">XP Progress</span>
+          <span class="font-headline font-black text-primary text-sm tracking-tighter" id="xp-label-val">0 / 500 XP</span>
+        </div>
+        <div class="h-2 w-full bg-surface-container-highest rounded-full overflow-hidden shadow-inner border border-white/5">
+          <div class="h-full bg-gradient-to-r from-primary-container via-primary to-white relative transition-all duration-700" id="xp-fill" style="width:0%">
+            <div class="absolute right-0 top-0 bottom-0 w-4 bg-white/40 blur-[4px]"></div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
+  </section>
+
+  <!-- ── Stats Grid (Bento) ── -->
+  <section class="px-6 -mt-8 relative z-20" id="macro-view">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-surface-container-low p-5 rounded-[24px] border border-outline-variant/10 shadow-xl backdrop-blur-md">
+        <span class="text-on-surface-variant font-label text-[10px] uppercase tracking-widest font-bold block mb-1">Energie</span>
+        <div class="flex items-baseline gap-1">
+          <span class="font-headline text-3xl font-black text-primary" id="m-kcal">—</span>
+          <span class="text-on-surface-variant text-[10px] font-medium">KCAL</span>
+        </div>
+      </div>
+      <div class="bg-surface-container-low p-5 rounded-[24px] border border-outline-variant/10 shadow-xl backdrop-blur-md">
+        <span class="text-secondary font-label text-[10px] uppercase tracking-widest font-bold block mb-1">Proteine</span>
+        <div class="flex items-baseline gap-1">
+          <span class="font-headline text-3xl font-black text-secondary" id="m-prot">—</span>
+          <span class="text-on-surface-variant text-[10px] font-medium">G</span>
+        </div>
+      </div>
+      <div class="bg-surface-container-low p-5 rounded-[24px] border border-outline-variant/10 shadow-xl backdrop-blur-md">
+        <span class="text-tertiary font-label text-[10px] uppercase tracking-widest font-bold block mb-1">Carbs</span>
+        <div class="flex items-baseline gap-1">
+          <span class="font-headline text-3xl font-black text-tertiary" id="m-carbs">—</span>
+          <span class="text-on-surface-variant text-[10px] font-medium">G</span>
+        </div>
+      </div>
+      <div class="bg-surface-container-low p-5 rounded-[24px] border border-outline-variant/10 shadow-xl backdrop-blur-md">
+        <span class="text-error font-label text-[10px] uppercase tracking-widest font-bold block mb-1">Fette</span>
+        <div class="flex items-baseline gap-1">
+          <span class="font-headline text-3xl font-black text-error" id="m-fett">—</span>
+          <span class="text-on-surface-variant text-[10px] font-medium">G</span>
+        </div>
+      </div>
+    </div>
+    <div class="flex justify-end mt-3">
+      <button id="btn-edit-toggle" class="text-primary font-headline font-bold text-xs tracking-widest uppercase bg-surface-container-high px-4 py-2 rounded-full border border-outline-variant/20">
+        Bearbeiten
+      </button>
+    </div>
+  </section>
 
   <!-- ── Edit Macros (hidden) ── -->
-  <div class="edit-sheet fade-up" id="edit-mode" style="display:none">
-    <div class="field">
-      <label>Ziel</label>
-      <select id="e-ziel">
-        <option value="definieren">🔥 Definieren (Fett verlieren)</option>
-        <option value="aufbauen">💪 Aufbauen (Muskeln)</option>
-        <option value="recomp">⚡ Body Recomp</option>
-      </select>
-    </div>
-    <div class="input-row">
-      <div class="field">
-        <label>Kalorien</label>
-        <div class="input-unit-wrap"><input type="number" id="e-kcal" min="500" max="15000"><span class="input-unit">kcal</span></div>
+  <section class="px-6 mt-4 relative z-20" id="edit-mode" style="display:none">
+    <div class="bg-surface-container-low rounded-[24px] border border-outline-variant/10 p-5">
+      <div class="mb-4">
+        <label class="block text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">Ziel</label>
+        <select id="e-ziel">
+          <option value="definieren">🔥 Definieren (Fett verlieren)</option>
+          <option value="aufbauen">💪 Aufbauen (Muskeln)</option>
+          <option value="recomp">⚡ Body Recomp</option>
+        </select>
       </div>
-      <div class="field">
-        <label>Protein</label>
-        <div class="input-unit-wrap"><input type="number" id="e-prot" min="0" max="999"><span class="input-unit">g</span></div>
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">Kalorien</label>
+          <div class="input-unit-wrap"><input type="number" id="e-kcal" min="500" max="15000"><span class="input-unit-abs">kcal</span></div>
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">Protein</label>
+          <div class="input-unit-wrap"><input type="number" id="e-prot" min="0" max="999"><span class="input-unit-abs">g</span></div>
+        </div>
       </div>
-    </div>
-    <div class="input-row">
-      <div class="field">
-        <label>Fett</label>
-        <div class="input-unit-wrap"><input type="number" id="e-fett" min="0" max="999"><span class="input-unit">g</span></div>
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">Fett</label>
+          <div class="input-unit-wrap"><input type="number" id="e-fett" min="0" max="999"><span class="input-unit-abs">g</span></div>
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">Carbs</label>
+          <div class="input-unit-wrap"><input type="number" id="e-carbs" min="0" max="999"><span class="input-unit-abs">g</span></div>
+        </div>
       </div>
-      <div class="field">
-        <label>Carbs</label>
-        <div class="input-unit-wrap"><input type="number" id="e-carbs" min="0" max="999"><span class="input-unit">g</span></div>
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">Wasser</label>
+          <div class="input-unit-wrap"><input type="number" id="e-wasser" step="0.5" min="1" max="10"><span class="input-unit-abs">L</span></div>
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">Schritte</label>
+          <input type="number" id="e-schritte" min="1000" max="50000">
+        </div>
       </div>
-    </div>
-    <div class="input-row">
-      <div class="field">
-        <label>Wasser</label>
-        <div class="input-unit-wrap"><input type="number" id="e-wasser" step="0.5" min="1" max="10"><span class="input-unit">L</span></div>
-      </div>
-      <div class="field">
-        <label>Schritte</label>
-        <input type="number" id="e-schritte" min="1000" max="50000">
-      </div>
-    </div>
 
-    <hr class="divider">
-    <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--muted);margin-bottom:10px">AUS 90TC-TABELLE BERECHNEN</div>
-    <div class="input-row">
-      <div class="field">
-        <label>Körpergröße</label>
-        <div class="input-unit-wrap"><input type="number" id="t-groesse" placeholder="175" min="140" max="220"><span class="input-unit">cm</span></div>
+      <div class="border-t border-white/5 pt-4 mb-4">
+        <div class="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-3">Aus 90TC-Tabelle berechnen</div>
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <div>
+            <label class="block text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">Körpergröße</label>
+            <div class="input-unit-wrap"><input type="number" id="t-groesse" placeholder="175" min="140" max="220"><span class="input-unit-abs">cm</span></div>
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">KFA</label>
+            <div class="input-unit-wrap"><input type="number" id="t-kfa" placeholder="20" min="3" max="60"><span class="input-unit-abs">%</span></div>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <div>
+            <label class="block text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">Alter (opt.)</label>
+            <div class="input-unit-wrap"><input type="number" id="t-alter" placeholder="30" min="16" max="99"><span class="input-unit-abs">J.</span></div>
+          </div>
+          <div class="flex items-end pb-1">
+            <label class="flex items-center gap-2 cursor-pointer text-sm text-on-surface-variant font-medium">
+              <input type="checkbox" id="t-vegan"> 🌱 Vegan
+            </label>
+          </div>
+        </div>
+        <button id="btn-tabelle" class="w-full bg-surface-container-high border border-outline-variant/20 rounded-xl text-primary font-headline font-bold text-sm py-2.5 mb-2">
+          📋 Makros aus Tabelle übernehmen
+        </button>
+        <div id="tabellen-hint" class="text-[11px] text-on-surface-variant mt-1"></div>
       </div>
-      <div class="field">
-        <label>KFA</label>
-        <div class="input-unit-wrap"><input type="number" id="t-kfa" placeholder="20" min="3" max="60"><span class="input-unit">%</span></div>
-      </div>
-    </div>
-    <div class="input-row" style="margin-bottom:10px">
-      <div class="field">
-        <label>Alter (opt.)</label>
-        <div class="input-unit-wrap"><input type="number" id="t-alter" placeholder="30" min="16" max="99"><span class="input-unit">J.</span></div>
-      </div>
-      <div style="display:flex;align-items:flex-end;padding-bottom:14px">
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text2);text-transform:none;letter-spacing:0;font-weight:500">
-          <input type="checkbox" id="t-vegan" style="width:18px;height:18px;accent-color:var(--gold)">
-          🌱 Vegan
-        </label>
-      </div>
-    </div>
-    <button id="btn-tabelle" style="width:100%;background:#232235;border:1px solid var(--border);border-radius:12px;color:var(--gold);padding:10px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:6px">
-      📋 Makros aus Tabelle übernehmen
-    </button>
-    <div id="tabellen-hint" class="tabellen-hint"></div>
-    <hr class="divider">
-    <div style="display:flex;gap:10px">
-      <button class="btn-ghost" id="btn-cancel-edit">Abbrechen</button>
-      <button class="btn-primary" id="btn-save-macros">Speichern</button>
-    </div>
-  </div>
 
-  <!-- ── Erfolge ── -->
-  <div class="section fade-up d2">
-    <div class="sec-head">
-      <div class="sec-title">Erfolge</div>
+      <div class="flex gap-3">
+        <button id="btn-cancel-edit" class="flex-1 bg-surface-container-high border border-white/10 rounded-xl text-on-surface-variant font-headline font-bold py-3">Abbrechen</button>
+        <button id="btn-save-macros" class="flex-2 bg-gradient-to-r from-primary-container to-primary text-on-primary font-headline font-black py-3 rounded-xl" style="flex:2">Speichern</button>
+      </div>
     </div>
-    <div class="badge-grid" id="badge-grid">
+  </section>
+
+  <!-- ── Achievements ── -->
+  <section class="mt-12 px-6">
+    <h3 class="font-headline text-2xl font-black italic tracking-tighter text-on-surface mb-6 uppercase">Erfolge</h3>
+    <div class="grid grid-cols-4 sm:grid-cols-6 gap-6" id="badge-grid">
       <!-- filled by JS -->
     </div>
-  </div>
+  </section>
 
-  <!-- ── Profil & Plan ── -->
-  <div class="section fade-up d3">
-    <div class="sec-head">
-      <div class="sec-title">Profil & Plan</div>
-    </div>
-    <div class="settings-card">
-      <a href="maße.html" class="setting-row">
-        <div class="setting-ico">📏</div>
-        <span class="setting-lbl">Körpermaße & Tracking</span>
-        <span class="setting-arr">›</span>
+  <!-- ── Settings ── -->
+  <section class="mt-12 px-6 mb-32">
+    <h3 class="font-headline text-2xl font-black italic tracking-tighter text-on-surface mb-6 uppercase">Profil &amp; Plan</h3>
+    <div class="space-y-3">
+      <a href="maße.html" class="group flex items-center justify-between p-5 bg-surface-container-low rounded-[20px] border border-outline-variant/10 active:scale-[0.98] transition-all">
+        <div class="flex items-center gap-4">
+          <div class="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center">
+            <span class="material-symbols-outlined text-primary text-xl">straighten</span>
+          </div>
+          <span class="font-headline font-bold text-on-surface tracking-tight">Körpermaße &amp; Tracking</span>
+        </div>
+        <span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
       </a>
-      <a href="fotos.html" class="setting-row">
-        <div class="setting-ico">📸</div>
-        <span class="setting-lbl">Fortschrittsfotos</span>
-        <span class="setting-arr">›</span>
+      <a href="fotos.html" class="group flex items-center justify-between p-5 bg-surface-container-low rounded-[20px] border border-outline-variant/10 active:scale-[0.98] transition-all">
+        <div class="flex items-center gap-4">
+          <div class="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center">
+            <span class="material-symbols-outlined text-primary text-xl">photo_library</span>
+          </div>
+          <span class="font-headline font-bold text-on-surface tracking-tight">Fortschrittsfotos</span>
+        </div>
+        <span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
       </a>
-      <a href="ernaehrungsplan.html" class="setting-row">
-        <div class="setting-ico">🍽️</div>
-        <span class="setting-lbl">Mein Ernährungsplan</span>
-        <span class="setting-arr">›</span>
+      <a href="ernaehrungsplan.html" class="group flex items-center justify-between p-5 bg-surface-container-low rounded-[20px] border border-outline-variant/10 active:scale-[0.98] transition-all">
+        <div class="flex items-center gap-4">
+          <div class="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center">
+            <span class="material-symbols-outlined text-primary text-xl">restaurant_menu</span>
+          </div>
+          <span class="font-headline font-bold text-on-surface tracking-tight">Mein Ernährungsplan</span>
+        </div>
+        <span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
       </a>
-      <a href="einkauf.html" class="setting-row">
-        <div class="setting-ico">🛒</div>
-        <span class="setting-lbl">Einkaufsliste</span>
-        <span class="setting-arr">›</span>
+      <a href="einkauf.html" class="group flex items-center justify-between p-5 bg-surface-container-low rounded-[20px] border border-outline-variant/10 active:scale-[0.98] transition-all">
+        <div class="flex items-center gap-4">
+          <div class="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center">
+            <span class="material-symbols-outlined text-primary text-xl">shopping_basket</span>
+          </div>
+          <span class="font-headline font-bold text-on-surface tracking-tight">Einkaufsliste</span>
+        </div>
+        <span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
       </a>
-      <div class="setting-row danger" id="btn-reset">
-        <div class="setting-ico">🔒</div>
-        <span class="setting-lbl">Transformation zurücksetzen</span>
-        <span class="setting-arr">›</span>
+      <div class="group flex items-center justify-between p-5 bg-surface-container-lowest rounded-[20px] border border-error/20 active:scale-[0.98] transition-all mt-8 cursor-pointer" id="btn-reset">
+        <div class="flex items-center gap-4">
+          <div class="w-10 h-10 rounded-xl bg-error/10 flex items-center justify-center">
+            <span class="material-symbols-outlined text-error text-xl">restart_alt</span>
+          </div>
+          <span class="font-headline font-bold text-error tracking-tight">Transformation zurücksetzen</span>
+        </div>
+        <span class="material-symbols-outlined text-error/50">lock</span>
       </div>
     </div>
-  </div>
+  </section>
 
-  <div style="text-align:center;color:var(--muted);font-size:11px;padding:8px 16px 16px">90TC · v1.0</div>
-</div>
-
-<!-- ── Reset Modal ── -->
-<div id="reset-modal">
-  <div class="reset-sheet">
-    <div class="reset-title">Transformation zurücksetzen 🔄</div>
-    <div class="reset-sub">Was möchtest du zurücksetzen?</div>
-    <button class="reset-btn" id="btn-reset-date">
-      <div class="reset-btn-title">📅 Nur Datum zurücksetzen</div>
-      <div class="reset-btn-sub">Profil, XP, Badges & Daten bleiben erhalten</div>
-    </button>
-    <button class="reset-btn red" id="btn-reset-all">
-      <div class="reset-btn-title">🗑️ Komplett neu starten</div>
-      <div class="reset-btn-sub">Alle Daten werden unwiderruflich gelöscht</div>
-    </button>
-    <button class="reset-cancel" id="btn-close-reset">Abbrechen</button>
-  </div>
-</div>
+</main>
 
 <!-- ── Bottom Nav ── -->
-<nav class="bnav">
-  <a href="dashboard.html" class="bnav-item">
-    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-    Start
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-[#0D0D17]/80 backdrop-blur-[30px] rounded-t-[32px] border-t border-white/5 shadow-[0_-12px_40px_rgba(0,0,0,0.9)]">
+  <a href="dashboard.html" class="flex flex-col items-center justify-center text-slate-500 p-3 hover:text-white transition-all active:scale-90 duration-300">
+    <span class="material-symbols-outlined">home</span>
   </a>
-  <a href="essen.html" class="bnav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
-    Ernährung
+  <a href="essen.html" class="flex flex-col items-center justify-center text-slate-500 p-3 hover:text-white transition-all active:scale-90 duration-300">
+    <span class="material-symbols-outlined">restaurant</span>
   </a>
-  <a href="training.html" class="bnav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="8" width="4" height="8" rx="1"/><rect x="18" y="8" width="4" height="8" rx="1"/><line x1="6" y1="12" x2="10" y2="12"/><line x1="14" y1="12" x2="18" y2="12"/><rect x="10" y="9" width="4" height="6" rx="1"/></svg>
-    Training
+  <a href="training.html" class="flex flex-col items-center justify-center text-slate-500 p-3 hover:text-white transition-all active:scale-90 duration-300">
+    <span class="material-symbols-outlined text-3xl">add_circle</span>
   </a>
-  <a href="fortschritt.html" class="bnav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-    Statistik
+  <a href="fortschritt.html" class="flex flex-col items-center justify-center text-slate-500 p-3 hover:text-white transition-all active:scale-90 duration-300">
+    <span class="material-symbols-outlined">fitness_center</span>
   </a>
-  <a href="profil.html" class="bnav-item active">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    Profil
-  </a>
+  <div class="flex flex-col items-center justify-center bg-gradient-to-tr from-[#F0A500] to-[#FFC56C] text-[#0D0D17] rounded-2xl p-3 shadow-[0_0_20px_rgba(240,165,0,0.4)] active:scale-90 duration-300 ease-out">
+    <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">person</span>
+  </div>
 </nav>
+
+</div><!-- #main -->
+
+<!-- ── Reset Modal ── -->
+<div id="reset-modal" class="fixed inset-0 z-[500] bg-black/80 backdrop-blur-md items-end px-4 pb-6" style="display:none">
+  <div class="w-full max-w-lg mx-auto bg-surface-container-low rounded-[24px] border border-outline-variant/10 p-6">
+    <h3 class="font-headline font-black text-xl text-on-surface mb-2">Transformation zurücksetzen 🔄</h3>
+    <p class="text-on-surface-variant text-sm mb-5">Was möchtest du zurücksetzen?</p>
+    <button id="btn-reset-date" class="w-full bg-surface-container-high border border-white/10 rounded-[16px] text-left px-5 py-4 mb-3 cursor-pointer">
+      <div class="font-headline font-bold text-on-surface">📅 Nur Datum zurücksetzen</div>
+      <div class="text-xs text-on-surface-variant mt-1">Profil, XP, Badges & Daten bleiben erhalten</div>
+    </button>
+    <button id="btn-reset-all" class="w-full bg-error/10 border border-error/30 rounded-[16px] text-left px-5 py-4 mb-3 cursor-pointer">
+      <div class="font-headline font-bold text-error">🗑️ Komplett neu starten</div>
+      <div class="text-xs text-error/60 mt-1">Alle Daten werden unwiderruflich gelöscht</div>
+    </button>
+    <button id="btn-close-reset" class="w-full border border-white/10 rounded-[16px] text-on-surface-variant font-headline font-bold py-3 cursor-pointer">Abbrechen</button>
+  </div>
+</div>
 
 <div id="toast"></div>
 
@@ -611,21 +438,25 @@
 let currentProfile = null
 let editOpen = false
 
-// ── Badges Definition ──────────────────────────────────
-const ALL_BADGES = [
-  { id: 'og_member',    icon: '🏆', name: 'OG Member',     check: p => !!p.startdatum },
-  { id: 'streak_90',   icon: '🔥', name: '90-Day Streak',  check: p => (p.streak_aktuell || 0) >= 90 },
-  { id: 'iron_master', icon: '🔨', name: 'Iron Master',    check: p => (p.xp_gesamt || 0) >= 3500 },
-  { id: 'legendary',   icon: '⭐', name: 'Legendary',      check: p => (p.xp_gesamt || 0) >= 5500 },
-  { id: 'meal_pro',    icon: '🥗', name: 'Meal Prep God',  check: p => false },
-  { id: 'runner',      icon: '🏃', name: 'Best Runner',    check: p => false },
+const LEVELS_DEF = [
+  { name:'ROOKIE',       min:0     },
+  { name:'STARTER',      min:500   },
+  { name:'KÄMPFER',      min:1200  },
+  { name:'ATHLET',       min:2200  },
+  { name:'CHAMPION',     min:3500  },
+  { name:'LEGEND',       min:5500  },
+  { name:'TITAN',        min:8000  },
+  { name:'UNSTOPPABLE',  min:12000 },
 ]
 
-const ZIEL_DATA = {
-  definieren: { icon:'🔥', name:'Definieren',  desc:'Fett verlieren & Muskeln sichtbar machen' },
-  aufbauen:   { icon:'💪', name:'Aufbauen',    desc:'Muskelmasse aufbauen & stärker werden' },
-  recomp:     { icon:'⚡', name:'Body Recomp', desc:'Körperzusammensetzung verbessern' },
-}
+const ALL_BADGES = [
+  { id:'og_member',    icon:'military_tech',       name:'OG Member',    fill:true,  check: p => !!p.startdatum },
+  { id:'streak_30',    icon:'local_fire_department',name:'30 Day Streak',fill:true,  check: p => (p.streak_aktuell||0) >= 30 },
+  { id:'iron_master',  icon:'fitness_center',       name:'Iron Master',  fill:true,  check: p => (p.xp_gesamt||0) >= 3500 },
+  { id:'legendary',    icon:'trophy',               name:'Legendary',    fill:false, check: p => (p.xp_gesamt||0) >= 5500 },
+  { id:'meal_pro',     icon:'nutrition',            name:'Meal Prep God',fill:false, check: p => false },
+  { id:'fast_worker',  icon:'timer',                name:'Fast Worker',  fill:false, check: p => false },
+]
 
 // ── Toast ──────────────────────────────────────────────
 function showToast(msg, type = '') {
@@ -638,60 +469,70 @@ function showToast(msg, type = '') {
 
 // ── Render ─────────────────────────────────────────────
 function renderProfile(p) {
-  const li    = getLevelInfo(p.xp_gesamt || 0)
-  const LEVELS_DEF = [
-    { name:'Rookie',min:0},{name:'Starter',min:500},{name:'Kämpfer',min:1200},
-    {name:'Athlet',min:2200},{name:'Champion',min:3500},{name:'Legend',min:5500},
-    {name:'Titan',min:8000},{name:'Unstoppable',min:12000}
-  ]
-  const currMin = LEVELS_DEF[li.level - 1]?.min || 0
-  const nextMin = LEVELS_DEF[li.level]?.min || currMin + 1000
-  const xpInLevel = (p.xp_gesamt || 0) - currMin
-  const xpNeeded  = nextMin - currMin
-  const pct       = Math.min(100, Math.round(xpInLevel / xpNeeded * 100))
+  const xp     = p.xp_gesamt || 0
+  const li     = getLevelInfo(xp)
+  const lvlIdx = li.level - 1
+  const currMin = LEVELS_DEF[lvlIdx]?.min || 0
+  const nextMin = LEVELS_DEF[lvlIdx + 1]?.min || (currMin + 1000)
+  const pct     = Math.min(100, Math.round((xp - currMin) / (nextMin - currMin) * 100))
+  const lvlName = LEVELS_DEF[lvlIdx]?.name || 'ROOKIE'
 
   // Avatar
   const avatarEl = document.getElementById('p-avatar')
   if (p.avatar_url) {
-    avatarEl.innerHTML = `<img src="${p.avatar_url}">`
-  } else {
-    avatarEl.textContent = '🏋️'
+    avatarEl.innerHTML = `<img src="${p.avatar_url}" class="w-full h-full object-cover">`
   }
 
+  // Topbar
+  document.getElementById('topbar-stats').textContent = `${p.streak_aktuell||0} 🔥 ${xp.toLocaleString('de-DE')} XP`
+
   // Hero
-  document.getElementById('p-name').textContent       = p.name || '—'
   document.getElementById('p-level-chip').textContent = `LEVEL ${li.level}`
-  document.getElementById('p-level-num').textContent  = li.level
-  document.getElementById('top-streak').textContent   = p.streak_aktuell || 0
-  document.getElementById('top-xp').textContent       = (p.xp_gesamt || 0).toLocaleString('de-DE')
+  document.getElementById('p-level-name').textContent = lvlName
+  const heroH = document.getElementById('p-hero-headline')
+  heroH.innerHTML = `LEVEL ${li.level} <span class="text-primary">—</span> ${lvlName}`
 
   // XP bar
   document.getElementById('xp-fill').style.width = pct + '%'
   document.getElementById('xp-label-val').textContent =
-    `${(p.xp_gesamt||0).toLocaleString('de-DE')} / ${nextMin.toLocaleString('de-DE')} XP`
+    `${xp.toLocaleString('de-DE')} / ${nextMin.toLocaleString('de-DE')} XP`
 
   // Macros
-  document.getElementById('m-kcal').innerHTML  = (p.kalorien_ziel  || '—') + '<span class="macro-unit">kcal</span>'
-  document.getElementById('m-prot').innerHTML  = (p.protein_ziel_g ? p.protein_ziel_g : '—') + '<span class="macro-unit">g</span>'
-  document.getElementById('m-fett').innerHTML  = (p.fett_ziel_g    ? p.fett_ziel_g    : '—') + '<span class="macro-unit">g</span>'
-  document.getElementById('m-carbs').innerHTML = (p.carbs_ziel_g   ? p.carbs_ziel_g   : '—') + '<span class="macro-unit">g</span>'
+  document.getElementById('m-kcal').textContent  = p.kalorien_ziel  || '—'
+  document.getElementById('m-prot').textContent  = p.protein_ziel_g || '—'
+  document.getElementById('m-fett').textContent  = p.fett_ziel_g    || '—'
+  document.getElementById('m-carbs').textContent = p.carbs_ziel_g   || '—'
 
   // Badges
   const grid = document.getElementById('badge-grid')
   grid.innerHTML = ALL_BADGES.map(b => {
     const earned = b.check(p)
-    return `<div class="badge-item ${earned ? 'earned' : 'locked'}">
-      <div class="badge-icon">${b.icon}</div>
-      <div class="badge-name">${b.name}</div>
-    </div>`
+    const fillStyle = (earned && b.fill)
+      ? `font-variation-settings: 'FILL' 1`
+      : ''
+    if (earned) {
+      return `<div class="flex flex-col items-center gap-2">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-primary/20 to-primary-container flex items-center justify-center shadow-[0_0_25px_rgba(240,165,0,0.3)] border border-primary/50">
+          <span class="material-symbols-outlined text-primary text-3xl" style="${fillStyle}">${b.icon}</span>
+        </div>
+        <span class="font-label text-[8px] uppercase font-black text-primary text-center">${b.name}</span>
+      </div>`
+    } else {
+      return `<div class="flex flex-col items-center gap-2 opacity-30 grayscale">
+        <div class="w-16 h-16 rounded-2xl bg-surface-container-highest flex items-center justify-center border border-white/5">
+          <span class="material-symbols-outlined text-on-surface-variant text-3xl">${b.icon}</span>
+        </div>
+        <span class="font-label text-[8px] uppercase font-bold text-on-surface-variant text-center">${b.name}</span>
+      </div>`
+    }
   }).join('')
 }
 
 // ── Toggle Edit ────────────────────────────────────────
 function toggleEdit() {
   editOpen = !editOpen
-  document.getElementById('edit-mode').style.display  = editOpen ? 'block' : 'none'
-  document.getElementById('macro-view').style.display = editOpen ? 'none'  : 'grid'
+  document.getElementById('edit-mode').style.display   = editOpen ? 'block' : 'none'
+  document.getElementById('macro-view').style.display  = editOpen ? 'none'  : 'block'
   document.getElementById('btn-edit-toggle').textContent = editOpen ? '✕ Schließen' : 'Bearbeiten'
   if (editOpen) {
     const p = currentProfile
@@ -711,15 +552,15 @@ async function saveMacros() {
   btn.disabled = true; btn.textContent = '...'
   const updates = {
     ziel:           document.getElementById('e-ziel').value,
-    kalorien_ziel:  parseInt(document.getElementById('e-kcal').value)   || null,
-    protein_ziel_g: parseInt(document.getElementById('e-prot').value)   || null,
-    fett_ziel_g:    parseInt(document.getElementById('e-fett').value)   || null,
-    carbs_ziel_g:   parseInt(document.getElementById('e-carbs').value)  || null,
+    kalorien_ziel:  parseInt(document.getElementById('e-kcal').value)     || null,
+    protein_ziel_g: parseInt(document.getElementById('e-prot').value)     || null,
+    fett_ziel_g:    parseInt(document.getElementById('e-fett').value)     || null,
+    carbs_ziel_g:   parseInt(document.getElementById('e-carbs').value)    || null,
     wasser_ziel_l:  parseFloat(document.getElementById('e-wasser').value) || 3.5,
     schritte_ziel:  parseInt(document.getElementById('e-schritte').value) || 10000,
   }
   const { error } = await sb.from('profiles').update(updates).eq('id', currentProfile.id)
-  if (error) { showToast(error.message, 'error'); btn.disabled = false; btn.textContent = 'Speichern'; return }
+  if (error) { showToast(error.message,'error'); btn.disabled=false; btn.textContent='Speichern'; return }
   Object.assign(currentProfile, updates)
   renderProfile(currentProfile)
   toggleEdit()
@@ -735,32 +576,33 @@ function berechneAusTabelle() {
   const vegan   = document.getElementById('t-vegan').checked
   const hint    = document.getElementById('tabellen-hint')
   if (!groesse || !kfa) { hint.textContent = '⚠️ Bitte Größe und KFA eingeben.'; return }
-  const m = calculateMacrosFromTable(currentProfile.geschlecht || 'maennlich',
-    document.getElementById('e-ziel').value || 'recomp', kfa, groesse,
-    currentProfile.gewicht_kg || 80, alter, vegan)
+  const m = calculateMacrosFromTable(
+    currentProfile.geschlecht || 'maennlich',
+    document.getElementById('e-ziel').value || 'recomp',
+    kfa, groesse, currentProfile.gewicht_kg || 80, alter, vegan)
   if (!m) { hint.textContent = '⚠️ Keine passende Tabellengruppe gefunden.'; return }
   document.getElementById('e-kcal').value  = m.kalorien
   document.getElementById('e-prot').value  = m.protein
   document.getElementById('e-fett').value  = m.fett
   document.getElementById('e-carbs').value = m.carbs
-  hint.style.color = 'var(--green)'
+  hint.style.color = '#00ed7d'
   hint.textContent = `✓ ${m.kfaGruppe} · ${m.hZeile}`
 }
 
 // ── Avatar Upload ──────────────────────────────────────
 async function uploadAvatar(input) {
   const file = input.files[0]; if (!file) return
-  if (file.size > 5 * 1024 * 1024) { showToast('Bild max. 5 MB', 'error'); return }
+  if (file.size > 5*1024*1024) { showToast('Bild max. 5 MB','error'); return }
   showToast('Wird hochgeladen...')
   const ext  = file.name.split('.').pop()
   const path = `${currentProfile.id}/avatar.${ext}`
-  const { error: upErr } = await sb.storage.from('avatars').upload(path, file, { upsert: true })
-  if (upErr) { showToast(upErr.message, 'error'); return }
+  const { error: upErr } = await sb.storage.from('avatars').upload(path, file, { upsert:true })
+  if (upErr) { showToast(upErr.message,'error'); return }
   const { data } = sb.storage.from('avatars').getPublicUrl(path)
   const url = data.publicUrl + '?t=' + Date.now()
   await sb.from('profiles').update({ avatar_url: url }).eq('id', currentProfile.id)
   currentProfile.avatar_url = url
-  document.getElementById('p-avatar').innerHTML = `<img src="${url}">`
+  document.getElementById('p-avatar').innerHTML = `<img src="${url}" class="w-full h-full object-cover">`
   showToast('Foto gespeichert ✓')
 }
 
@@ -772,7 +614,7 @@ async function resetDateOnly() {
   closeResetModal()
   const today = new Date().toISOString().split('T')[0]
   const { error } = await sb.from('profiles').update({ startdatum: today }).eq('id', currentProfile.id)
-  if (error) { showToast(error.message, 'error'); return }
+  if (error) { showToast(error.message,'error'); return }
   showToast('Challenge neu gestartet! 🚀')
   setTimeout(() => window.location.href = 'dashboard.html', 1500)
 }
