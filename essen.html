@@ -198,61 +198,61 @@ tailwind.config = {
 
   <!-- ── 2. TAGESSTATUS (Makros) ── -->
   <section class="grid grid-cols-2 gap-2.5">
-    <div class="p-3.5 rounded-[18px] flex flex-col gap-1 border border-white/5" style="background:rgba(18,18,26,0.75);backdrop-filter:blur(16px);">
-      <div class="flex items-center gap-1.5">
-        <span class="material-symbols-outlined text-primary" style="font-size:15px;font-variation-settings:'FILL' 1">local_fire_department</span>
-        <span class="font-label text-[9px] uppercase font-bold tracking-widest text-on-surface-variant">Kalorien</span>
+    <div class="p-2.5 rounded-[14px] flex flex-col gap-0.5 border border-white/5" style="background:rgba(18,18,26,0.75);backdrop-filter:blur(16px);">
+      <div class="flex items-center gap-1">
+        <span class="material-symbols-outlined text-primary" style="font-size:12px;font-variation-settings:'FILL' 1">local_fire_department</span>
+        <span class="font-label text-[8px] uppercase font-bold tracking-widest text-on-surface-variant">Kalorien</span>
       </div>
       <div class="flex items-baseline gap-1">
-        <span class="font-headline italic font-black text-primary" style="font-size:1.7rem;line-height:1" id="val-kcal">0</span>
-        <span class="font-label text-[10px] text-on-surface-variant">KCAL</span>
+        <span class="font-headline italic font-black text-primary" style="font-size:1.3rem;line-height:1" id="val-kcal">0</span>
+        <span class="font-label text-[9px] text-on-surface-variant">kcal</span>
       </div>
-      <div class="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-        <div class="h-full bg-primary shadow-[0_0_8px_rgba(240,165,0,0.5)] transition-all duration-700" id="bar-kcal-bento" style="width:0%"></div>
+      <div class="h-0.5 w-full bg-white/5 rounded-full overflow-hidden mt-0.5">
+        <div class="h-full bg-primary transition-all duration-700" id="bar-kcal-bento" style="width:0%"></div>
       </div>
-      <span class="text-[9px] text-on-surface-variant font-medium" id="sub-kcal">kein Ziel</span>
+      <span class="text-[8px] text-on-surface-variant font-medium" id="sub-kcal">kein Ziel</span>
     </div>
-    <div class="p-3.5 rounded-[18px] flex flex-col gap-1 border border-white/5" style="background:rgba(18,18,26,0.75);backdrop-filter:blur(16px);">
-      <div class="flex items-center gap-1.5">
-        <span class="material-symbols-outlined text-secondary" style="font-size:15px">exercise</span>
-        <span class="font-label text-[9px] uppercase font-bold tracking-widest text-secondary">Protein</span>
+    <div class="p-2.5 rounded-[14px] flex flex-col gap-0.5 border border-white/5" style="background:rgba(18,18,26,0.75);backdrop-filter:blur(16px);">
+      <div class="flex items-center gap-1">
+        <span class="material-symbols-outlined text-secondary" style="font-size:12px">exercise</span>
+        <span class="font-label text-[8px] uppercase font-bold tracking-widest text-secondary">Protein</span>
       </div>
       <div class="flex items-baseline gap-1">
-        <span class="font-headline italic font-black text-secondary" style="font-size:1.7rem;line-height:1" id="val-prot">0</span>
-        <span class="font-label text-[10px] text-on-surface-variant">G</span>
+        <span class="font-headline italic font-black text-secondary" style="font-size:1.3rem;line-height:1" id="val-prot">0</span>
+        <span class="font-label text-[9px] text-on-surface-variant">g</span>
       </div>
-      <div class="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-        <div class="h-full bg-secondary shadow-[0_0_8px_rgba(0,162,230,0.5)] transition-all duration-700" id="bar-prot-bento" style="width:0%"></div>
+      <div class="h-0.5 w-full bg-white/5 rounded-full overflow-hidden mt-0.5">
+        <div class="h-full bg-secondary transition-all duration-700" id="bar-prot-bento" style="width:0%"></div>
       </div>
-      <span class="text-[9px] text-on-surface-variant font-medium" id="sub-prot">kein Ziel</span>
+      <span class="text-[8px] text-on-surface-variant font-medium" id="sub-prot">kein Ziel</span>
     </div>
-    <div class="p-3.5 rounded-[18px] flex flex-col gap-1 border border-white/5" style="background:rgba(18,18,26,0.75);backdrop-filter:blur(16px);">
-      <div class="flex items-center gap-1.5">
-        <span class="material-symbols-outlined text-on-surface-variant" style="font-size:15px">grain</span>
-        <span class="font-label text-[9px] uppercase font-bold tracking-widest text-on-surface-variant">Carbs</span>
+    <div class="p-2.5 rounded-[14px] flex flex-col gap-0.5 border border-white/5" style="background:rgba(18,18,26,0.75);backdrop-filter:blur(16px);">
+      <div class="flex items-center gap-1">
+        <span class="material-symbols-outlined text-on-surface-variant" style="font-size:12px">grain</span>
+        <span class="font-label text-[8px] uppercase font-bold tracking-widest text-on-surface-variant">Carbs</span>
       </div>
       <div class="flex items-baseline gap-1">
-        <span class="font-headline italic font-black text-on-surface" style="font-size:1.7rem;line-height:1" id="val-carbs">0</span>
-        <span class="font-label text-[10px] text-on-surface-variant">G</span>
+        <span class="font-headline italic font-black text-on-surface" style="font-size:1.3rem;line-height:1" id="val-carbs">0</span>
+        <span class="font-label text-[9px] text-on-surface-variant">g</span>
       </div>
-      <div class="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+      <div class="h-0.5 w-full bg-white/5 rounded-full overflow-hidden mt-0.5">
         <div class="h-full bg-on-surface-variant/40 transition-all duration-700" id="bar-carbs-bento" style="width:0%"></div>
       </div>
-      <span class="text-[9px] text-on-surface-variant font-medium" id="sub-carbs">kein Ziel</span>
+      <span class="text-[8px] text-on-surface-variant font-medium" id="sub-carbs">kein Ziel</span>
     </div>
-    <div class="p-3.5 rounded-[18px] flex flex-col gap-1 border border-white/5" style="background:rgba(18,18,26,0.75);backdrop-filter:blur(16px);">
-      <div class="flex items-center gap-1.5">
-        <span class="material-symbols-outlined text-tertiary" style="font-size:15px">water_drop</span>
-        <span class="font-label text-[9px] uppercase font-bold tracking-widest text-tertiary">Fett</span>
+    <div class="p-2.5 rounded-[14px] flex flex-col gap-0.5 border border-white/5" style="background:rgba(18,18,26,0.75);backdrop-filter:blur(16px);">
+      <div class="flex items-center gap-1">
+        <span class="material-symbols-outlined text-tertiary" style="font-size:12px">water_drop</span>
+        <span class="font-label text-[8px] uppercase font-bold tracking-widest text-tertiary">Fett</span>
       </div>
       <div class="flex items-baseline gap-1">
-        <span class="font-headline italic font-black text-tertiary" style="font-size:1.7rem;line-height:1" id="val-fett">0</span>
-        <span class="font-label text-[10px] text-on-surface-variant">G</span>
+        <span class="font-headline italic font-black text-tertiary" style="font-size:1.3rem;line-height:1" id="val-fett">0</span>
+        <span class="font-label text-[9px] text-on-surface-variant">g</span>
       </div>
-      <div class="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-        <div class="h-full bg-tertiary shadow-[0_0_8px_rgba(0,237,125,0.5)] transition-all duration-700" id="bar-fett-bento" style="width:0%"></div>
+      <div class="h-0.5 w-full bg-white/5 rounded-full overflow-hidden mt-0.5">
+        <div class="h-full bg-tertiary transition-all duration-700" id="bar-fett-bento" style="width:0%"></div>
       </div>
-      <span class="text-[9px] text-on-surface-variant font-medium" id="sub-fett">kein Ziel</span>
+      <span class="text-[8px] text-on-surface-variant font-medium" id="sub-fett">kein Ziel</span>
     </div>
   </section>
 
