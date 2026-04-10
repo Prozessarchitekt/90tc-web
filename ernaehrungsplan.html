@@ -288,41 +288,55 @@ tailwind.config = {
       <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar" id="plan-tabs" style="-webkit-overflow-scrolling:touch;"></div>
     </div>
 
-    <!-- Macro Rings -->
-    <section class="flex flex-col items-center mb-6">
-      <div class="relative" style="width:220px;height:220px;">
-        <svg viewBox="0 0 220 220" width="220" height="220" style="-webkit-transform:rotate(-90deg);transform:rotate(-90deg);">
-          <!-- Tracks -->
-          <circle cx="110" cy="110" r="96" fill="none" stroke="rgba(255,197,108,0.08)" stroke-width="10"/>
-          <circle cx="110" cy="110" r="74" fill="none" stroke="rgba(137,206,255,0.08)" stroke-width="10"/>
-          <circle cx="110" cy="110" r="52" fill="none" stroke="rgba(0,237,125,0.08)" stroke-width="10"/>
-          <!-- Fills -->
-          <circle id="ring-kcal" cx="110" cy="110" r="96" fill="none" stroke="#ffc56c" stroke-width="10" stroke-linecap="round" style="stroke-dasharray:603.2;stroke-dashoffset:603.2;filter:drop-shadow(0 0 8px rgba(255,197,108,0.5));" class="ring-arc"/>
-          <circle id="ring-prot" cx="110" cy="110" r="74" fill="none" stroke="#89ceff" stroke-width="10" stroke-linecap="round" style="stroke-dasharray:465;stroke-dashoffset:465;filter:drop-shadow(0 0 6px rgba(137,206,255,0.4));" class="ring-arc"/>
-          <circle id="ring-fett" cx="110" cy="110" r="52" fill="none" stroke="#00ed7d" stroke-width="10" stroke-linecap="round" style="stroke-dasharray:326.7;stroke-dashoffset:326.7;filter:drop-shadow(0 0 6px rgba(0,237,125,0.4));" class="ring-arc"/>
-        </svg>
-        <div class="absolute inset-0 flex flex-col items-center justify-center">
-          <span id="ring-kcal-val" class="font-headline font-black italic text-primary" style="font-size:2rem;line-height:1;">0</span>
-          <span class="font-label text-[8px] uppercase tracking-widest text-on-surface-variant">von <span id="ring-kcal-target">—</span> kcal</span>
-          <div id="ring-score-badge" class="mt-2 px-3 py-0.5 rounded-full" style="background:rgba(255,197,108,0.1);border:1px solid rgba(255,197,108,0.2);display:none">
-            <span id="ring-score-text" class="font-headline font-black italic text-primary text-xs">0%</span>
+    <!-- Macro HUD -->
+    <section class="mb-6 rounded-[22px] overflow-hidden border" style="background:rgba(10,10,18,0.9);border-color:rgba(255,197,108,0.1);box-shadow:0 0 40px rgba(255,197,108,0.04);">
+      <!-- Kcal row -->
+      <div style="padding:16px 18px 12px;border-bottom:1px solid rgba(255,255,255,0.05);">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px;">
+          <div style="display:flex;align-items:baseline;gap:6px;">
+            <span id="ring-kcal-val" class="font-headline font-black italic text-primary" style="font-size:2.4rem;line-height:1;">0</span>
+            <span style="font-size:10px;font-weight:700;color:#757481;text-transform:uppercase;letter-spacing:0.08em;">kcal</span>
+          </div>
+          <div style="text-align:right;">
+            <span style="font-size:11px;color:#757481;">Ziel: </span><span id="ring-kcal-target" style="font-size:11px;font-weight:700;color:#ffc56c;">—</span>
+            <div id="ring-score-badge" style="display:none;margin-top:2px;">
+              <span id="ring-score-text" class="font-headline font-black italic text-primary" style="font-size:11px;"></span>
+            </div>
           </div>
         </div>
+        <!-- Kcal bar -->
+        <div style="height:6px;background:rgba(255,197,108,0.08);border-radius:3px;overflow:hidden;">
+          <div id="bar-kcal" style="height:100%;width:0%;background:linear-gradient(90deg,#f0a500,#ffc56c);border-radius:3px;box-shadow:0 0 10px rgba(255,197,108,0.5);transition:width 0.9s cubic-bezier(.4,0,.2,1);"></div>
+        </div>
       </div>
-
-      <!-- Macro stats row -->
-      <div class="flex gap-3 mt-1">
-        <div class="text-center px-3 py-2 rounded-[12px]" style="background:rgba(137,206,255,0.07);border:1px solid rgba(137,206,255,0.15);">
-          <span class="font-headline font-black italic text-secondary text-base" id="stat-prot">0</span>
-          <span class="text-[9px] text-on-surface-variant block">/ <span id="stat-prot-t">—</span>g P</span>
+      <!-- P / F / C rows -->
+      <div style="padding:12px 18px 14px;display:flex;flex-direction:column;gap:10px;">
+        <!-- Protein -->
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#89ceff;width:14px;flex-shrink:0;">P</span>
+          <div style="flex:1;height:4px;background:rgba(137,206,255,0.1);border-radius:2px;overflow:hidden;">
+            <div id="bar-prot" style="height:100%;width:0%;background:#89ceff;border-radius:2px;box-shadow:0 0 8px rgba(137,206,255,0.4);transition:width 0.9s cubic-bezier(.4,0,.2,1);"></div>
+          </div>
+          <span style="font-size:11px;font-weight:700;color:#89ceff;width:28px;text-align:right;flex-shrink:0;" id="stat-prot">0</span>
+          <span style="font-size:10px;color:#757481;flex-shrink:0;">/ <span id="stat-prot-t">—</span>g</span>
         </div>
-        <div class="text-center px-3 py-2 rounded-[12px]" style="background:rgba(0,237,125,0.06);border:1px solid rgba(0,237,125,0.12);">
-          <span class="font-headline font-black italic text-tertiary text-base" id="stat-fett">0</span>
-          <span class="text-[9px] text-on-surface-variant block">/ <span id="stat-fett-t">—</span>g F</span>
+        <!-- Fett -->
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#00ed7d;width:14px;flex-shrink:0;">F</span>
+          <div style="flex:1;height:4px;background:rgba(0,237,125,0.1);border-radius:2px;overflow:hidden;">
+            <div id="bar-fett" style="height:100%;width:0%;background:#00ed7d;border-radius:2px;box-shadow:0 0 8px rgba(0,237,125,0.3);transition:width 0.9s cubic-bezier(.4,0,.2,1);"></div>
+          </div>
+          <span style="font-size:11px;font-weight:700;color:#00ed7d;width:28px;text-align:right;flex-shrink:0;" id="stat-fett">0</span>
+          <span style="font-size:10px;color:#757481;flex-shrink:0;">/ <span id="stat-fett-t">—</span>g</span>
         </div>
-        <div class="text-center px-3 py-2 rounded-[12px]" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
-          <span class="font-headline font-black italic text-on-surface text-base" id="stat-carbs">0</span>
-          <span class="text-[9px] text-on-surface-variant block">/ <span id="stat-carbs-t">—</span>g C</span>
+        <!-- Carbs -->
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#c0b8d4;width:14px;flex-shrink:0;">C</span>
+          <div style="flex:1;height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;">
+            <div id="bar-carbs" style="height:100%;width:0%;background:#c0b8d4;border-radius:2px;transition:width 0.9s cubic-bezier(.4,0,.2,1);"></div>
+          </div>
+          <span style="font-size:11px;font-weight:700;color:#c0b8d4;width:28px;text-align:right;flex-shrink:0;" id="stat-carbs">0</span>
+          <span style="font-size:10px;color:#757481;flex-shrink:0;">/ <span id="stat-carbs-t">—</span>g</span>
         </div>
       </div>
     </section>
@@ -586,27 +600,23 @@ function planTotals() {
 
 function updateRings() {
   const t = planTotals()
-  const pct = (val, target, circ) => {
-    if (!target) return circ
-    return circ - Math.min(1, val/target) * circ
-  }
-  document.getElementById('ring-kcal').style.strokeDashoffset = pct(t.kcal, targets.kcal, 603.2)
-  document.getElementById('ring-prot').style.strokeDashoffset = pct(t.prot, targets.prot, 465)
-  document.getElementById('ring-fett').style.strokeDashoffset = pct(t.fett, targets.fett, 326.7)
+  const pct = (val, target) => target ? Math.min(100, (val / target) * 100) + '%' : '0%'
 
-  document.getElementById('ring-kcal-val').textContent = t.kcal
+  document.getElementById('ring-kcal-val').textContent = Math.round(t.kcal)
+  document.getElementById('bar-kcal').style.width = pct(t.kcal, targets.kcal)
+  document.getElementById('bar-prot').style.width = pct(t.prot, targets.prot)
+  document.getElementById('bar-fett').style.width = pct(t.fett, targets.fett)
+  document.getElementById('bar-carbs').style.width = pct(t.carbs, targets.carbs)
+
   document.getElementById('stat-prot').textContent = Math.round(t.prot)
   document.getElementById('stat-fett').textContent = Math.round(t.fett)
   document.getElementById('stat-carbs').textContent = Math.round(t.carbs)
 
-  // Score
   if (targets.kcal) {
     const score = Math.round(Math.min(100, (t.kcal / targets.kcal) * 100))
     const badge = document.getElementById('ring-score-badge')
     badge.style.display = 'block'
-    document.getElementById('ring-score-text').textContent = score + '%'
-    badge.style.background = score >= 90 ? 'rgba(0,237,125,0.1)' : 'rgba(255,197,108,0.1)'
-    badge.style.borderColor = score >= 90 ? 'rgba(0,237,125,0.3)' : 'rgba(255,197,108,0.2)'
+    document.getElementById('ring-score-text').textContent = score + '% des Ziels'
     document.getElementById('ring-score-text').style.color = score >= 90 ? '#00ed7d' : '#ffc56c'
   }
 }
