@@ -84,7 +84,12 @@
   <div class="absolute bottom-0 left-0 bg-gradient-to-r from-transparent via-amber-500/20 to-transparent h-[1px] w-full"></div>
 </nav>
 
-<main class="pt-24 pb-40 px-4 max-w-lg mx-auto space-y-3 relative">
+<main class="px-4 max-w-lg mx-auto flex flex-col w-full relative"
+      style="min-height:100dvh;
+             padding-top:max(76px,calc(env(safe-area-inset-top) + 60px));
+             padding-bottom:max(90px,calc(env(safe-area-inset-bottom) + 74px));
+             justify-content:space-between;
+             gap:8px;">
 
   <!-- Boss Banner -->
   <div id="boss-banner" style="display:none" class="bg-surface-container border border-error/30 rounded-[20px] p-4 flex items-center gap-3 shadow-[0_0_20px_rgba(255,115,81,0.1)]">
