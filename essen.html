@@ -113,13 +113,15 @@ tailwind.config = {
   .sheet-handle-wrap { padding:14px;display:flex;justify-content:center; }
   .sheet-handle { width:40px;height:4px;background:rgba(255,197,108,0.4);border-radius:2px; }
 
-  /* Inputs */
+  /* Inputs — font-size 16px prevents iOS auto-zoom on focus */
   input[type="number"], input[type="text"], select {
     background: #0d0d14; border: 1px solid rgba(255,255,255,.1);
     border-radius: 12px; color: #e4e1ef; padding: 10px 14px;
-    font-family: 'Inter', sans-serif; font-size: 14px; outline: none; width: 100%;
+    font-family: 'Inter', sans-serif; font-size: 16px; outline: none; width: 100%;
   }
   input:focus, select:focus { border-color: #ffc56c; }
+  /* Search input specifically */
+  #search-input { font-size: 16px !important; }
 
   /* Meal items */
   .meal-item-row {
@@ -266,7 +268,7 @@ tailwind.config = {
   <section class="flex gap-3">
     <div class="flex-1 flex items-center gap-3 px-4 rounded-[18px] border" style="background:rgba(18,18,26,0.8);backdrop-filter:blur(16px);border-color:rgba(72,71,82,0.35);height:52px;">
       <span class="material-symbols-outlined text-on-surface-variant" onclick="doSearch()" style="cursor:pointer;font-size:20px;flex-shrink:0">search</span>
-      <input class="bg-transparent border-none focus:ring-0 text-sm font-medium w-full outline-none p-0 rounded-none" id="search-input" placeholder="Lebensmittel finden…" type="text" style="background:transparent;border:none;border-radius:0;padding:0;color:#efecfb;font-family:'Inter',sans-serif;"/>
+      <input class="bg-transparent border-none focus:ring-0 font-medium w-full outline-none p-0 rounded-none" id="search-input" placeholder="Lebensmittel finden…" type="text" style="background:transparent;border:none;border-radius:0;padding:0;color:#efecfb;font-family:'Inter',sans-serif;font-size:16px;"/>
     </div>
     <button id="btn-scan" class="flex items-center justify-center rounded-[18px] active:scale-95 transition-all flex-shrink-0" style="width:52px;height:52px;background:linear-gradient(135deg,#ffc56c,#cb9743);box-shadow:0 6px 20px rgba(255,197,108,0.3);">
       <span class="material-symbols-outlined" style="font-size:22px;color:#321f00;font-weight:700;">barcode_scanner</span>
@@ -562,6 +564,8 @@ async function lookupBarcode(code) {
 }
 
 async function searchProducts(query) {
+  const q = query.trim().toLowerCase()
+
   // Try FatSecret first (may fail due to CORS in browser, silent fallback)
   const fsPromise = (async () => {
     const fs = await fsGet({ method:'foods.search', search_expression:query, max_results:20 })
@@ -573,25 +577,36 @@ async function searchProducts(query) {
     return null
   })()
 
-  // OpenFoodFacts: try v2 API (better, no country filter) and legacy in parallel
+  // OpenFoodFacts: German locale, sort by scan count (most scanned = most relevant)
   const offPromise = (async () => {
     const fields = 'product_name,product_name_de,generic_name,generic_name_de,brands,nutriments,image_small_url,code'
-    const attempts = [
-      // OFF v2 search — global, no country restriction
-      fetch(`https://world.openfoodfacts.org/api/v2/search?search_terms=${encodeURIComponent(query)}&fields=${fields}&page_size=20&sort_by=popularity`, { signal:AbortSignal.timeout(5000) }),
-      // OFF legacy — no country filter
-      fetch(`https://world.openfoodfacts.org/cgi/search.pl?` + new URLSearchParams({ search_terms:query, action:'process', json:'1', page_size:'20', fields, sort_by:'popularity' }), { signal:AbortSignal.timeout(5000) }),
+    const urls = [
+      // v2 with German locale + popularity
+      `https://world.openfoodfacts.org/api/v2/search?q=${encodeURIComponent(query)}&lc=de&fields=${fields}&page_size=30&sort_by=unique_scans_n`,
+      // legacy search with German locale
+      `https://world.openfoodfacts.org/cgi/search.pl?` + new URLSearchParams({ search_terms:query, action:'process', json:'1', page_size:'30', fields, sort_by:'unique_scans_n', lc:'de' }),
     ]
-    for (const req of attempts) {
+    for (const url of urls) {
       try {
-        const r = await req
+        const r = await fetch(url, { signal:AbortSignal.timeout(6000) })
         const d = await r.json()
-        const prods = d.products || d.foods || []
-        const parsed = prods
-          .filter(p => p.product_name || p.product_name_de || p.generic_name_de)
+        const prods = d.products || []
+        let parsed = prods
+          .filter(p => p.product_name || p.product_name_de || p.generic_name_de || p.generic_name)
           .map(parseOFFProduct)
           .filter(p => p?.kcal100 != null)
-        if (parsed.length > 0) return parsed
+        if (parsed.length === 0) continue
+
+        // Sort: products whose name starts with query first, then contains, then rest
+        parsed.sort((a, b) => {
+          const na = (a.name || '').toLowerCase(), nb = (b.name || '').toLowerCase()
+          const aStarts = na.startsWith(q), bStarts = nb.startsWith(q)
+          const aContains = na.includes(q), bContains = nb.includes(q)
+          if (aStarts !== bStarts) return aStarts ? -1 : 1
+          if (aContains !== bContains) return aContains ? -1 : 1
+          return 0
+        })
+        return parsed
       } catch(e) {}
     }
     return null
