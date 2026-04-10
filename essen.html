@@ -1137,13 +1137,13 @@ async function init() {
   document.getElementById('main').style.display = 'block'
 
   requestAnimationFrame(() => {
-    const nav = document.querySelector('nav')
     const sec = document.getElementById('search-bar-section')
     const spacer = document.getElementById('search-spacer')
-    if (nav && sec) {
-      const top = nav.getBoundingClientRect().bottom
+    if (sec) {
+      const top = sec.getBoundingClientRect().top
+      const h = sec.offsetHeight
+      if (spacer) spacer.style.height = h + 'px'
       sec.style.top = top + 'px'
-      if (spacer) spacer.style.height = (sec.offsetHeight + 8) + 'px'
     }
   })
 }
