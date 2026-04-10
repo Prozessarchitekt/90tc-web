@@ -84,7 +84,7 @@
   <div class="absolute bottom-0 left-0 bg-gradient-to-r from-transparent via-amber-500/20 to-transparent h-[1px] w-full"></div>
 </nav>
 
-<main class="pt-28 pb-40 px-5 max-w-lg mx-auto space-y-8 relative">
+<main class="pt-28 pb-40 px-5 max-w-lg mx-auto space-y-4 relative">
 
   <!-- Boss Banner -->
   <div id="boss-banner" style="display:none" class="bg-surface-container border border-error/30 rounded-[24px] p-5 flex items-center gap-4 shadow-[0_0_20px_rgba(255,115,81,0.1)]">
@@ -98,7 +98,7 @@
   <!-- Hero Section -->
   <section class="space-y-1 relative">
     <span class="font-headline font-bold text-primary tracking-[0.3em] text-[10px] uppercase opacity-80 block">WILLKOMMEN ZURÜCK</span>
-    <h1 class="font-headline font-black italic tracking-tighter uppercase" style="font-size:clamp(2.8rem,13vw,5rem);line-height:0.88">
+    <h1 class="font-headline font-black italic tracking-tighter uppercase" style="font-size:clamp(2rem,9vw,3.5rem);line-height:0.9">
       Hey, <span class="text-primary" id="dash-greeting">Chris</span>!
     </h1>
     <div class="h-1.5 w-24 bg-primary rounded-full mt-3 shadow-[0_0_20px_rgba(240,165,0,0.8)]"></div>
@@ -106,7 +106,7 @@
 
   <!-- Progress Ring -->
   <section class="flex flex-col items-center gap-3">
-    <div class="relative flex items-center justify-center" style="width:min(224px,58vw);height:min(224px,58vw);">
+    <div class="relative flex items-center justify-center" style="width:min(160px,42vw);height:min(160px,42vw);">
       <svg class="w-full h-full -rotate-90" viewBox="0 0 256 256">
         <circle cx="128" cy="128" fill="transparent" r="110" stroke="rgba(255,255,255,0.07)" stroke-width="12"/>
         <circle id="ring-arc" class="progress-ring-glow" cx="128" cy="128" fill="transparent" r="110"
@@ -114,13 +114,13 @@
           style="stroke-dasharray:691;stroke-dashoffset:691;transition:stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1)"/>
       </svg>
       <div class="absolute inset-0 flex flex-col items-center justify-center">
-        <span id="ring-day" class="font-headline italic font-black text-primary leading-none" style="font-size:4.5rem">1</span>
+        <span id="ring-day" class="font-headline italic font-black text-primary leading-none" style="font-size:3rem">1</span>
         <span class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant mt-1">VON 90 TAGEN</span>
       </div>
     </div>
 
     <!-- XP Bar -->
-    <div id="xp-bar-wrap" style="display:none;width:min(224px,58vw)">
+    <div id="xp-bar-wrap" style="display:none;width:min(160px,42vw)">
       <div class="flex justify-between text-[10px] text-on-surface-variant font-bold mb-1.5">
         <span id="xp-level-lbl">Level 1</span>
         <span id="xp-val-lbl">0 XP</span>
@@ -133,7 +133,7 @@
 
   <!-- Main CTA -->
   <section>
-    <a id="cta-btn" href="checkin.html" class="obsidian-gradient w-full py-5 rounded-2xl flex items-center justify-center gap-3 shadow-[0_12px_32px_rgba(255,197,108,0.2)] active:scale-[0.98] transition-transform">
+    <a id="cta-btn" href="checkin.html" class="obsidian-gradient w-full py-3.5 rounded-2xl flex items-center justify-center gap-3 shadow-[0_12px_32px_rgba(255,197,108,0.2)] active:scale-[0.98] transition-transform">
       <span id="cta-icon" class="material-symbols-outlined text-on-primary font-bold" style="font-variation-settings:'FILL' 1">rocket_launch</span>
       <span class="font-headline italic font-black uppercase text-on-primary text-base tracking-tight" id="cta-text">Morgen-Check-in starten</span>
     </a>
@@ -150,44 +150,44 @@
   </a>
 
   <!-- Stats Bento Grid -->
-  <section class="grid grid-cols-2 gap-4">
-    <div class="bg-surface-container p-5 rounded-[24px] flex flex-col gap-2 border border-white/5">
+  <section class="grid grid-cols-2 gap-3">
+    <div class="bg-surface-container p-4 rounded-[20px] flex flex-col gap-1.5 border border-white/5">
       <div class="flex items-center gap-2">
-        <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings:'FILL' 1">local_fire_department</span>
+        <span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings:'FILL' 1">local_fire_department</span>
         <span class="font-label text-[10px] uppercase font-bold tracking-widest text-on-surface-variant">Streak</span>
       </div>
-      <div class="flex items-baseline gap-1 mt-1">
-        <span id="s-streak" class="font-headline italic text-4xl font-black text-primary">0</span>
+      <div class="flex items-baseline gap-1">
+        <span id="s-streak" class="font-headline italic text-3xl font-black text-primary">0</span>
         <span class="font-label text-xs text-on-surface-variant">TAG</span>
       </div>
     </div>
-    <div class="bg-surface-container p-5 rounded-[24px] flex flex-col gap-2 border border-white/5">
+    <div class="bg-surface-container p-4 rounded-[20px] flex flex-col gap-1.5 border border-white/5">
       <div class="flex items-center gap-2">
-        <span class="material-symbols-outlined text-secondary text-xl">restaurant</span>
+        <span class="material-symbols-outlined text-secondary text-lg">restaurant</span>
         <span class="font-label text-[10px] uppercase font-bold tracking-widest text-on-surface-variant">Kalorien</span>
       </div>
-      <div class="flex items-baseline gap-1 mt-1">
-        <span id="s-kcal" class="font-headline italic text-4xl font-black">—</span>
+      <div class="flex items-baseline gap-1">
+        <span id="s-kcal" class="font-headline italic text-3xl font-black">—</span>
         <span class="font-label text-xs text-on-surface-variant">KCAL</span>
       </div>
     </div>
-    <div class="bg-surface-container p-5 rounded-[24px] flex flex-col gap-2 border border-white/5">
+    <div class="bg-surface-container p-4 rounded-[20px] flex flex-col gap-1.5 border border-white/5">
       <div class="flex items-center gap-2">
-        <span class="material-symbols-outlined text-tertiary text-xl">fitness_center</span>
+        <span class="material-symbols-outlined text-tertiary text-lg">fitness_center</span>
         <span class="font-label text-[10px] uppercase font-bold tracking-widest text-on-surface-variant">Protein</span>
       </div>
-      <div class="flex items-baseline gap-1 mt-1">
-        <span id="s-prot" class="font-headline italic text-4xl font-black">—</span>
+      <div class="flex items-baseline gap-1">
+        <span id="s-prot" class="font-headline italic text-3xl font-black">—</span>
         <span class="font-label text-xs text-on-surface-variant">G</span>
       </div>
     </div>
-    <div id="stat-training" class="bg-surface-container p-5 rounded-[24px] flex flex-col gap-2 border border-white/5">
+    <div id="stat-training" class="bg-surface-container p-4 rounded-[20px] flex flex-col gap-1.5 border border-white/5">
       <div class="flex items-center gap-2">
-        <span class="material-symbols-outlined text-on-surface-variant text-xl">event_available</span>
+        <span class="material-symbols-outlined text-on-surface-variant text-lg">event_available</span>
         <span class="font-label text-[10px] uppercase font-bold tracking-widest text-on-surface-variant">Training</span>
       </div>
-      <div class="flex items-baseline gap-1 mt-1">
-        <span id="s-train" class="font-headline italic text-2xl font-black text-on-surface-variant uppercase">–</span>
+      <div class="flex items-baseline gap-1">
+        <span id="s-train" class="font-headline italic text-xl font-black text-on-surface-variant uppercase">–</span>
       </div>
       <span id="s-train-sub" class="font-label text-[10px] text-on-surface-variant uppercase tracking-widest">Heute</span>
     </div>
