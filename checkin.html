@@ -284,7 +284,7 @@
     </div>
 
     <!-- ☀️ MORGEN SECTION -->
-    <div class="stitch-card morgen-card" id="morgen-section">
+    <div class="stitch-card morgen-card" id="morgen-section" style="display:none">
       <div class="stitch-card-header">
         <div class="stitch-card-icon" style="background:linear-gradient(135deg,rgba(255,197,108,0.18),rgba(255,197,108,0.06));border:1.5px solid rgba(255,197,108,0.3);box-shadow:0 0 20px rgba(255,197,108,0.12);">
           <span class="material-symbols-outlined" style="font-size:22px;color:#ffc56c;font-variation-settings:'FILL' 1;">wb_sunny</span>
@@ -367,7 +367,7 @@
     </div>
 
     <!-- 🌙 ABEND SECTION -->
-    <div class="stitch-card abend-card" id="abend-section">
+    <div class="stitch-card abend-card" id="abend-section" style="display:none">
       <div class="stitch-card-header">
         <div class="stitch-card-icon" style="background:linear-gradient(135deg,rgba(137,206,255,0.18),rgba(137,206,255,0.06));border:1.5px solid rgba(137,206,255,0.3);box-shadow:0 0 20px rgba(137,206,255,0.1);">
           <span class="material-symbols-outlined" style="font-size:22px;color:#89ceff;font-variation-settings:'FILL' 1;">bedtime</span>
@@ -785,7 +785,6 @@ async function init() {
   if (entry) {
     if (entry.checkin_morgen) {
       alreadyMorgen = true
-      document.getElementById('done-banner').style.display = 'flex'
       if (entry.gewicht_kg) document.getElementById('gewicht').value = entry.gewicht_kg
       if (entry.schlaf_ist_h) document.getElementById('schlaf').value = entry.schlaf_ist_h
       if (entry.intention) document.getElementById('intention').value = entry.intention
@@ -831,6 +830,21 @@ async function init() {
   if (profile.protein_ziel_g) document.getElementById('protein').placeholder = profile.protein_ziel_g
   if (profile.fett_ziel_g) document.getElementById('fett').placeholder = profile.fett_ziel_g
   if (profile.carbs_ziel_g) document.getElementById('carbs').placeholder = profile.carbs_ziel_g
+
+  // Determine which section to show
+  const mode = new URLSearchParams(location.search).get('mode')
+  const showMorgen = mode === 'morgen' || (!mode && !alreadyMorgen)
+  const showAbend  = mode === 'abend'  || (!mode && alreadyMorgen)
+
+  if (showAbend) {
+    document.getElementById('abend-section').style.display = 'block'
+    document.getElementById('page-title').textContent = 'ABEND'
+    document.getElementById('done-banner').style.display = alreadyAbend ? 'flex' : 'none'
+  } else {
+    document.getElementById('morgen-section').style.display = 'block'
+    document.getElementById('page-title').textContent = 'MORGEN'
+    document.getElementById('done-banner').style.display = alreadyMorgen ? 'flex' : 'none'
+  }
 
   document.getElementById('loading').style.display = 'none'
   document.getElementById('main').style.display = 'block'
