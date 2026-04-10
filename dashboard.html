@@ -68,14 +68,14 @@
     .pill-done .pill-icon-el { color: #00ed7d !important; }
   </style>
 </head>
-<body class="bg-background font-body text-on-surface selection:bg-primary/30 antialiased">
+<body class="bg-background font-body text-on-surface selection:bg-primary/30 antialiased overflow-x-hidden">
 <div class="grainy-overlay"></div>
 <div id="splash"><div class="spinner"></div></div>
 
 <div id="main" style="display:none">
 
 <!-- Top Nav -->
-<nav class="fixed top-0 w-full z-50 bg-neutral-950/80 backdrop-blur-xl flex justify-between items-center px-6 py-4 shadow-[0_8px_32px_rgba(0,0,0,0.8)]">
+<nav class="fixed top-0 w-full z-50 bg-neutral-950/80 backdrop-blur-xl flex justify-between items-center px-6 pb-4 shadow-[0_8px_32px_rgba(0,0,0,0.8)]" style="padding-top:max(16px,env(safe-area-inset-top))">
   <div class="flex items-center gap-2">
     <span class="material-symbols-outlined text-amber-500" style="font-variation-settings:'FILL' 1">workspace_premium</span>
     <span class="text-xl font-black tracking-tighter text-amber-500 italic font-headline uppercase">90TC</span>
@@ -84,7 +84,7 @@
   <div class="absolute bottom-0 left-0 bg-gradient-to-r from-transparent via-amber-500/20 to-transparent h-[1px] w-full"></div>
 </nav>
 
-<main class="pt-28 pb-40 px-5 max-w-lg mx-auto space-y-8 relative">
+<main class="pb-40 px-5 max-w-lg mx-auto space-y-8 relative" style="padding-top:max(112px,calc(env(safe-area-inset-top)+96px))">
 
   <!-- Boss Banner -->
   <div id="boss-banner" style="display:none" class="bg-surface-container border border-error/30 rounded-[24px] p-5 flex items-center gap-4 shadow-[0_0_20px_rgba(255,115,81,0.1)]">
