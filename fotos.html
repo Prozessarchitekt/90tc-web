@@ -241,24 +241,21 @@ tailwind.config = {
             <span class="material-symbols-outlined text-on-surface-variant foto-slot-icon" style="font-size:28px;">person</span>
           </div>
           <div class="foto-slot-label text-center">Vorne</div>
-          <input type="file" id="inp-vorne-cam" accept="image/*" capture="environment" style="display:none" onchange="uploadFoto(this,'vorne')">
-          <input type="file" id="inp-vorne-lib" accept="image/*" style="display:none" onchange="uploadFoto(this,'vorne')">
+          <input type="file" id="inp-vorne" accept="image/*" style="display:none" onchange="uploadFoto(this,'vorne')">
         </div>
         <div>
           <div class="foto-slot" id="slot-seite" onclick="openPhotoSheet('seite')">
             <span class="material-symbols-outlined text-on-surface-variant foto-slot-icon" style="font-size:28px;">accessibility_new</span>
           </div>
           <div class="foto-slot-label text-center">Seite</div>
-          <input type="file" id="inp-seite-cam" accept="image/*" capture="environment" style="display:none" onchange="uploadFoto(this,'seite')">
-          <input type="file" id="inp-seite-lib" accept="image/*" style="display:none" onchange="uploadFoto(this,'seite')">
+          <input type="file" id="inp-seite" accept="image/*" style="display:none" onchange="uploadFoto(this,'seite')">
         </div>
         <div>
           <div class="foto-slot" id="slot-hinten" onclick="openPhotoSheet('hinten')">
             <span class="material-symbols-outlined text-on-surface-variant foto-slot-icon" style="font-size:28px;">directions_walk</span>
           </div>
           <div class="foto-slot-label text-center">Hinten</div>
-          <input type="file" id="inp-hinten-cam" accept="image/*" capture="environment" style="display:none" onchange="uploadFoto(this,'hinten')">
-          <input type="file" id="inp-hinten-lib" accept="image/*" style="display:none" onchange="uploadFoto(this,'hinten')">
+          <input type="file" id="inp-hinten" accept="image/*" style="display:none" onchange="uploadFoto(this,'hinten')">
         </div>
       </div>
     </div>
@@ -434,7 +431,15 @@ function closePhotoSheet(e) {
 function pickSource(source) {
   document.getElementById('photo-sheet').style.display = 'none'
   if (!_activeWinkel) return
-  document.getElementById('inp-' + _activeWinkel + '-' + source).click()
+  const inp = document.getElementById('inp-' + _activeWinkel)
+  // Reset value so same file can be re-selected
+  inp.value = ''
+  if (source === 'cam') {
+    inp.setAttribute('capture', 'environment')
+  } else {
+    inp.removeAttribute('capture')
+  }
+  inp.click()
   _activeWinkel = null
 }
 
