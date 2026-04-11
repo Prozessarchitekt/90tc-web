@@ -741,6 +741,22 @@ const MUSTER_META = {
   'brust_isoliert':      { name: 'Brust – Isoliert',        icon: '💪', pause: '1–2 Min. Pause (Isolation)' },
 };
 
+// Exercise category images (Unsplash CDN)
+const EXERCISE_IMAGES = {
+  'push_horizontal':     'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=120&h=120&fit=crop&crop=center&q=70',
+  'pull_horizontal':     'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=120&h=120&fit=crop&crop=center&q=70',
+  'push_vertikal':       'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=120&h=120&fit=crop&crop=center&q=70',
+  'pull_vertikal':       'https://images.unsplash.com/photo-1598971639058-fab3c3109a41?w=120&h=120&fit=crop&crop=center&q=70',
+  'schulter_seite':      'https://images.unsplash.com/photo-1581009137042-c552e485697a?w=120&h=120&fit=crop&crop=center&q=70',
+  'brust_isoliert':      'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=120&h=120&fit=crop&crop=center&q=70',
+  'beine_quad':          'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=120&h=120&fit=crop&crop=center&q=70',
+  'beine_hintere_kette': 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=120&h=120&fit=crop&crop=center&q=70',
+  'beine_glute':         'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=120&h=120&fit=crop&crop=center&q=70',
+  'beinbeuger':          'https://images.unsplash.com/photo-1550977616-efc580084ac5?w=120&h=120&fit=crop&crop=center&q=70',
+  'beinstrecker':        'https://images.unsplash.com/photo-1599058917212-d750089bc07e?w=120&h=120&fit=crop&crop=center&q=70',
+  'waden':               'https://images.unsplash.com/photo-1434682881908-b43d0467b798?w=120&h=120&fit=crop&crop=center&q=70',
+};
+
 // Equipment-Icons: kw=Körpergewicht, kh=Kurzhantel, bank=Bank, band=Widerstandsband, booty=Booty-Band, matte=Matte, mb=Medizinball, lh=Langhantel, maschine=Maschine, kabel=Kabelzug
 const UEBUNGEN = {
   'push_horizontal': [
@@ -1527,8 +1543,12 @@ function renderMovementCard(musterId, meta, uebungen, sets, selectedUebung, isTr
     // Exercise selection
     body += `<div class="exercise-select-label">Wähle deine Übung (bleibt für 90 Tage):</div>`;
     uebungen.forEach(u => {
+      const catImg = EXERCISE_IMAGES[musterId];
+      const thumbHtml = catImg
+        ? `<div style="width:44px;height:44px;border-radius:10px;overflow:hidden;flex-shrink:0;background:var(--card-alt)"><img src="${catImg}" style="width:100%;height:100%;object-fit:cover" loading="lazy" onerror="this.parentElement.innerHTML='${u.eicon}'"></div>`
+        : `<span class="exercise-equip">${u.eicon}</span>`;
       body += `<div class="exercise-btn" onclick="selectExercise('${musterId}', '${escStr(u.name)}')">
-        <span class="exercise-equip">${u.eicon}</span>
+        ${thumbHtml}
         <div style="flex:1">
           <div class="exercise-btn-name">${u.name}</div>
           <div class="exercise-btn-info">${u.info}</div>
@@ -1603,10 +1623,15 @@ function renderMovementCard(musterId, meta, uebungen, sets, selectedUebung, isTr
     body += `<div class="rest-hint">${meta.pause}</div>`;
   }
 
+  const imgUrl = EXERCISE_IMAGES[musterId];
+  const imgHtml = imgUrl
+    ? `<div style="width:48px;height:48px;border-radius:12px;overflow:hidden;flex-shrink:0;background:var(--card2)"><img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover" loading="lazy" onerror="this.parentElement.style.display='none'"></div>`
+    : `<span class="movement-icon">${meta.icon}</span>`;
+
   return `<div class="movement-card">
     <div class="movement-header">
-      <span class="movement-icon">${meta.icon}</span>
-      <span class="movement-name">${meta.name}</span>
+      ${imgHtml}
+      <span class="movement-name" style="font-size:13px">${meta.name}</span>
       <span class="movement-prescription">${setLabel}</span>
       <span class="movement-chevron open">▾</span>
     </div>

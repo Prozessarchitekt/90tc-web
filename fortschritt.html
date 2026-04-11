@@ -122,6 +122,23 @@
     .bnav { display:none !important; }
     .no-scrollbar::-webkit-scrollbar { display:none; }
     .no-scrollbar { -ms-overflow-style:none;scrollbar-width:none; }
+
+    /* Cinematic Hero */
+    .stats-hero { position:relative; overflow:hidden; display:flex; flex-direction:column; margin:0; width:100%; }
+    .stats-hero-bg {
+      position:absolute; inset:0; z-index:0;
+      background:
+        radial-gradient(ellipse at 20% 15%, rgba(137,206,255,0.18) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 80%, rgba(0,237,125,0.10) 0%, transparent 50%),
+        radial-gradient(ellipse at 60% 40%, rgba(255,197,108,0.08) 0%, transparent 60%),
+        linear-gradient(180deg, #070a12 0%, #0d0d17 100%);
+    }
+    .stats-hero-overlay {
+      position:absolute; inset:0; z-index:1;
+      background:linear-gradient(180deg, transparent 30%, #03030A 100%);
+    }
+    .stats-hero-content { position:relative; z-index:2; padding:0 20px 28px; }
+    #main { padding:0 16px 120px; max-width:600px; margin:0 auto; }
   </style>
 </head>
 <body class="dark font-body antialiased">
@@ -129,25 +146,35 @@
 <div class="grainy-overlay"></div>
 
 <!-- Top Nav -->
-<header class="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 pb-4"
-        style="background:rgba(3,3,10,0.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(72,71,82,0.2);padding-top:max(16px,env(safe-area-inset-top))">
-  <a href="dashboard.html" class="flex items-center justify-center w-10 h-10 rounded-full"
-     style="background:rgba(255,197,108,0.08);border:1px solid rgba(255,197,108,0.15);text-decoration:none;">
-    <span class="material-symbols-outlined" style="font-size:20px;color:#ffc56c;">arrow_back</span>
-  </a>
-  <p class="font-headline italic font-black text-xl uppercase" style="color:#ffc56c;letter-spacing:-0.02em;">FORTSCHRITT</p>
-  <a href="maße.html" class="flex items-center gap-1 px-3 py-2 rounded-full text-[11px] font-bold uppercase tracking-wider"
-     style="background:rgba(255,197,108,0.08);border:1px solid rgba(255,197,108,0.2);color:#ffc56c;text-decoration:none;">
-    <span class="material-symbols-outlined" style="font-size:14px;">straighten</span>Messen
-  </a>
-</header>
+<nav class="fixed top-0 w-full z-50 bg-neutral-950/80 backdrop-blur-xl flex justify-between items-center px-6 pb-4 shadow-[0_8px_32px_rgba(0,0,0,0.8)]" style="padding-top:max(16px,env(safe-area-inset-top))">
+  <div class="flex items-center gap-2">
+    <span class="material-symbols-outlined text-amber-500" style="font-variation-settings:'FILL' 1">workspace_premium</span>
+    <span class="text-xl font-black tracking-tighter text-amber-500 italic font-headline uppercase">90TC</span>
+  </div>
+  <span class="font-headline tracking-tighter uppercase font-bold text-amber-500 text-sm" id="topbar-day-stats"></span>
+  <div class="absolute bottom-0 left-0 bg-gradient-to-r from-transparent via-amber-500/20 to-transparent h-[1px] w-full"></div>
+</nav>
 
 <div id="app">
   <div class="splash" id="loading"><div class="spinner"></div></div>
   <div id="main" class="no-scrollbar" style="display:none;">
 
+    <!-- ── Cinematic Hero ── -->
+    <div class="stats-hero" style="margin:0 -16px;width:calc(100% + 32px);">
+      <div class="stats-hero-bg"></div>
+      <div class="stats-hero-overlay"></div>
+      <div style="height:calc(max(16px,env(safe-area-inset-top)) + 56px);flex-shrink:0;"></div>
+      <div class="stats-hero-content">
+        <span style="font-family:'Space Grotesk',sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.28em;color:rgba(137,206,255,0.7);display:block;margin-bottom:6px;" id="stats-hero-badge">DEIN FORTSCHRITT</span>
+        <h1 style="font-family:'Space Grotesk',sans-serif;font-size:clamp(2.6rem,11vw,4rem);font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:-0.04em;line-height:0.88;color:#e4e1ef;text-shadow:0 0 40px rgba(137,206,255,0.15);">
+          STATIS<span style="color:#89ceff;">TIK</span>
+        </h1>
+        <p style="font-size:12px;color:rgba(172,169,183,0.7);font-weight:500;margin-top:8px;" id="stats-hero-sub">Trainings · Körper · Gewicht</p>
+      </div>
+    </div>
+
     <!-- Key Stats -->
-    <div class="stat-grid">
+    <div class="stat-grid" style="margin-top:16px;">
       <div class="stat-box">
         <div class="stat-box-val" id="s-streak" style="color:#ffc56c;">0</div>
         <div class="stat-box-label">🔥 Streak</div>
@@ -339,6 +366,15 @@ async function init() {
 
   document.getElementById('loading').style.display = 'none'
   document.getElementById('main').style.display = 'block'
+
+  // Topbar day
+  const dayNrStats = calcDayNr ? calcDayNr(profile.startdatum) : 0
+  const topDayEl = document.getElementById('topbar-day-stats')
+  if (topDayEl) topDayEl.textContent = dayNrStats > 0 ? `TAG ${dayNrStats} 🔥` : 'VORBEREITUNG'
+
+  // Hero sub text
+  const heroSub = document.getElementById('stats-hero-sub')
+  if (heroSub && dayNrStats > 0) heroSub.textContent = `Tag ${dayNrStats} · Challenge läuft`
 
   const earnedIds = new Set((badges || []).map(b => b.badge_id))
   await checkBadges(user, profile, entries, earnedIds)
