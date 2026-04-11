@@ -287,14 +287,7 @@ function renderStep() {
 
       ${form.methode === 'tabelle' && kfa === 0 ? '<div style="font-size:12px;color:var(--gold2);margin-top:6px">⚠️ Kein KFA angegeben — Formel wird als Fallback genutzt.</div>' : ''}
 
-      <div class="input-group" style="margin-top:8px">
-        <label class="input-label">🗓️ Geplanter Challenge-Start</label>
-        <input type="date" id="f-start" value="${form.startdatum}"
-          style="background:var(--card);border:1.5px solid var(--border2);border-radius:var(--r-sm);padding:12px 14px;color:var(--text);font-size:15px;width:100%;box-sizing:border-box">
-        <div style="font-size:12px;color:var(--muted);margin-top:6px">Standard: heute. Kannst du auch rückwirkend setzen.</div>
-      </div>
     `
-    document.getElementById('f-start').addEventListener('input', e => { form.startdatum = e.target.value })
   }
 
   else if (step === 5) {
@@ -393,7 +386,7 @@ async function finish() {
     carbs_ziel_g: m.carbs,
     pal_stunden: form.stunden,
     kalorienanpassung: form.ziel === 'recomp' ? 0 : (form.anpassung || 300),
-    startdatum: form.startdatum || new Date().toISOString().split('T')[0],
+    startdatum: null,
     wasser_ziel_l: 3.5,
     schlaf_ziel_h: 8.0,
     schritte_ziel: 10000,

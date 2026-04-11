@@ -69,7 +69,7 @@
     @keyframes spin { to { transform:rotate(360deg); } }
 
     /* Page */
-    #main { padding:116px 16px 100px; max-width:640px; margin:0 auto; }
+    #main { padding:100px 16px calc(100px + env(safe-area-inset-bottom)); max-width:480px; margin:0 auto; }
 
     /* Glass card */
     .stitch-card {
@@ -248,6 +248,81 @@
     .no-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
 
     .bnav { display:none !important; }
+
+    /* ── New premium redesign ─────────────────────────── */
+    /* Section header */
+    .ci-header { display:flex;align-items:center;gap:12px;margin-bottom:22px; }
+    .ci-title { font-family:'Space Grotesk',sans-serif;font-size:1.75rem;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:-0.03em;line-height:1; }
+    .ci-sub { font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#757481;margin-top:3px; }
+    .ci-xp { margin-left:auto;font-size:10px;font-weight:700;letter-spacing:0.08em;padding:5px 12px;border-radius:20px;white-space:nowrap; }
+
+    /* Obsidian metric card */
+    .metric-card { background:#0D0D14;border-radius:20px;padding:18px 18px 14px;border:1px solid rgba(72,71,82,0.3);flex:1; }
+    .metric-lbl { font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#aca9b7;display:block;margin-bottom:6px; }
+    .metric-row { display:flex;align-items:baseline;gap:5px; }
+    .metric-input {
+      background:transparent;border:none;outline:none;
+      font-family:'Space Grotesk',sans-serif;font-size:2rem;font-weight:900;font-style:italic;
+      color:#efecfb;width:100%;min-width:0;padding:0;
+    }
+    .metric-input::placeholder { color:#34343f; }
+    .metric-unit { font-size:12px;font-weight:700;color:#757481;flex-shrink:0; }
+
+    /* Panel */
+    .ci-panel { background:#0D0D14;border-radius:20px;padding:18px;border:1px solid rgba(72,71,82,0.3);margin-bottom:14px; }
+    .ci-panel.glass { background:rgba(25,24,37,0.6);backdrop-filter:blur(24px); }
+    .ci-panel-lbl { font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#aca9b7;display:block;margin-bottom:12px; }
+
+    /* Circular energy buttons */
+    .energie-grid { display:flex;justify-content:space-between;align-items:center;gap:8px; }
+    .energie-btn {
+      flex:1;aspect-ratio:1;max-width:56px;border-radius:50%;
+      background:rgba(13,13,23,0.9);border:1.5px solid rgba(72,71,82,0.4);
+      display:flex;align-items:center;justify-content:center;
+      font-size:22px;cursor:pointer;transition:all .18s;
+    }
+    .energie-btn.active {
+      background:rgba(255,197,108,0.14);border-color:#ffc56c;
+      box-shadow:0 0 18px rgba(255,197,108,0.22);transform:scale(1.1);
+    }
+    .energie-btn:active { transform:scale(0.93); }
+    .energie-emoji { font-size:22px; }
+    .energie-label { display:none; }
+
+    /* Clean inline text inputs */
+    .clean-input {
+      background:transparent;border:none;border-bottom:1px solid rgba(72,71,82,0.35);
+      outline:none;padding:7px 0;font-family:'Inter',sans-serif;font-size:14px;
+      color:#efecfb;width:100%;transition:border-color .2s;
+    }
+    .clean-input:focus { border-bottom-color:rgba(255,197,108,0.5); }
+    .clean-input::placeholder { color:#484752; }
+
+    /* Clean textarea */
+    .clean-textarea {
+      background:transparent;border:none;outline:none;width:100%;
+      font-family:'Inter',sans-serif;font-size:14px;color:#efecfb;
+      resize:none;line-height:1.6;min-height:56px;
+    }
+    .clean-textarea::placeholder { color:#484752; }
+
+    /* Goal row */
+    .goal-row { display:flex;align-items:center;gap:12px; }
+    .goal-nr {
+      width:28px;height:28px;border-radius:9px;flex-shrink:0;
+      display:flex;align-items:center;justify-content:center;
+      font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:900;font-style:italic;
+    }
+    .goal-nr.gold { background:rgba(255,197,108,0.12);border:1px solid rgba(255,197,108,0.25);color:#ffc56c; }
+    .goal-nr.green { background:rgba(17,240,128,0.1);border:1px solid rgba(17,240,128,0.25);color:#11f080; }
+
+    /* Left-accent card (wasser/schritte) */
+    .accent-card { border-left:3px solid; background:#0D0D14;border-radius:0 20px 20px 0;padding:16px 16px 12px;flex:1; }
+
+    /* Macro ring mini */
+    .macro-ring-row { display:flex;justify-content:space-around;margin-top:16px;padding-top:14px;border-top:1px solid rgba(72,71,82,0.2); }
+    .macro-ring-item { display:flex;flex-direction:column;align-items:center;gap:6px; }
+    .macro-ring-lbl { font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#aca9b7; }
   </style>
 </head>
 <body class="dark font-body antialiased">
@@ -284,80 +359,71 @@
     </div>
 
     <!-- ☀️ MORGEN SECTION -->
-    <div class="stitch-card morgen-card" id="morgen-section" style="display:none">
-      <div class="stitch-card-header">
-        <div class="stitch-card-icon" style="background:linear-gradient(135deg,rgba(255,197,108,0.18),rgba(255,197,108,0.06));border:1.5px solid rgba(255,197,108,0.3);box-shadow:0 0 20px rgba(255,197,108,0.12);">
-          <span class="material-symbols-outlined" style="font-size:22px;color:#ffc56c;font-variation-settings:'FILL' 1;">wb_sunny</span>
+    <div id="morgen-section" style="display:none;padding-bottom:8px;">
+
+      <!-- Header -->
+      <div class="ci-header">
+        <span class="material-symbols-outlined" style="font-size:34px;color:#ffc56c;font-variation-settings:'FILL' 1;flex-shrink:0;">wb_sunny</span>
+        <div>
+          <div class="ci-title" style="color:#efecfb;">Morgen-<span style="color:#ffc56c;">Check-in</span></div>
+          <div class="ci-sub">Körper · Energie · Tagesziele</div>
         </div>
-        <div class="flex-1">
-          <div class="stitch-card-title" style="color:#ffc56c;">Morgen</div>
-          <div class="stitch-card-sub">Körper · Energie · Tagesziele</div>
-        </div>
-        <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,197,108,0.5);background:rgba(255,197,108,0.08);border:1px solid rgba(255,197,108,0.15);padding:4px 10px;border-radius:20px;">+20 XP</span>
+        <span class="ci-xp" style="color:rgba(255,197,108,0.7);background:rgba(255,197,108,0.08);border:1px solid rgba(255,197,108,0.18);">+20 XP</span>
       </div>
 
-      <!-- Gewicht & Schlaf -->
-      <div class="field-section">
-        <span class="material-symbols-outlined">monitor_weight</span>
-        Körper
-      </div>
-      <div class="input-row">
-        <div class="input-group">
-          <label class="input-label">Gewicht</label>
-          <div class="input-with-unit">
-            <input type="number" id="gewicht" placeholder="80.5" step="0.1" min="30" max="300">
-            <span class="input-unit">kg</span>
+      <!-- Gewicht & Schlaf metric cards -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+        <div class="metric-card">
+          <span class="metric-lbl">Körpergewicht</span>
+          <div class="metric-row">
+            <input type="number" id="gewicht" class="metric-input" placeholder="—" step="0.1" min="30" max="300">
+            <span class="metric-unit">KG</span>
           </div>
         </div>
-        <div class="input-group">
-          <label class="input-label">Schlaf</label>
-          <div class="input-with-unit">
-            <input type="number" id="schlaf" placeholder="7.5" step="0.5" min="0" max="24">
-            <span class="input-unit">h</span>
+        <div class="metric-card">
+          <span class="metric-lbl">Schlaf</span>
+          <div class="metric-row">
+            <input type="number" id="schlaf" class="metric-input" placeholder="—" step="0.5" min="0" max="24">
+            <span class="metric-unit">STD</span>
           </div>
         </div>
       </div>
 
-      <!-- Energie -->
-      <div class="field-section">
-        <span class="material-symbols-outlined">bolt</span>
-        Energielevel heute
-      </div>
-      <div class="energie-grid">
-        <button class="energie-btn" onclick="setEnergie(1,this)">
-          <span class="energie-emoji">😴</span>
-          <span class="energie-label">Müde</span>
-        </button>
-        <button class="energie-btn" onclick="setEnergie(2,this)">
-          <span class="energie-emoji">😐</span>
-          <span class="energie-label">Ok</span>
-        </button>
-        <button class="energie-btn" onclick="setEnergie(3,this)">
-          <span class="energie-emoji">⚡</span>
-          <span class="energie-label">Gut</span>
-        </button>
-        <button class="energie-btn" onclick="setEnergie(4,this)">
-          <span class="energie-emoji">🚀</span>
-          <span class="energie-label">Top!</span>
-        </button>
+      <!-- Energy Level -->
+      <div class="ci-panel" style="margin-bottom:14px;">
+        <span class="ci-panel-lbl">Energy Level</span>
+        <div class="energie-grid">
+          <button class="energie-btn" onclick="setEnergie(1,this)"><span class="energie-emoji">😴</span></button>
+          <button class="energie-btn" onclick="setEnergie(2,this)"><span class="energie-emoji">🥱</span></button>
+          <button class="energie-btn" onclick="setEnergie(3,this)"><span class="energie-emoji">⚡</span></button>
+          <button class="energie-btn" onclick="setEnergie(4,this)"><span class="energie-emoji">🚀</span></button>
+          <button class="energie-btn" onclick="setEnergie(5,this)"><span class="energie-emoji">🔥</span></button>
+        </div>
       </div>
 
       <!-- Intention -->
-      <div class="field-section">
-        <span class="material-symbols-outlined">flag</span>
-        Meine Intention für heute
+      <div class="ci-panel glass" style="margin-bottom:14px;">
+        <span class="ci-panel-lbl">Meine Intention für heute</span>
+        <textarea id="intention" class="clean-textarea" placeholder="Was willst du heute verkörpern?" rows="2" maxlength="200"></textarea>
       </div>
-      <input type="text" id="intention" placeholder="Ich bin heute…" maxlength="100" style="width:100%;">
 
       <!-- 3 Ziele -->
-      <div class="field-section">
-        <span class="material-symbols-outlined">checklist</span>
-        3 Dinge, die ich heute umsetze
-      </div>
-      <div class="ziele-list">
-        <div class="ziel-row"><div class="ziel-nr">1</div><input type="text" id="z1" placeholder="Ziel 1…"></div>
-        <div class="ziel-row"><div class="ziel-nr">2</div><input type="text" id="z2" placeholder="Ziel 2…"></div>
-        <div class="ziel-row"><div class="ziel-nr">3</div><input type="text" id="z3" placeholder="Ziel 3…"></div>
+      <div class="ci-panel" style="margin-bottom:20px;">
+        <span class="ci-panel-lbl">3 Dinge, die ich heute umsetze</span>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div class="goal-row">
+            <div class="goal-nr gold">1</div>
+            <input type="text" id="z1" class="clean-input" placeholder="z.B. Krafttraining absolvieren">
+          </div>
+          <div class="goal-row">
+            <div class="goal-nr gold">2</div>
+            <input type="text" id="z2" class="clean-input" placeholder="z.B. 3 Liter Wasser trinken">
+          </div>
+          <div class="goal-row">
+            <div class="goal-nr gold">3</div>
+            <input type="text" id="z3" class="clean-input" placeholder="z.B. 20 Min Meditation">
+          </div>
+        </div>
       </div>
 
       <button class="btn-save-gold" onclick="saveMorgen()" id="btn-morgen">
@@ -367,145 +433,170 @@
     </div>
 
     <!-- 🌙 ABEND SECTION -->
-    <div class="stitch-card abend-card" id="abend-section" style="display:none">
-      <div class="stitch-card-header">
-        <div class="stitch-card-icon" style="background:linear-gradient(135deg,rgba(137,206,255,0.18),rgba(137,206,255,0.06));border:1.5px solid rgba(137,206,255,0.3);box-shadow:0 0 20px rgba(137,206,255,0.1);">
-          <span class="material-symbols-outlined" style="font-size:22px;color:#89ceff;font-variation-settings:'FILL' 1;">bedtime</span>
+    <div id="abend-section" style="display:none;padding-bottom:8px;">
+
+      <!-- Header -->
+      <div class="ci-header">
+        <span class="material-symbols-outlined" style="font-size:34px;color:#89ceff;font-variation-settings:'FILL' 1;flex-shrink:0;">dark_mode</span>
+        <div>
+          <div class="ci-title" style="color:#efecfb;">Abend-<span style="color:#89ceff;">Check-in</span></div>
+          <div class="ci-sub">Ernährung · Training · Reflexion</div>
         </div>
-        <div class="flex-1">
-          <div class="stitch-card-title" style="color:#89ceff;">Abend</div>
-          <div class="stitch-card-sub">Ernährung · Training · Reflexion</div>
-        </div>
-        <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:rgba(137,206,255,0.5);background:rgba(137,206,255,0.08);border:1px solid rgba(137,206,255,0.15);padding:4px 10px;border-radius:20px;">+30 XP</span>
+        <span class="ci-xp" style="color:rgba(137,206,255,0.7);background:rgba(137,206,255,0.08);border:1px solid rgba(137,206,255,0.18);">+30 XP</span>
       </div>
 
-      <!-- Ernährung -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-        <div class="field-section" style="margin:0;">
-          <span class="material-symbols-outlined">restaurant</span>
-          Ernährung heute
+      <!-- Macro Review -->
+      <div class="ci-panel" style="margin-bottom:14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <span class="ci-panel-lbl" style="margin:0;">Macro Review</span>
+          <a href="essen.html" style="font-size:11px;font-weight:700;color:#ffc56c;text-decoration:none;background:rgba(255,197,108,0.08);border:1px solid rgba(255,197,108,0.2);padding:4px 10px;border-radius:20px;display:flex;align-items:center;gap:4px;">
+            <span class="material-symbols-outlined" style="font-size:13px;">open_in_new</span>Tracker
+          </a>
         </div>
-        <a href="essen.html" style="font-size:11px;font-weight:700;color:#ffc56c;text-decoration:none;background:rgba(255,197,108,0.08);border:1px solid rgba(255,197,108,0.2);padding:5px 10px;border-radius:20px;display:flex;align-items:center;gap:4px;">
-          <span class="material-symbols-outlined" style="font-size:14px;">open_in_new</span>Tracker
-        </a>
-      </div>
-      <div class="input-row" style="margin-bottom:10px;">
-        <div class="input-group">
-          <label class="input-label">Kalorien</label>
-          <div class="input-with-unit">
-            <input type="number" id="kalorien" placeholder="2500" min="0" max="15000">
-            <span class="input-unit">kcal</span>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+          <div class="metric-card" style="padding:14px 14px 10px;">
+            <span class="metric-lbl">Kalorien</span>
+            <div class="metric-row">
+              <input type="number" id="kalorien" class="metric-input" style="font-size:1.6rem;" placeholder="—" min="0" max="15000">
+              <span class="metric-unit">kcal</span>
+            </div>
+          </div>
+          <div class="metric-card" style="padding:14px 14px 10px;">
+            <span class="metric-lbl">Protein</span>
+            <div class="metric-row">
+              <input type="number" id="protein" class="metric-input" style="font-size:1.6rem;" placeholder="—" min="0" max="999">
+              <span class="metric-unit">g</span>
+            </div>
+          </div>
+          <div class="metric-card" style="padding:14px 14px 10px;">
+            <span class="metric-lbl">Fett</span>
+            <div class="metric-row">
+              <input type="number" id="fett" class="metric-input" style="font-size:1.6rem;" placeholder="—" min="0" max="999">
+              <span class="metric-unit">g</span>
+            </div>
+          </div>
+          <div class="metric-card" style="padding:14px 14px 10px;">
+            <span class="metric-lbl">Carbs</span>
+            <div class="metric-row">
+              <input type="number" id="carbs" class="metric-input" style="font-size:1.6rem;" placeholder="—" min="0" max="999">
+              <span class="metric-unit">g</span>
+            </div>
           </div>
         </div>
-        <div class="input-group">
-          <label class="input-label">Protein</label>
-          <div class="input-with-unit">
-            <input type="number" id="protein" placeholder="160" min="0" max="999">
-            <span class="input-unit">g</span>
+        <!-- Mini macro rings -->
+        <div class="macro-ring-row">
+          <div class="macro-ring-item">
+            <div style="position:relative;width:52px;height:52px;">
+              <svg width="52" height="52" style="transform:rotate(-90deg);">
+                <circle cx="26" cy="26" r="21" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="4"/>
+                <circle id="ring-prot" cx="26" cy="26" r="21" fill="none" stroke="#ffc56c" stroke-width="4" stroke-linecap="round" stroke-dasharray="132" stroke-dashoffset="132" style="transition:stroke-dashoffset .6s ease;filter:drop-shadow(0 0 4px rgba(255,197,108,0.5));"/>
+              </svg>
+              <span id="ring-prot-pct" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#efecfb;">0%</span>
+            </div>
+            <span class="macro-ring-lbl">Prot</span>
           </div>
-        </div>
-      </div>
-      <div class="input-row">
-        <div class="input-group">
-          <label class="input-label">Fett</label>
-          <div class="input-with-unit">
-            <input type="number" id="fett" placeholder="70" min="0" max="999">
-            <span class="input-unit">g</span>
+          <div class="macro-ring-item">
+            <div style="position:relative;width:52px;height:52px;">
+              <svg width="52" height="52" style="transform:rotate(-90deg);">
+                <circle cx="26" cy="26" r="21" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="4"/>
+                <circle id="ring-carb" cx="26" cy="26" r="21" fill="none" stroke="#89ceff" stroke-width="4" stroke-linecap="round" stroke-dasharray="132" stroke-dashoffset="132" style="transition:stroke-dashoffset .6s ease;filter:drop-shadow(0 0 4px rgba(137,206,255,0.5));"/>
+              </svg>
+              <span id="ring-carb-pct" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#efecfb;">0%</span>
+            </div>
+            <span class="macro-ring-lbl">Carbs</span>
           </div>
-        </div>
-        <div class="input-group">
-          <label class="input-label">Carbs</label>
-          <div class="input-with-unit">
-            <input type="number" id="carbs" placeholder="280" min="0" max="999">
-            <span class="input-unit">g</span>
+          <div class="macro-ring-item">
+            <div style="position:relative;width:52px;height:52px;">
+              <svg width="52" height="52" style="transform:rotate(-90deg);">
+                <circle cx="26" cy="26" r="21" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="4"/>
+                <circle id="ring-fat" cx="26" cy="26" r="21" fill="none" stroke="#00ed7d" stroke-width="4" stroke-linecap="round" stroke-dasharray="132" stroke-dashoffset="132" style="transition:stroke-dashoffset .6s ease;filter:drop-shadow(0 0 4px rgba(0,237,125,0.5));"/>
+              </svg>
+              <span id="ring-fat-pct" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#efecfb;">0%</span>
+            </div>
+            <span class="macro-ring-lbl">Fett</span>
+          </div>
+          <div class="macro-ring-item">
+            <div style="position:relative;width:52px;height:52px;">
+              <svg width="52" height="52" style="transform:rotate(-90deg);">
+                <circle cx="26" cy="26" r="21" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="4"/>
+                <circle id="ring-kcal" cx="26" cy="26" r="21" fill="none" stroke="#ffc56c" stroke-width="4" stroke-linecap="round" stroke-dasharray="132" stroke-dashoffset="132" style="transition:stroke-dashoffset .6s ease;opacity:0.7;"/>
+              </svg>
+              <span id="ring-kcal-pct" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#efecfb;">0%</span>
+            </div>
+            <span class="macro-ring-lbl">Kcal</span>
           </div>
         </div>
       </div>
 
       <!-- Wasser & Schritte -->
-      <div class="field-section">
-        <span class="material-symbols-outlined">water_drop</span>
-        Wasser &amp; Schritte
-      </div>
-      <div class="input-row">
-        <div class="input-group">
-          <label class="input-label">Wasser</label>
-          <div class="input-with-unit">
-            <input type="number" id="wasser" placeholder="3.5" step="0.1" min="0" max="20">
-            <span class="input-unit">L</span>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+        <div style="background:#0D0D14;border-radius:20px;border:1px solid rgba(72,71,82,0.3);border-left:3px solid rgba(137,206,255,0.5);padding:16px;">
+          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#aca9b7;display:block;margin-bottom:6px;">Wasser</span>
+          <div class="metric-row">
+            <input type="number" id="wasser" class="metric-input" style="font-size:1.6rem;" placeholder="—" step="0.1" min="0" max="20">
+            <span class="metric-unit">L</span>
           </div>
         </div>
-        <div class="input-group">
-          <label class="input-label">Schritte</label>
-          <input type="number" id="schritte" placeholder="10000" min="0" max="100000" style="padding-right:14px;">
+        <div style="background:#0D0D14;border-radius:20px;border:1px solid rgba(72,71,82,0.3);border-left:3px solid rgba(0,237,125,0.4);padding:16px;">
+          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#aca9b7;display:block;margin-bottom:6px;">Schritte</span>
+          <div class="metric-row">
+            <input type="number" id="schritte" class="metric-input" style="font-size:1.6rem;" placeholder="—" min="0" max="100000">
+          </div>
         </div>
       </div>
 
       <!-- Training -->
-      <div class="field-section">
-        <span class="material-symbols-outlined">fitness_center</span>
-        Training heute?
-      </div>
-      <div class="ja-nein-row">
-        <button class="ja-btn" id="training-ja" onclick="setTraining(true)">✓ Ja</button>
-        <button class="nein-btn" id="training-nein" onclick="setTraining(false)">✗ Nein</button>
-      </div>
-
-      <!-- Progression -->
-      <div id="prog-group" style="display:none;">
-        <div class="field-section" style="margin-top:14px;">
-          <span class="material-symbols-outlined">trending_up</span>
-          Progression erzielt?
-        </div>
+      <div class="ci-panel" style="margin-bottom:14px;">
+        <span class="ci-panel-lbl">Training heute?</span>
         <div class="ja-nein-row">
-          <button class="ja-btn" id="prog-ja" onclick="setProgression(true)">📈 Ja!</button>
-          <button class="nein-btn" id="prog-nein" onclick="setProgression(false)">Nicht heute</button>
+          <button class="ja-btn" id="training-ja" onclick="setTraining(true)">✓ Ja</button>
+          <button class="nein-btn" id="training-nein" onclick="setTraining(false)">✗ Nein</button>
+        </div>
+        <div id="prog-group" style="display:none;margin-top:14px;">
+          <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#aca9b7;display:block;margin-bottom:10px;">Progression erzielt?</span>
+          <div class="ja-nein-row">
+            <button class="ja-btn" id="prog-ja" onclick="setProgression(true)">📈 Ja!</button>
+            <button class="nein-btn" id="prog-nein" onclick="setProgression(false)">Nicht heute</button>
+          </div>
         </div>
       </div>
 
-      <!-- Stimmung -->
-      <div class="field-section">
-        <span class="material-symbols-outlined">mood</span>
-        Stimmung heute
-      </div>
-      <div class="stimmung-row">
-        <button class="stimmung-btn" onclick="setStimmung(1,this)">😞</button>
-        <button class="stimmung-btn" onclick="setStimmung(2,this)">😕</button>
-        <button class="stimmung-btn" onclick="setStimmung(3,this)">😐</button>
-        <button class="stimmung-btn" onclick="setStimmung(4,this)">🙂</button>
-        <button class="stimmung-btn" onclick="setStimmung(5,this)">😄</button>
+      <!-- Stimmung + Körpergefühl -->
+      <div class="ci-panel" style="margin-bottom:14px;">
+        <span class="ci-panel-lbl">Mood</span>
+        <div class="stimmung-row" style="margin-bottom:20px;">
+          <button class="stimmung-btn" onclick="setStimmung(1,this)">😭</button>
+          <button class="stimmung-btn" onclick="setStimmung(2,this)">😕</button>
+          <button class="stimmung-btn" onclick="setStimmung(3,this)">😐</button>
+          <button class="stimmung-btn" onclick="setStimmung(4,this)">😊</button>
+          <button class="stimmung-btn" onclick="setStimmung(5,this)">🤩</button>
+        </div>
+        <span class="ci-panel-lbl">Körpergefühl</span>
+        <div class="koerper-grid">
+          <button class="koerper-btn" onclick="setKoerper(1,this)"><span class="koerper-emoji">🧊</span><span class="koerper-label">Schwer</span></button>
+          <button class="koerper-btn" onclick="setKoerper(2,this)"><span class="koerper-emoji">🧘</span><span class="koerper-label">Ok</span></button>
+          <button class="koerper-btn" onclick="setKoerper(3,this)"><span class="koerper-emoji">🔋</span><span class="koerper-label">Gut</span></button>
+          <button class="koerper-btn" onclick="setKoerper(4,this)"><span class="koerper-emoji">🔥</span><span class="koerper-label">Stark</span></button>
+          <button class="koerper-btn" onclick="setKoerper(5,this)"><span class="koerper-emoji">🚀</span><span class="koerper-label">Top!</span></button>
+        </div>
       </div>
 
-      <!-- Körpergefühl -->
-      <div class="field-section">
-        <span class="material-symbols-outlined">self_improvement</span>
-        Körpergefühl heute
-      </div>
-      <div class="koerper-grid">
-        <button class="koerper-btn" onclick="setKoerper(1,this)"><span class="koerper-emoji">😣</span><span class="koerper-label">Sehr schlecht</span></button>
-        <button class="koerper-btn" onclick="setKoerper(2,this)"><span class="koerper-emoji">😕</span><span class="koerper-label">Schlecht</span></button>
-        <button class="koerper-btn" onclick="setKoerper(3,this)"><span class="koerper-emoji">😐</span><span class="koerper-label">Ok</span></button>
-        <button class="koerper-btn" onclick="setKoerper(4,this)"><span class="koerper-emoji">💪</span><span class="koerper-label">Gut</span></button>
-        <button class="koerper-btn" onclick="setKoerper(5,this)"><span class="koerper-emoji">🚀</span><span class="koerper-label">Sehr gut</span></button>
-      </div>
-
-      <!-- 3 gute Dinge -->
-      <div class="field-section">
-        <span class="material-symbols-outlined">thumb_up</span>
-        3 Dinge, die heute gut liefen
-      </div>
-      <div class="ziele-list">
-        <div class="ziel-row">
-          <div class="ziel-nr" style="background:rgba(17,240,128,0.15);border-color:rgba(17,240,128,0.3);color:#11f080;">1</div>
-          <input type="text" id="g1" placeholder="Was lief gut?">
-        </div>
-        <div class="ziel-row">
-          <div class="ziel-nr" style="background:rgba(17,240,128,0.15);border-color:rgba(17,240,128,0.3);color:#11f080;">2</div>
-          <input type="text" id="g2" placeholder="Was lief gut?">
-        </div>
-        <div class="ziel-row">
-          <div class="ziel-nr" style="background:rgba(17,240,128,0.15);border-color:rgba(17,240,128,0.3);color:#11f080;">3</div>
-          <input type="text" id="g3" placeholder="Was lief gut?">
+      <!-- Was lief gut -->
+      <div class="ci-panel" style="margin-bottom:14px;">
+        <span class="ci-panel-lbl">Was lief heute gut?</span>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div class="goal-row">
+            <div class="goal-nr green">1</div>
+            <input type="text" id="g1" class="clean-input" placeholder="Halte deinen Sieg fest…">
+          </div>
+          <div class="goal-row">
+            <div class="goal-nr green">2</div>
+            <input type="text" id="g2" class="clean-input" placeholder="Und noch einer…">
+          </div>
+          <div class="goal-row">
+            <div class="goal-nr green">3</div>
+            <input type="text" id="g3" class="clean-input" placeholder="Und noch einer…">
+          </div>
         </div>
       </div>
 
@@ -829,6 +920,29 @@ async function init() {
   if (profile.protein_ziel_g) document.getElementById('protein').placeholder = profile.protein_ziel_g
   if (profile.fett_ziel_g) document.getElementById('fett').placeholder = profile.fett_ziel_g
   if (profile.carbs_ziel_g) document.getElementById('carbs').placeholder = profile.carbs_ziel_g
+
+  // Macro rings live update
+  function updateRings() {
+    const arc = 132
+    const pairs = [
+      ['kalorien', 'ring-kcal', 'ring-kcal-pct', profile.kalorien_ziel],
+      ['protein',  'ring-prot', 'ring-prot-pct',  profile.protein_ziel_g],
+      ['carbs',    'ring-carb', 'ring-carb-pct',  profile.carbs_ziel_g],
+      ['fett',     'ring-fat',  'ring-fat-pct',   profile.fett_ziel_g],
+    ]
+    pairs.forEach(([inputId, ringId, pctId, ziel]) => {
+      const val = parseFloat(document.getElementById(inputId)?.value) || 0
+      const pct = ziel ? Math.min(1, val / ziel) : 0
+      const ring = document.getElementById(ringId)
+      const pctEl = document.getElementById(pctId)
+      if (ring) ring.style.strokeDashoffset = (arc - arc * pct).toFixed(1)
+      if (pctEl) pctEl.textContent = Math.round(pct * 100) + '%'
+    })
+  }
+  ['kalorien','protein','carbs','fett'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', updateRings)
+  })
+  updateRings()
 
   // Determine which section to show
   const mode = new URLSearchParams(location.search).get('mode')

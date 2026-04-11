@@ -135,8 +135,25 @@
     </div>
   </section>
 
+  <!-- Pre-Start Banner (shown when challenge not yet started) -->
+  <div id="start-banner" style="display:none">
+    <div style="background:linear-gradient(135deg,rgba(255,197,108,0.08),rgba(255,197,108,0.03));border:1px solid rgba(255,197,108,0.22);border-radius:24px;padding:28px 22px;text-align:center;">
+      <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,197,108,0.12);border:1px solid rgba(255,197,108,0.25);border-radius:100px;padding:4px 12px;margin-bottom:16px;">
+        <span class="material-symbols-outlined" style="font-size:14px;color:#ffc56c;">schedule</span>
+        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#ffc56c;">BEREIT ZUM STARTEN</span>
+      </div>
+      <h2 class="font-headline font-black italic uppercase" style="font-size:1.7rem;line-height:1;color:#e4e1ef;margin-bottom:8px;">Deine Challenge<br><span style="color:#ffc56c;">wartet auf dich.</span></h2>
+      <p style="font-size:13px;color:#757481;line-height:1.5;margin-bottom:22px;">90 Tage. Kein Kompromiss. Wenn du bereit bist, startest du — nicht früher.</p>
+      <button onclick="startChallenge()" id="btn-start-challenge"
+        style="width:100%;background:linear-gradient(135deg,#ffc56c,#cb9743);border:none;border-radius:18px;padding:16px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;box-shadow:0 8px 32px rgba(255,197,108,0.4);">
+        <span class="material-symbols-outlined" style="font-size:22px;color:#321f00;font-variation-settings:'FILL' 1">rocket_launch</span>
+        <span class="font-headline font-black uppercase" style="font-size:15px;letter-spacing:0.05em;color:#321f00;">Challenge heute starten</span>
+      </button>
+    </div>
+  </div>
+
   <!-- Check-in Buttons -->
-  <section class="flex flex-col gap-3">
+  <section id="checkin-section" class="flex flex-col gap-3">
     <!-- Morgen -->
     <a id="btn-morgen" href="checkin.html?mode=morgen"
        class="flex items-center justify-between px-5 py-4 rounded-[22px] transition-all active:scale-[0.98]"
@@ -193,7 +210,7 @@
   </a>
 
   <!-- Stats Bento Grid -->
-  <section class="grid grid-cols-2 gap-2.5">
+  <section id="stats-grid" class="grid grid-cols-2 gap-2.5">
     <div class="bg-surface-container p-3.5 rounded-[18px] flex flex-col gap-1 border border-white/5">
       <div class="flex items-center gap-1.5">
         <span class="material-symbols-outlined text-primary" style="font-size:16px;font-variation-settings:'FILL' 1">local_fire_department</span>
@@ -290,11 +307,38 @@ async function init() {
   document.getElementById('main').style.display = 'block'
 
   const dayNr = calcDayNr(profile.startdatum)
-  const pct   = Math.min(Math.round((dayNr / 90) * 100), 100)
-
-  // Greeting + topbar
   const name = profile.vorname || profile.name || 'Chris'
   document.getElementById('dash-greeting').textContent = name
+
+  // ── Pre-challenge mode ───────────────────────────────────────────
+  if (dayNr === 0) {
+    document.getElementById('topbar-day').textContent = 'TAG 0'
+    document.getElementById('ring-day').textContent = '0'
+    document.getElementById('ring-day').style.color = '#757481'
+    document.getElementById('ring-arc').style.stroke = '#34343f'
+    document.querySelector('#ring-day + span')?.remove()
+    const ringLabel = document.createElement('span')
+    ringLabel.className = 'font-label'
+    ringLabel.style.cssText = 'font-size:8px;text-transform:uppercase;letter-spacing:0.1em;color:#757481;margin-top:2px;'
+    ringLabel.textContent = 'BEREIT?'
+    document.getElementById('ring-day').insertAdjacentElement('afterend', ringLabel)
+    document.getElementById('checkin-section').style.display = 'none'
+    document.getElementById('start-banner').style.display = 'block'
+    document.getElementById('stats-grid').style.display = 'none'
+    document.getElementById('weekly-rem').style.display = 'none'
+    document.getElementById('xp-bar-wrap').style.display = 'none'
+    if (typeof getQuoteForDay === 'function') {
+      const q = getQuoteForDay(1)
+      if (q) {
+        document.getElementById('quote-text').textContent = q.text || '—'
+        if (q.author) document.getElementById('quote-author').textContent = '— ' + q.author
+      }
+    }
+    return
+  }
+
+  // ── Active challenge ─────────────────────────────────────────────
+  const pct = Math.min(Math.round((dayNr / 90) * 100), 100)
   document.getElementById('topbar-day').textContent = `TAG ${dayNr} 🔥`
 
   // Ring animation
@@ -410,6 +454,19 @@ async function init() {
   }
 }
 init()
+
+async function startChallenge() {
+  const btn = document.getElementById('btn-start-challenge')
+  btn.disabled = true
+  btn.querySelector('span:last-child').textContent = 'Starte...'
+  const ctx = await requireProfile()
+  if (!ctx) return
+  const today = new Date().toISOString().split('T')[0]
+  const { error } = await sb.from('profiles').update({ startdatum: today }).eq('id', ctx.user.id)
+  if (error) { showToast(error.message, 'error'); btn.disabled = false; return }
+  showToast('🚀 Challenge gestartet! TAG 1 beginnt jetzt.')
+  setTimeout(() => window.location.reload(), 1200)
+}
 </script>
 </body>
 </html>

@@ -52,6 +52,7 @@ function getStreakEmoji(streak) {
 
 // ── Day Calculator ───────────────────────────────────
 function calcDayNr(startdatum) {
+  if (!startdatum) return 0
   const start = new Date(startdatum)
   const today = new Date()
   start.setHours(0,0,0,0)
