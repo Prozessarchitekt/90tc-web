@@ -124,8 +124,8 @@ function renderStep() {
       <div class="input-group">
         <label class="input-label">Geschlecht</label>
         <div class="toggle-group">
-          <button class="toggle-btn ${form.geschlecht==='maennlich'?'active':''}" onclick="form.geschlecht='maennlich';renderStep()">♂ Männlich</button>
-          <button class="toggle-btn ${form.geschlecht==='weiblich'?'active':''}" onclick="form.geschlecht='weiblich';renderStep()">♀ Weiblich</button>
+          <button class="toggle-btn ${form.geschlecht==='maennlich'?'active':''}" onclick="setGeschlecht('maennlich')">♂ Männlich</button>
+          <button class="toggle-btn ${form.geschlecht==='weiblich'?'active':''}" onclick="setGeschlecht('weiblich')">♀ Weiblich</button>
         </div>
       </div>
       <div class="input-group">
@@ -320,6 +320,7 @@ function handleFotoUpload(input) {
 }
 
 function selectZiel(val) { form.ziel = val; renderStep() }
+function setGeschlecht(val) { form.geschlecht = val; renderStep() }
 function setAnpassung(a) { form.anpassung = a; renderStep() }
 function changeStunde(key, delta) {
   form.stunden[key] = Math.max(0, (form.stunden[key]||0) + delta)
