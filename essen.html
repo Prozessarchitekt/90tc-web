@@ -106,20 +106,6 @@ tailwind.config = {
   .scanner-frame::after  { top:0;right:0;border-width:3px 3px 0 0;border-radius:0 8px 0 0; }
   .scanner-corner-bl { bottom:0;left:0;border-width:0 0 3px 3px;border-radius:0 0 0 8px; }
   .scanner-corner-br { bottom:0;right:0;border-width:0 3px 3px 0;border-radius:0 0 8px 0; }
-  /* Scan line */
-  .scanner-line {
-    position:absolute;left:8px;right:8px;height:2px;
-    background:linear-gradient(90deg,transparent,#ffc56c,transparent);
-    box-shadow:0 0 12px rgba(255,197,108,0.8);
-    animation:scan-move 2s ease-in-out infinite;
-    top:0;
-  }
-  @keyframes scan-move {
-    0%   { top:8px;   opacity:0.6; }
-    50%  { top:calc(100% - 10px); opacity:1; }
-    100% { top:8px;   opacity:0.6; }
-  }
-
   .scanner-close {
     position:absolute;top:max(20px,env(safe-area-inset-top));right:20px;
     background:rgba(18,18,26,0.85);border:1.5px solid rgba(255,197,108,0.3);
@@ -457,7 +443,6 @@ tailwind.config = {
     <div class="scanner-frame">
       <div class="scanner-corner-bl"></div>
       <div class="scanner-corner-br"></div>
-      <div class="scanner-line"></div>
     </div>
   </div>
   <!-- Header -->
@@ -709,22 +694,45 @@ async function searchProducts(query) {
       })
   }
 
-  // DE server first (bessere Relevanz für deutsche Produkte), world als Fallback
-  for (const base of ['https://de.openfoodfacts.org', 'https://world.openfoodfacts.org']) {
+  // FatSecret search (parallel to OFF for speed)
+  const fsPromise = (async () => {
     try {
-      const url = `${base}/cgi/search.pl?` + new URLSearchParams({
-        search_terms: query, action: 'process', json: '1', page_size: '40', fields
-      })
-      const r = await fetch(url, { signal: AbortSignal.timeout(8000) })
-      if (r.ok) {
-        const d = await r.json()
-        const result = rankAndFilter(d.products || [])
-        if (result.length) return result
-      }
-    } catch(e) {}
-  }
+      const d = await fsGet({ method:'foods.search', search_expression:query, max_results:20, page_number:0 })
+      const raw = d?.foods?.food
+      if (!raw) return []
+      return (Array.isArray(raw) ? raw : [raw]).map(parseFSSearchItem).filter(p => p && p.name && p.name !== '—')
+    } catch(e) { return [] }
+  })()
 
-  return []
+  // OpenFoodFacts search (DE first, world fallback)
+  const offPromise = (async () => {
+    for (const base of ['https://de.openfoodfacts.org', 'https://world.openfoodfacts.org']) {
+      try {
+        const url = `${base}/cgi/search.pl?` + new URLSearchParams({
+          search_terms: query, action: 'process', json: '1', page_size: '40', fields
+        })
+        const r = await fetch(url, { signal: AbortSignal.timeout(8000) })
+        if (r.ok) {
+          const d = await r.json()
+          const result = rankAndFilter(d.products || [])
+          if (result.length) return result
+        }
+      } catch(e) {}
+    }
+    return []
+  })()
+
+  // Return whichever resolves first with results, merge both
+  const [fsResults, offResults] = await Promise.all([fsPromise, offPromise])
+
+  // Merge: OFF results first (better for German products), FS fills gaps
+  const seen = new Set()
+  const merged = []
+  for (const r of [...offResults, ...fsResults]) {
+    const key = r.name.toLowerCase()
+    if (!seen.has(key)) { seen.add(key); merged.push(r) }
+  }
+  return merged
 }
 
 function parseFSProduct(food) {
