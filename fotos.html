@@ -237,25 +237,28 @@ tailwind.config = {
 
       <div class="grid grid-cols-3 gap-3">
         <div>
-          <div class="foto-slot" id="slot-vorne" onclick="triggerUpload('vorne')">
+          <div class="foto-slot" id="slot-vorne" onclick="openPhotoSheet('vorne')">
             <span class="material-symbols-outlined text-on-surface-variant foto-slot-icon" style="font-size:28px;">person</span>
           </div>
           <div class="foto-slot-label text-center">Vorne</div>
-          <input type="file" id="inp-vorne" accept="image/*" capture="environment" style="display:none" onchange="uploadFoto(this,'vorne')">
+          <input type="file" id="inp-vorne-cam" accept="image/*" capture="environment" style="display:none" onchange="uploadFoto(this,'vorne')">
+          <input type="file" id="inp-vorne-lib" accept="image/*" style="display:none" onchange="uploadFoto(this,'vorne')">
         </div>
         <div>
-          <div class="foto-slot" id="slot-seite" onclick="triggerUpload('seite')">
+          <div class="foto-slot" id="slot-seite" onclick="openPhotoSheet('seite')">
             <span class="material-symbols-outlined text-on-surface-variant foto-slot-icon" style="font-size:28px;">accessibility_new</span>
           </div>
           <div class="foto-slot-label text-center">Seite</div>
-          <input type="file" id="inp-seite" accept="image/*" capture="environment" style="display:none" onchange="uploadFoto(this,'seite')">
+          <input type="file" id="inp-seite-cam" accept="image/*" capture="environment" style="display:none" onchange="uploadFoto(this,'seite')">
+          <input type="file" id="inp-seite-lib" accept="image/*" style="display:none" onchange="uploadFoto(this,'seite')">
         </div>
         <div>
-          <div class="foto-slot" id="slot-hinten" onclick="triggerUpload('hinten')">
+          <div class="foto-slot" id="slot-hinten" onclick="openPhotoSheet('hinten')">
             <span class="material-symbols-outlined text-on-surface-variant foto-slot-icon" style="font-size:28px;">directions_walk</span>
           </div>
           <div class="foto-slot-label text-center">Hinten</div>
-          <input type="file" id="inp-hinten" accept="image/*" capture="environment" style="display:none" onchange="uploadFoto(this,'hinten')">
+          <input type="file" id="inp-hinten-cam" accept="image/*" capture="environment" style="display:none" onchange="uploadFoto(this,'hinten')">
+          <input type="file" id="inp-hinten-lib" accept="image/*" style="display:none" onchange="uploadFoto(this,'hinten')">
         </div>
       </div>
     </div>
@@ -317,6 +320,47 @@ tailwind.config = {
 
 </div><!-- #main -->
 
+<!-- ── Photo Source Sheet ── -->
+<div id="photo-sheet" style="
+  position:fixed;inset:0;z-index:3000;display:none;
+  align-items:flex-end;justify-content:center;
+  background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);"
+  onclick="closePhotoSheet(event)">
+  <div style="
+    width:100%;max-width:480px;
+    background:#0d0d17;
+    border-top:1px solid rgba(255,255,255,0.1);
+    border-radius:24px 24px 0 0;
+    padding:12px 16px calc(24px + env(safe-area-inset-bottom));
+    display:flex;flex-direction:column;gap:10px;"
+    onclick="event.stopPropagation()">
+    <div style="width:36px;height:4px;background:rgba(255,255,255,0.2);border-radius:2px;margin:0 auto 8px;"></div>
+    <p style="font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(172,169,183,0.5);text-align:center;margin-bottom:2px;">Foto hinzufügen</p>
+    <button onclick="pickSource('cam')" style="
+      display:flex;align-items:center;gap:14px;
+      background:rgba(255,197,108,0.08);border:1px solid rgba(255,197,108,0.2);
+      border-radius:16px;padding:16px 18px;cursor:pointer;color:#e4e1ef;
+      font-family:'Inter',sans-serif;font-size:15px;font-weight:600;">
+      <span class="material-symbols-outlined" style="font-size:22px;color:#ffc56c;font-variation-settings:'FILL' 1">photo_camera</span>
+      Foto aufnehmen
+    </button>
+    <button onclick="pickSource('lib')" style="
+      display:flex;align-items:center;gap:14px;
+      background:rgba(137,206,255,0.08);border:1px solid rgba(137,206,255,0.2);
+      border-radius:16px;padding:16px 18px;cursor:pointer;color:#e4e1ef;
+      font-family:'Inter',sans-serif;font-size:15px;font-weight:600;">
+      <span class="material-symbols-outlined" style="font-size:22px;color:#89ceff;font-variation-settings:'FILL' 1">photo_library</span>
+      Aus Mediathek wählen
+    </button>
+    <button onclick="closePhotoSheet()" style="
+      background:transparent;border:1px solid rgba(255,255,255,0.08);
+      border-radius:16px;padding:14px;cursor:pointer;
+      color:rgba(172,169,183,0.5);font-family:'Inter',sans-serif;font-size:14px;font-weight:500;">
+      Abbrechen
+    </button>
+  </div>
+</div>
+
 <!-- ── Upload Overlay ── -->
 <div id="upload-overlay">
   <div class="spinner" style="width:48px;height:48px;border-width:3px;"></div>
@@ -374,8 +418,24 @@ function showToast(msg) {
   toastTimer = setTimeout(() => el.classList.remove('show'), 2800)
 }
 
-function triggerUpload(winkel) {
-  document.getElementById('inp-' + winkel).click()
+let _activeWinkel = null
+
+function openPhotoSheet(winkel) {
+  _activeWinkel = winkel
+  document.getElementById('photo-sheet').style.display = 'flex'
+}
+
+function closePhotoSheet(e) {
+  if (e && e.target !== document.getElementById('photo-sheet')) return
+  document.getElementById('photo-sheet').style.display = 'none'
+  _activeWinkel = null
+}
+
+function pickSource(source) {
+  document.getElementById('photo-sheet').style.display = 'none'
+  if (!_activeWinkel) return
+  document.getElementById('inp-' + _activeWinkel + '-' + source).click()
+  _activeWinkel = null
 }
 
 async function uploadFoto(input, winkel) {
