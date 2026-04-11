@@ -164,6 +164,24 @@ tailwind.config = {
     background:rgba(255,255,255,.08);flex-shrink:0;
     display:flex;align-items:center;justify-content:center;font-size:24px;
   }
+
+  /* ── Essen Hero ── */
+  .essen-hero {
+    position:relative; width:100%; overflow:hidden;
+    display:flex; flex-direction:column;
+  }
+  .essen-hero-bg {
+    position:absolute; inset:0; z-index:0;
+    background:
+      radial-gradient(ellipse at 65% 10%, rgba(255,197,108,0.22) 0%, transparent 50%),
+      radial-gradient(ellipse at 15% 85%, rgba(255,130,0,0.09) 0%, transparent 50%),
+      linear-gradient(180deg, #07060f 0%, #0d0d17 100%);
+  }
+  .essen-hero-overlay {
+    position:absolute; inset:0; z-index:1;
+    background:linear-gradient(180deg, transparent 25%, #03030A 100%);
+  }
+  .essen-hero-content { position:relative; z-index:2; padding:0 20px 20px; }
 </style>
 </head>
 <body class="text-on-surface font-body selection:bg-primary/30 antialiased overflow-x-hidden" style="overflow-x:hidden;max-width:100vw;">
@@ -185,79 +203,87 @@ tailwind.config = {
   <div class="absolute bottom-0 left-0 bg-gradient-to-r from-transparent via-amber-500/20 to-transparent h-[1px] w-full"></div>
 </nav>
 
-<main class="px-4 max-w-lg mx-auto space-y-4 relative" style="overflow-x:clip;padding-top:calc(max(16px,env(safe-area-inset-top)) + 64px);padding-bottom:calc(200px + env(safe-area-inset-bottom));">
+<main class="max-w-lg mx-auto relative" style="overflow-x:clip;padding-bottom:calc(200px + env(safe-area-inset-bottom));">
 
-  <!-- ── 1. HEADER ── -->
-  <header class="relative">
-    <span class="font-headline font-bold text-primary tracking-[0.28em] text-[9px] uppercase opacity-70 mb-3 block" id="page-sub">TAG — · PHASE I</span>
-    <h1 class="text-huge font-headline font-black text-on-background tracking-tighter uppercase italic">
-      ERNÄH<span class="text-primary">RUNG</span>
-    </h1>
-    <div class="h-1 w-14 bg-primary rounded-full mt-2 shadow-[0_0_16px_rgba(240,165,0,0.8)]"></div>
-  </header>
-
-  <!-- ── 2. CALORIE HERO ── -->
-  <section class="relative">
-    <div style="position:absolute;top:-20px;left:50%;transform:translateX(-50%);width:280px;height:140px;background:radial-gradient(ellipse,rgba(255,197,108,0.1) 0%,transparent 70%);pointer-events:none;z-index:0;"></div>
-    <div class="relative rounded-[26px] border overflow-hidden" style="background:rgba(10,10,18,0.94);border-color:rgba(255,197,108,0.13);box-shadow:0 24px 60px rgba(0,0,0,0.7),inset 0 1px 0 rgba(255,197,108,0.08);z-index:1;">
-      <div class="px-6 pt-5 pb-4">
-        <!-- SVG Arc -->
-        <div class="relative flex justify-center" style="height:110px;">
-          <svg viewBox="0 0 200 110" style="width:100%;max-width:230px;height:110px;overflow:visible;display:block;">
-            <!-- Track -->
-            <path d="M 18 102 A 84 84 0 0 1 182 102" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="13" stroke-linecap="round"/>
-            <!-- Progress arc -->
-            <path id="arc-progress" d="M 18 102 A 84 84 0 0 1 182 102" fill="none" stroke="#ffc56c" stroke-width="13" stroke-linecap="round"
-                  stroke-dasharray="0 263.9"
-                  style="transition:stroke-dasharray 0.85s cubic-bezier(0.4,0,0.2,1),stroke 0.4s;filter:drop-shadow(0 0 10px rgba(255,197,108,0.55));"/>
-          </svg>
-          <!-- Center number overlay -->
-          <div style="position:absolute;bottom:4px;left:0;right:0;text-align:center;pointer-events:none;">
-            <div class="font-headline font-black italic text-primary" style="font-size:2.8rem;line-height:1;letter-spacing:-0.05em;text-shadow:0 0 28px rgba(240,165,0,0.55);" id="val-kcal">0</div>
-            <div class="font-label font-black uppercase tracking-[0.18em]" style="font-size:9px;color:rgba(255,197,108,0.55);margin-top:2px;">kcal</div>
-          </div>
+  <!-- ── HERO: Tag label + ERNÄHRUNG headline + Arc + Macro strip ── -->
+  <div class="essen-hero">
+    <div class="essen-hero-bg"></div>
+    <div class="essen-hero-overlay"></div>
+    <!-- spacer for fixed topbar -->
+    <div style="height:calc(max(16px,env(safe-area-inset-top)) + 64px);flex-shrink:0;"></div>
+    <div class="essen-hero-content">
+      <!-- Tag label -->
+      <span class="font-headline font-bold text-primary tracking-[0.28em] text-[9px] uppercase opacity-70 mb-2 block" id="page-sub">TAG — · PHASE I</span>
+      <!-- Headline -->
+      <h1 class="font-headline font-black italic uppercase tracking-tighter mb-4" style="font-size:clamp(2.6rem,12vw,4rem);line-height:0.88;letter-spacing:-0.04em;text-shadow:0 0 40px rgba(255,197,108,0.3);">
+        ERNÄH<span class="text-primary">RUNG</span>
+      </h1>
+      <!-- SVG Arc -->
+      <div class="relative flex justify-center mb-1" style="height:118px;">
+        <svg viewBox="0 0 200 110" style="width:100%;max-width:240px;height:118px;overflow:visible;display:block;">
+          <path d="M 18 102 A 84 84 0 0 1 182 102" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="13" stroke-linecap="round"/>
+          <path id="arc-progress" d="M 18 102 A 84 84 0 0 1 182 102" fill="none" stroke="#ffc56c" stroke-width="13" stroke-linecap="round"
+                stroke-dasharray="0 263.9"
+                style="transition:stroke-dasharray 0.85s cubic-bezier(0.4,0,0.2,1),stroke 0.4s;filter:drop-shadow(0 0 12px rgba(255,197,108,0.6));"/>
+        </svg>
+        <div style="position:absolute;bottom:6px;left:0;right:0;text-align:center;pointer-events:none;">
+          <div class="font-headline font-black italic text-primary" style="font-size:3rem;line-height:1;letter-spacing:-0.05em;text-shadow:0 0 32px rgba(240,165,0,0.6);" id="val-kcal">0</div>
+          <div class="font-label font-black uppercase tracking-[0.2em]" style="font-size:9px;color:rgba(255,197,108,0.55);margin-top:2px;">kcal</div>
         </div>
-        <!-- Goal subtitle -->
-        <div class="text-center mt-1">
-          <span class="font-label" style="font-size:11px;color:rgba(228,225,239,0.45);" id="sub-kcal">kein Ziel gesetzt</span>
-        </div>
+      </div>
+      <div class="text-center mb-5">
+        <span class="font-label" style="font-size:11px;color:rgba(228,225,239,0.4);" id="sub-kcal">kein Ziel gesetzt</span>
       </div>
     </div>
-  </section>
+  </div>
 
-  <!-- ── 3. MACRO STRIP ── -->
-  <section class="grid grid-cols-3 gap-2">
+  <!-- ── MACRO CARDS ── -->
+  <div class="grid grid-cols-3 gap-3 px-4 -mt-2 mb-4">
     <!-- Protein -->
-    <div class="flex flex-col items-center gap-1 py-3 px-2 rounded-[18px] border border-white/5" style="background:rgba(18,18,26,0.85);backdrop-filter:blur(12px);">
-      <div class="font-headline font-black italic text-secondary" style="font-size:1.45rem;line-height:1;letter-spacing:-0.03em;" id="val-prot">0</div>
-      <div style="font-size:7px;font-weight:800;text-transform:uppercase;letter-spacing:0.18em;color:rgba(137,206,255,0.5);">g</div>
-      <div class="h-[3px] w-full rounded-full overflow-hidden" style="background:rgba(255,255,255,0.05);">
-        <div class="h-full rounded-full transition-all duration-700" style="width:0%;background:#89ceff;" id="bar-prot-bento"></div>
+    <div class="flex flex-col gap-2 p-4 rounded-[22px] border border-white/5 shadow-xl" style="background:rgba(137,206,255,0.06);backdrop-filter:blur(16px);">
+      <div class="flex items-end gap-1">
+        <div class="font-headline font-black italic text-secondary" style="font-size:1.7rem;line-height:1;letter-spacing:-0.04em;" id="val-prot">0</div>
+        <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.14em;color:rgba(137,206,255,0.5);padding-bottom:4px;">g</div>
       </div>
-      <div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;color:rgba(228,225,239,0.4);">Protein</div>
-      <div style="font-size:7px;color:rgba(228,225,239,0.3);font-weight:500;" id="sub-prot">—</div>
+      <div class="h-[3px] w-full rounded-full overflow-hidden" style="background:rgba(255,255,255,0.06);">
+        <div class="h-full rounded-full transition-all duration-700" style="width:0%;background:linear-gradient(90deg,#5ab4f5,#89ceff);" id="bar-prot-bento"></div>
+      </div>
+      <div>
+        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;color:rgba(137,206,255,0.7);">Protein</div>
+        <div style="font-size:8px;color:rgba(228,225,239,0.3);font-weight:500;margin-top:1px;" id="sub-prot">—</div>
+      </div>
     </div>
     <!-- Fett -->
-    <div class="flex flex-col items-center gap-1 py-3 px-2 rounded-[18px] border border-white/5" style="background:rgba(18,18,26,0.85);backdrop-filter:blur(12px);">
-      <div class="font-headline font-black italic text-tertiary" style="font-size:1.45rem;line-height:1;letter-spacing:-0.03em;" id="val-fett">0</div>
-      <div style="font-size:7px;font-weight:800;text-transform:uppercase;letter-spacing:0.18em;color:rgba(0,237,125,0.5);">g</div>
-      <div class="h-[3px] w-full rounded-full overflow-hidden" style="background:rgba(255,255,255,0.05);">
-        <div class="h-full rounded-full transition-all duration-700" style="width:0%;background:#00ed7d;" id="bar-fett-bento"></div>
+    <div class="flex flex-col gap-2 p-4 rounded-[22px] border border-white/5 shadow-xl" style="background:rgba(0,237,125,0.05);backdrop-filter:blur(16px);">
+      <div class="flex items-end gap-1">
+        <div class="font-headline font-black italic text-tertiary" style="font-size:1.7rem;line-height:1;letter-spacing:-0.04em;" id="val-fett">0</div>
+        <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.14em;color:rgba(0,237,125,0.45);padding-bottom:4px;">g</div>
       </div>
-      <div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;color:rgba(228,225,239,0.4);">Fett</div>
-      <div style="font-size:7px;color:rgba(228,225,239,0.3);font-weight:500;" id="sub-fett">—</div>
+      <div class="h-[3px] w-full rounded-full overflow-hidden" style="background:rgba(255,255,255,0.06);">
+        <div class="h-full rounded-full transition-all duration-700" style="width:0%;background:linear-gradient(90deg,#00c469,#00ed7d);" id="bar-fett-bento"></div>
+      </div>
+      <div>
+        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;color:rgba(0,237,125,0.65);">Fett</div>
+        <div style="font-size:8px;color:rgba(228,225,239,0.3);font-weight:500;margin-top:1px;" id="sub-fett">—</div>
+      </div>
     </div>
     <!-- Carbs -->
-    <div class="flex flex-col items-center gap-1 py-3 px-2 rounded-[18px] border border-white/5" style="background:rgba(18,18,26,0.85);backdrop-filter:blur(12px);">
-      <div class="font-headline font-black italic" style="font-size:1.45rem;line-height:1;letter-spacing:-0.03em;color:rgba(228,225,239,0.75);" id="val-carbs">0</div>
-      <div style="font-size:7px;font-weight:800;text-transform:uppercase;letter-spacing:0.18em;color:rgba(228,225,239,0.3);">g</div>
-      <div class="h-[3px] w-full rounded-full overflow-hidden" style="background:rgba(255,255,255,0.05);">
-        <div class="h-full rounded-full transition-all duration-700" style="width:0%;background:rgba(214,196,172,0.6);" id="bar-carbs-bento"></div>
+    <div class="flex flex-col gap-2 p-4 rounded-[22px] border border-white/5 shadow-xl" style="background:rgba(255,197,108,0.05);backdrop-filter:blur(16px);">
+      <div class="flex items-end gap-1">
+        <div class="font-headline font-black italic text-primary" style="font-size:1.7rem;line-height:1;letter-spacing:-0.04em;" id="val-carbs">0</div>
+        <div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.14em;color:rgba(255,197,108,0.45);padding-bottom:4px;">g</div>
       </div>
-      <div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;color:rgba(228,225,239,0.4);">Carbs</div>
-      <div style="font-size:7px;color:rgba(228,225,239,0.3);font-weight:500;" id="sub-carbs">—</div>
+      <div class="h-[3px] w-full rounded-full overflow-hidden" style="background:rgba(255,255,255,0.06);">
+        <div class="h-full rounded-full transition-all duration-700" style="width:0%;background:linear-gradient(90deg,#cb9743,#ffc56c);" id="bar-carbs-bento"></div>
+      </div>
+      <div>
+        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;color:rgba(255,197,108,0.65);">Carbs</div>
+        <div style="font-size:8px;color:rgba(228,225,239,0.3);font-weight:500;margin-top:1px;" id="sub-carbs">—</div>
+      </div>
     </div>
-  </section>
+  </div>
+
+  <div class="px-4 flex flex-col gap-3">
 
   <!-- ── 3. TAGESSTART: Plan laden (wenn vorhanden + noch nix eingetragen) ── -->
   <div id="load-plan-section" style="display:none">
@@ -318,6 +344,8 @@ tailwind.config = {
     </div>
     <span class="material-symbols-outlined text-on-surface-variant" style="font-size:20px;">chevron_right</span>
   </a>
+
+  </div><!-- /.px-4 wrapper -->
 
 </main>
 
@@ -1125,8 +1153,8 @@ async function init() {
   tagNr = calcDayNr(currentProfile.startdatum)
 
   const d = new Date()
-  document.getElementById('page-sub').textContent = `TAG ${tagNr} · PHASE I`
-  document.getElementById('topbar-info').textContent = `TAG ${tagNr} 🔥`
+  document.getElementById('page-sub').textContent = tagNr > 0 ? `TAG ${tagNr} · PHASE I` : 'VORBEREITUNG'
+  document.getElementById('topbar-info').textContent = tagNr > 0 ? `TAG ${tagNr} 🔥` : 'VORBEREITUNG'
 
   const { data:meals } = await sb.from('meal_entries')
     .select('*').eq('user_id',currentUser.id).eq('datum',getToday()).order('created_at')

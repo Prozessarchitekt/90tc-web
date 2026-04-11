@@ -1233,9 +1233,9 @@ async function init() {
   document.getElementById('main').style.display = 'block';
 
   // Topbar day
-  const dayNrTrain = calcDayNr ? calcDayNr(profile.startdatum) : 1
+  const dayNrTrain = calcDayNr ? calcDayNr(profile.startdatum) : 0
   const topDayEl = document.getElementById('topbar-day-train')
-  if (topDayEl) topDayEl.textContent = `TAG ${dayNrTrain} 🔥`
+  if (topDayEl) topDayEl.textContent = dayNrTrain > 0 ? `TAG ${dayNrTrain} 🔥` : 'VORBEREITUNG'
 
   // Plan label in header
   const planLabel = document.getElementById('header-plan-label')
