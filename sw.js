@@ -1,5 +1,5 @@
 // 90TC Service Worker — Offline Splash + Cache
-const CACHE_NAME = '90tc-v5'
+const CACHE_NAME = '90tc-v6'
 const STATIC = [
   '/index.html',
   '/login.html',
@@ -29,15 +29,16 @@ self.addEventListener('activate', e => {
   self.clients.claim()
 })
 
+// Domains that must never be cached (APIs, auth, external services)
+const BYPASS = ['supabase.co','fatsecret.com','openfoodfacts.org','googleapis.com','gstatic.com','jsdelivr.net','cdn.tailwindcss.com','fonts.','unpkg.com']
+
 self.addEventListener('fetch', e => {
-  // Nur GET, keine Supabase-Requests cachen
   if (e.request.method !== 'GET') return
-  if (e.request.url.includes('supabase.co')) return
+  if (BYPASS.some(d => e.request.url.includes(d))) return
 
   e.respondWith(
     fetch(e.request)
       .then(res => {
-        // Erfolgreiche Response auch in Cache legen
         if (res.ok) {
           const clone = res.clone()
           caches.open(CACHE_NAME).then(c => c.put(e.request, clone))
