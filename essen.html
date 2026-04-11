@@ -536,6 +536,66 @@ function updateMacroRings(t) {
   document.getElementById('sub-carbs').textContent = cg ? `Ziel: ${cg}g` : '—'
 }
 
+// ── Lokale Lebensmitteldatenbank (immer verfügbar, keine API nötig) ──
+const LOCAL_FOODS = [
+  // Milchprodukte
+  { name:'Magerquark',          brand:'Generisch', kcal100:67,  protein100:12.0, fett100:0.3,  carbs100:4.1,  image:null, aliases:['quark','mager quark'] },
+  { name:'Skyr',                brand:'Generisch', kcal100:63,  protein100:11.0, fett100:0.2,  carbs100:4.0,  image:null, aliases:[] },
+  { name:'Hüttenkäse',          brand:'Generisch', kcal100:98,  protein100:11.0, fett100:5.0,  carbs100:3.0,  image:null, aliases:['cottage cheese','hütten käse'] },
+  { name:'Joghurt (3,5 %)',     brand:'Generisch', kcal100:63,  protein100:3.5,  fett100:3.5,  carbs100:5.0,  image:null, aliases:['joghurt','yogurt','naturjoghurt'] },
+  { name:'Vollmilch',           brand:'Generisch', kcal100:61,  protein100:3.3,  fett100:3.5,  carbs100:4.7,  image:null, aliases:['milch','milk'] },
+  { name:'Mozzarella',          brand:'Generisch', kcal100:280, protein100:17.0, fett100:22.0, carbs100:2.0,  image:null, aliases:[] },
+  { name:'Gouda',               brand:'Generisch', kcal100:356, protein100:25.0, fett100:28.0, carbs100:1.0,  image:null, aliases:[] },
+  { name:'Parmesan',            brand:'Generisch', kcal100:431, protein100:38.0, fett100:29.0, carbs100:3.0,  image:null, aliases:[] },
+  // Fleisch & Fisch
+  { name:'Hähnchenbrust',       brand:'Generisch', kcal100:110, protein100:23.0, fett100:1.3,  carbs100:0.0,  image:null, aliases:['hühnchenbrust','chicken','huhn','hähnchenfilet','hähnchen filet'] },
+  { name:'Hähnchenoberschenkel',brand:'Generisch', kcal100:191, protein100:18.0, fett100:13.0, carbs100:0.0,  image:null, aliases:['oberschenkel','chicken thigh'] },
+  { name:'Rinderhack (mager)',  brand:'Generisch', kcal100:144, protein100:20.0, fett100:7.0,  carbs100:0.0,  image:null, aliases:['hackfleisch','rinderhackfleisch','hack'] },
+  { name:'Lachs',               brand:'Generisch', kcal100:208, protein100:20.0, fett100:13.0, carbs100:0.0,  image:null, aliases:['lachsfilet','salmon'] },
+  { name:'Thunfisch (Wasser)',  brand:'Generisch', kcal100:86,  protein100:20.0, fett100:1.0,  carbs100:0.0,  image:null, aliases:['thunfisch','tuna'] },
+  { name:'Seelachs',            brand:'Generisch', kcal100:74,  protein100:17.0, fett100:0.5,  carbs100:0.0,  image:null, aliases:['pollock','seelachsfilet'] },
+  { name:'Ei (Hühnerei)',       brand:'Generisch', kcal100:155, protein100:13.0, fett100:11.0, carbs100:1.0,  image:null, aliases:['ei','eier','eggs','egg'] },
+  { name:'Eiweißpulver (Whey)', brand:'Generisch', kcal100:370, protein100:75.0, fett100:5.0,  carbs100:10.0, image:null, aliases:['whey','protein pulver','proteinpulver','whey protein'] },
+  // Getreide & Kohlenhydrate
+  { name:'Haferflocken',        brand:'Generisch', kcal100:366, protein100:13.0, fett100:7.0,  carbs100:58.0, image:null, aliases:['oats','oatmeal','hafer'] },
+  { name:'Weißer Reis (gekocht)',brand:'Generisch',kcal100:130, protein100:2.7,  fett100:0.3,  carbs100:28.0, image:null, aliases:['reis','rice','basmati','jasminreis'] },
+  { name:'Brauner Reis (gekocht)',brand:'Generisch',kcal100:111,protein100:2.6,  fett100:0.9,  carbs100:23.0, image:null, aliases:['vollkornreis'] },
+  { name:'Vollkornbrot',        brand:'Generisch', kcal100:240, protein100:9.0,  fett100:3.0,  carbs100:42.0, image:null, aliases:['brot','vollkorn','schwarzbrot'] },
+  { name:'Kartoffel',           brand:'Generisch', kcal100:77,  protein100:2.0,  fett100:0.1,  carbs100:17.0, image:null, aliases:['kartoffeln','potato','potatoes'] },
+  { name:'Süßkartoffel',        brand:'Generisch', kcal100:86,  protein100:1.6,  fett100:0.1,  carbs100:20.0, image:null, aliases:['sweet potato','süßkartoffeln','yam'] },
+  { name:'Quinoa (gekocht)',    brand:'Generisch', kcal100:120, protein100:4.4,  fett100:1.9,  carbs100:21.0, image:null, aliases:['quinoa'] },
+  { name:'Pasta (gekocht)',     brand:'Generisch', kcal100:131, protein100:5.0,  fett100:1.1,  carbs100:26.0, image:null, aliases:['nudeln','spaghetti','penne','pasta'] },
+  // Hülsenfrüchte & Pflanzlich
+  { name:'Linsen (gekocht)',    brand:'Generisch', kcal100:116, protein100:9.0,  fett100:0.4,  carbs100:20.0, image:null, aliases:['linsen','lentils'] },
+  { name:'Kichererbsen (gekocht)',brand:'Generisch',kcal100:164,protein100:9.0,  fett100:3.0,  carbs100:27.0, image:null, aliases:['chickpeas','kichererbsen'] },
+  { name:'Tofu (fest)',         brand:'Generisch', kcal100:76,  protein100:8.0,  fett100:4.0,  carbs100:2.0,  image:null, aliases:['tofu'] },
+  { name:'Tempeh',              brand:'Generisch', kcal100:193, protein100:19.0, fett100:11.0, carbs100:9.0,  image:null, aliases:[] },
+  // Gemüse
+  { name:'Brokkoli',            brand:'Generisch', kcal100:34,  protein100:2.8,  fett100:0.4,  carbs100:7.0,  image:null, aliases:['broccoli'] },
+  { name:'Spinat',              brand:'Generisch', kcal100:23,  protein100:2.9,  fett100:0.4,  carbs100:3.6,  image:null, aliases:['blattspinat','spinach'] },
+  { name:'Paprika (rot)',       brand:'Generisch', kcal100:31,  protein100:1.0,  fett100:0.3,  carbs100:6.0,  image:null, aliases:['paprika'] },
+  { name:'Gurke',               brand:'Generisch', kcal100:15,  protein100:0.7,  fett100:0.1,  carbs100:3.1,  image:null, aliases:['cucumber'] },
+  { name:'Grüner Spargel',      brand:'Generisch', kcal100:20,  protein100:2.2,  fett100:0.2,  carbs100:3.5,  image:null, aliases:['spargel','asparagus'] },
+  { name:'Zucchini',            brand:'Generisch', kcal100:17,  protein100:1.2,  fett100:0.1,  carbs100:3.1,  image:null, aliases:['zucchini'] },
+  // Früchte
+  { name:'Banane',              brand:'Generisch', kcal100:89,  protein100:1.1,  fett100:0.3,  carbs100:23.0, image:null, aliases:['banana'] },
+  { name:'Apfel',               brand:'Generisch', kcal100:52,  protein100:0.3,  fett100:0.2,  carbs100:14.0, image:null, aliases:['apple','äpfel'] },
+  { name:'Beeren (Heidelbeer)', brand:'Generisch', kcal100:57,  protein100:0.7,  fett100:0.3,  carbs100:14.0, image:null, aliases:['blaubeeren','heidelbeeren','blueberry','beeren'] },
+  // Nüsse & Fette
+  { name:'Mandeln',             brand:'Generisch', kcal100:579, protein100:21.0, fett100:50.0, carbs100:22.0, image:null, aliases:['almonds','almond'] },
+  { name:'Erdnussbutter',       brand:'Generisch', kcal100:588, protein100:25.0, fett100:50.0, carbs100:20.0, image:null, aliases:['peanut butter','pb','erdnussmus'] },
+  { name:'Avocado',             brand:'Generisch', kcal100:160, protein100:2.0,  fett100:15.0, carbs100:9.0,  image:null, aliases:[] },
+  { name:'Olivenöl',            brand:'Generisch', kcal100:884, protein100:0.0,  fett100:100.0,carbs100:0.0,  image:null, aliases:['olive oil','öl'] },
+]
+
+function searchLocal(query) {
+  const q = query.trim().toLowerCase()
+  return LOCAL_FOODS.filter(f =>
+    f.name.toLowerCase().includes(q) ||
+    (f.aliases || []).some(a => a.includes(q))
+  ).map(f => ({ ...f, barcode: '', _local: true }))
+}
+
 // ── FatSecret ─────────────────────────────────────────
 let _fsToken = null, _fsTokenExp = 0
 
@@ -559,7 +619,10 @@ async function fsGet(params) {
   if (!token) return null
   try {
     const url = 'https://platform.fatsecret.com/rest/server.api?' + new URLSearchParams({ ...params, format:'json' })
-    const r = await fetch(url, { headers:{ Authorization:'Bearer '+token }, signal:AbortSignal.timeout(4000) })
+    const ctrl = new AbortController()
+    const t = setTimeout(() => ctrl.abort(), 4000)
+    const r = await fetch(url, { headers:{ Authorization:'Bearer '+token }, signal: ctrl.signal })
+    clearTimeout(t)
     return await r.json()
   } catch(e) { return null }
 }
@@ -579,7 +642,10 @@ async function lookupBarcode(code) {
   const offPromise = (async () => {
     for (const base of ['https://world.openfoodfacts.org','https://de.openfoodfacts.org']) {
       try {
-        const r = await fetch(`${base}/api/v2/product/${code}?fields=${fields}`, { signal:AbortSignal.timeout(5000) })
+        const bCtrl = new AbortController()
+        const bT = setTimeout(() => bCtrl.abort(), 5000)
+        const r = await fetch(`${base}/api/v2/product/${code}?fields=${fields}`, { signal: bCtrl.signal })
+        clearTimeout(bT)
         const d = await r.json()
         if (d.status === 1 && d.product) { const p = parseOFFProduct(d.product); if (p?.kcal100 != null) return p }
       } catch(e) {}
@@ -663,7 +729,12 @@ async function searchProducts(query) {
     const key = r.name.toLowerCase()
     if (!seen.has(key)) { seen.add(key); merged.push(r) }
   }
-  return merged
+
+  // Prepend local DB matches (instant, always available)
+  const localMatches = searchLocal(query)
+  const finalSeen = new Set(merged.map(r => r.name.toLowerCase()))
+  const newLocals = localMatches.filter(f => !finalSeen.has(f.name.toLowerCase()))
+  return [...newLocals, ...merged]
 }
 
 function parseFSProduct(food) {
