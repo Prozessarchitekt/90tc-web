@@ -260,6 +260,36 @@
       color:var(--accent);
     }
 
+    /* ── Training Hero ── */
+    /* Override .page top padding for hero pages */
+    .page { padding-top: 0 !important; }
+    .train-hero {
+      position:relative; overflow:hidden;
+      display:flex; flex-direction:column;
+      margin:0 -16px; width:calc(100% + 32px);
+    }
+    .train-hero-bg {
+      position:absolute; inset:0; z-index:0;
+      background:
+        radial-gradient(ellipse at 75% 10%, rgba(255,197,108,0.28) 0%, transparent 55%),
+        radial-gradient(ellipse at 10% 90%, rgba(0,237,125,0.09) 0%, transparent 50%),
+        linear-gradient(180deg, #080a12 0%, #0d0d17 100%);
+    }
+    .train-hero-overlay {
+      position:absolute; inset:0; z-index:1;
+      background:linear-gradient(180deg, transparent 20%, #03030A 100%);
+    }
+    .train-hero-content { position:relative; z-index:2; padding:0 16px 24px; }
+    .train-week-prog {
+      height:4px; width:100%; border-radius:99px; overflow:hidden;
+      background:rgba(255,255,255,0.07); margin-top:12px;
+    }
+    .train-week-prog-fill {
+      height:100%; border-radius:99px;
+      background:linear-gradient(90deg,#cb9743,#ffc56c,rgba(255,255,255,0.7));
+      transition:width .7s cubic-bezier(.4,0,.2,1);
+    }
+
     /* Multiple options */
     .plan-options-grid { display:flex; flex-direction:column; gap:10px; margin-bottom:20px; }
     .plan-opt {
@@ -474,13 +504,21 @@
   <div id="main" style="display:none">
     <div class="page">
 
-      <!-- Header -->
-      <div style="margin-bottom:20px">
-        <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:4px">
-          <h2 style="font-family:'Space Grotesk',sans-serif;font-size:clamp(2rem,10vw,3rem);font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:-0.04em;color:#e4e1ef;line-height:1">Trainingsplan</h2>
-          <span id="week-badge" style="font-family:'Space Grotesk',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#ffc56c;padding-bottom:4px">—</span>
+      <!-- ── Cinematic Hero ── -->
+      <div class="train-hero">
+        <div class="train-hero-bg"></div>
+        <div class="train-hero-overlay"></div>
+        <div style="height:calc(max(16px,env(safe-area-inset-top)) + 56px);flex-shrink:0;"></div>
+        <div class="train-hero-content">
+          <span style="font-family:'Space Grotesk',sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.28em;color:rgba(255,197,108,0.7);display:block;margin-bottom:6px;" id="week-badge">WOCHE — VON 12</span>
+          <h1 style="font-family:'Space Grotesk',sans-serif;font-size:clamp(2.8rem,12vw,4.2rem);font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:-0.04em;line-height:0.88;color:#e4e1ef;text-shadow:0 0 40px rgba(255,197,108,0.2);">
+            TRAI<span style="color:#ffc56c;">NING</span>
+          </h1>
+          <p id="header-plan-label" style="font-size:12px;color:rgba(172,169,183,0.7);font-weight:500;margin-top:8px;"></p>
+          <div class="train-week-prog" style="max-width:200px;">
+            <div class="train-week-prog-fill" id="week-prog-fill" style="width:0%"></div>
+          </div>
         </div>
-        <p id="header-plan-label" style="font-size:13px;color:#aca9b7;font-weight:500"></p>
       </div>
 
       <!-- Plan Banner -->
@@ -1243,8 +1281,10 @@ async function init() {
     ? (PLAN_DB.find(p=>p.id===savedPlanId)?.split || 'Training')
     : 'Training'
 
-  // Week badge
-  document.getElementById('week-badge').textContent = 'Woche ' + currentWeek + ' von 12';
+  // Week badge + progress fill
+  document.getElementById('week-badge').textContent = 'WOCHE ' + currentWeek + ' VON 12';
+  const progFill = document.getElementById('week-prog-fill')
+  if (progFill) progFill.style.width = Math.round((currentWeek / 12) * 100) + '%'
   document.getElementById('week-title').textContent = getWeekName(currentWeek);
   document.getElementById('week-sub').textContent = getWeekSub(currentWeek);
   if (currentWeek === 7) {

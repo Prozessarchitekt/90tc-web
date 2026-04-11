@@ -1,451 +1,444 @@
 <!DOCTYPE html>
-<html lang="de">
+<html class="dark" lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>90TC — Körpermaße</title>
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#ffc56c">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="90TC">
-  <link rel="apple-touch-icon" href="icon.svg">
-
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Space+Grotesk:wght@900&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-
-  <!-- Tailwind -->
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            'background':              '#03030A',
-            'surface':                 '#0d0d17',
-            'surface-container':       '#191825',
-            'surface-container-low':   '#12121d',
-            'surface-container-high':  '#1f1e2c',
-            'surface-container-highest':'#252433',
-            'surface-bright':          '#2b2b3a',
-            'on-surface':              '#efecfb',
-            'on-surface-variant':      '#aca9b7',
-            'outline':                 '#757481',
-            'outline-variant':         '#484752',
-            'primary':                 '#ffc56c',
-            'primary-container':       '#cb9743',
-            'on-primary-container':    '#321f00',
-            'secondary':               '#89ceff',
-            'tertiary-dim':            '#11f080',
-            'error':                   '#ff7351',
-          },
-          fontFamily: {
-            headline: ['Space Grotesk'],
-            body:     ['Inter'],
-            label:    ['Inter'],
-          },
-          borderRadius: {
-            DEFAULT: '1rem',
-            lg:      '2rem',
-            xl:      '3rem',
-            full:    '9999px',
-          },
-        },
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>90TC — Körpermaße</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#ffc56c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "surface-container-highest": "#34343f",
+        "surface-container-lowest": "#03030A",
+        "surface-container-high": "#12121A",
+        "surface": "#03030A",
+        "surface-container-low": "#0D0D14",
+        "surface-variant": "#1A1A24",
+        "on-surface-variant": "#d6c4ac",
+        "tertiary": "#00ed7d",
+        "surface-dim": "#03030A",
+        "error": "#ffb4ab",
+        "surface-bright": "#1C1C26",
+        "surface-container": "#0D0D14",
+        "secondary": "#89ceff",
+        "on-secondary": "#00344d",
+        "on-surface": "#e4e1ef",
+        "primary": "#ffc56c",
+        "outline-variant": "#34343f",
+        "primary-container": "#f0a500",
+        "on-primary": "#442c00",
+        "background": "#03030A",
+        "on-background": "#e4e1ef",
       },
+      fontFamily: { "headline": ["Space Grotesk"], "body": ["Inter"], "label": ["Inter"] }
     }
-  </script>
+  }
+}
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  body { background-color: #03030A; min-height: 100vh; }
 
-  <style>
-    /* Override old CSS vars */
-    :root {
-      --accent:        #ffc56c;
-      --accent-dim:    rgba(255,197,108,0.08);
-      --accent-border: rgba(255,197,108,0.18);
-      --gold:          #ffc56c;
-      --bg:            #03030A;
-      --bg2:           #0d0d17;
-      --card-bg:       #191825;
-      --text:          #efecfb;
-      --text2:         #aca9b7;
-      --muted:         #757481;
-      --green2:        #11f080;
-      --danger:        #ff7351;
-    }
+  .grainy-overlay {
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.04; pointer-events: none; z-index: 100;
+  }
 
-    body {
-      background: #03030A;
-      color: #efecfb;
-      font-family: 'Inter', sans-serif;
-      min-height: 100dvh;
-    }
+  /* Splash */
+  #splash { position:fixed;inset:0;z-index:9999;background:#03030A;display:flex;align-items:center;justify-content:center; }
+  .spinner { width:40px;height:40px;border:3px solid #1a1a24;border-top-color:#ffc56c;border-radius:50%;animation:spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Grain overlay */
-    .grainy-overlay {
-      pointer-events: none;
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
-      opacity: 0.035;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-      background-size: 180px 180px;
-    }
+  /* Toast */
+  #toast {
+    position: fixed; bottom: calc(180px + env(safe-area-inset-bottom)); left: 50%;
+    transform: translateX(-50%) translateY(12px);
+    background: #12121a; color: #e4e1ef;
+    border: 1px solid rgba(255,255,255,.12);
+    padding: 10px 20px; border-radius: 9999px;
+    font-size: 13px; font-weight: 600; z-index: 500;
+    opacity: 0; transition: opacity .25s, transform .25s;
+    pointer-events: none; white-space: nowrap;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-    /* Page layout */
-    .page {
-      padding: max(84px, calc(env(safe-area-inset-top) + 76px)) 16px 120px !important;
-      max-width: 640px;
-      margin: 0 auto;
-    }
+  /* Hero */
+  .masse-hero {
+    position: relative; width: 100%; overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .masse-hero-bg {
+    position: absolute; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse at 60% 5%, rgba(255,197,108,0.24) 0%, transparent 55%),
+      radial-gradient(ellipse at 15% 85%, rgba(0,237,125,0.08) 0%, transparent 50%),
+      linear-gradient(180deg, #080a12 0%, #0d0d17 100%);
+  }
+  .masse-hero-overlay {
+    position: absolute; inset: 0; z-index: 1;
+    background: linear-gradient(180deg, transparent 20%, #03030A 100%);
+  }
+  .masse-hero-content { position: relative; z-index: 2; padding: 0 20px 24px; }
 
-    /* Hide old bnav / splash handled inline */
-    .bnav { display: none !important; }
+  /* Metric card */
+  .metric-card {
+    background: rgba(12,12,20,0.85);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 22px;
+    padding: 18px 16px 14px;
+    display: flex; flex-direction: column; gap: 6px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+    position: relative; overflow: hidden;
+  }
+  .metric-card.highlighted {
+    background: rgba(255,197,108,0.06);
+    border-color: rgba(255,197,108,0.18);
+  }
 
-    /* Input styling */
-    .maß-input-wrap {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .maß-label {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #aca9b7;
-    }
-    .maß-label-hint {
-      font-size: 10px;
-      color: #757481;
-      margin-top: -2px;
-    }
-    .maß-input {
-      background: #12121d;
-      border: 1px solid rgba(72,71,82,0.5);
-      border-radius: 12px;
-      color: #efecfb;
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 18px;
-      font-weight: 900;
-      font-style: italic;
-      padding: 10px 36px 10px 14px;
-      width: 100%;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .maß-input:focus {
-      border-color: rgba(255,197,108,0.5);
-      box-shadow: 0 0 0 3px rgba(255,197,108,0.08);
-    }
-    .maß-input::placeholder { color: #484752; }
-    .maß-unit {
-      position: absolute;
-      right: 12px;
-      bottom: 11px;
-      font-size: 11px;
-      font-weight: 700;
-      color: #757481;
-      pointer-events: none;
-    }
-    .maße-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
+  /* Bottom sheet */
+  .sheet-overlay {
+    position: fixed; inset: 0; z-index: 300;
+    background: rgba(0,0,0,0.75); backdrop-filter: blur(12px);
+    display: none; align-items: flex-end;
+    transition: opacity .25s;
+  }
+  .sheet-overlay.open { display: flex; }
+  .sheet-panel {
+    width: 100%; max-height: 88vh;
+    background: linear-gradient(180deg, #141422, #0d0d17);
+    border: 1px solid rgba(255,197,108,0.12);
+    border-bottom: none;
+    border-radius: 28px 28px 0 0;
+    padding: 0 20px max(28px, env(safe-area-inset-bottom));
+    overflow-y: auto;
+    transform: translateY(100%);
+    transition: transform .35s cubic-bezier(.32,.72,0,1);
+  }
+  .sheet-overlay.open .sheet-panel { transform: translateY(0); }
+  .sheet-handle {
+    width: 40px; height: 4px;
+    background: rgba(255,197,108,0.3); border-radius: 2px;
+    margin: 14px auto 20px;
+  }
 
-    /* Weight inputs */
-    .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .input-group { display: flex; flex-direction: column; gap: 4px; }
-    .input-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #aca9b7; }
-    .input-with-unit { position: relative; }
-    .input-with-unit input {
-      background: #12121d;
-      border: 1px solid rgba(72,71,82,0.5);
-      border-radius: 12px;
-      color: #efecfb;
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 22px;
-      font-weight: 900;
-      font-style: italic;
-      padding: 12px 44px 12px 14px;
-      width: 100%;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .input-with-unit input:focus { border-color: rgba(255,197,108,0.5); box-shadow: 0 0 0 3px rgba(255,197,108,0.08); }
-    .input-with-unit input::placeholder { color: #484752; }
-    .input-with-unit input[readonly] { opacity: 0.45; cursor: not-allowed; }
-    .input-unit { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 11px; font-weight: 700; color: #757481; }
+  /* Input fields in sheet */
+  .maß-input-wrap { position: relative; display: flex; flex-direction: column; gap: 4px; }
+  .maß-label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.1em; color: rgba(172,169,183,0.7);
+  }
+  .maß-input {
+    background: rgba(18,18,26,0.9);
+    border: 1px solid rgba(72,71,82,0.5);
+    border-radius: 14px; color: #e4e1ef;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 20px; font-weight: 900; font-style: italic;
+    padding: 11px 36px 11px 14px;
+    width: 100%; outline: none;
+    transition: border-color .2s;
+  }
+  .maß-input:focus { border-color: rgba(255,197,108,0.5); box-shadow: 0 0 0 3px rgba(255,197,108,0.08); }
+  .maß-input::placeholder { color: #484752; }
+  .maß-unit {
+    position: absolute; right: 12px; bottom: 12px;
+    font-size: 10px; font-weight: 700; color: #757481; pointer-events: none;
+  }
+  .maße-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-    /* Compare rows */
-    .compare-row { display: grid; grid-template-columns: 1fr 60px 60px 60px; gap: 4px; padding: 8px 0; border-bottom: 1px solid rgba(72,71,82,0.3); font-size: 13px; align-items: center; }
-    .compare-row:last-child { border-bottom: none; }
-    .compare-label { color: #aca9b7; font-weight: 600; }
-    .compare-prev, .compare-curr { text-align: center; color: #efecfb; font-family: 'Space Grotesk', sans-serif; font-style: italic; font-weight: 900; }
-    .compare-delta { text-align: center; }
-    .delta-neg { color: #11f080; font-weight: 700; }
-    .delta-pos { color: #ff7351; font-weight: 700; }
-    .delta-zero { color: #757481; font-weight: 700; }
+  /* Weight input row */
+  .weight-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .input-group { display: flex; flex-direction: column; gap: 4px; }
+  .input-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(172,169,183,0.7); }
+  .input-with-unit { position: relative; }
+  .input-with-unit input {
+    background: rgba(18,18,26,0.9); border: 1px solid rgba(72,71,82,0.5);
+    border-radius: 14px; color: #e4e1ef;
+    font-family: 'Space Grotesk', sans-serif; font-size: 20px; font-weight: 900; font-style: italic;
+    padding: 11px 44px 11px 14px; width: 100%; outline: none; transition: border-color .2s;
+  }
+  .input-with-unit input:focus { border-color: rgba(255,197,108,0.5); box-shadow: 0 0 0 3px rgba(255,197,108,0.08); }
+  .input-with-unit input::placeholder { color: #484752; }
+  .input-with-unit input[readonly] { opacity: 0.4; cursor: not-allowed; }
+  .input-unit { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 10px; font-weight: 700; color: #757481; }
 
-    /* Error message */
-    .msg-error { background: rgba(255,115,81,0.12); border: 1px solid rgba(255,115,81,0.3); border-radius: 12px; color: #ff7351; font-size: 13px; padding: 10px 14px; }
+  /* Error */
+  .msg-error { background: rgba(255,115,81,0.10); border: 1px solid rgba(255,115,81,0.25); border-radius: 14px; color: #ff7351; font-size: 13px; padding: 10px 14px; }
 
-    /* Gold gradient button */
-    .btn-save-gold {
-      width: 100%;
-      padding: 18px;
-      border-radius: 16px;
-      border: none;
-      background: linear-gradient(135deg, #ffc56c 0%, #cb9743 100%);
-      color: #321f00;
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 16px;
-      font-weight: 900;
-      font-style: italic;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      box-shadow: 0 12px 32px rgba(255,197,108,0.22);
-      transition: transform 0.15s, box-shadow 0.15s;
-    }
-    .btn-save-gold:active { transform: scale(0.98); box-shadow: 0 6px 16px rgba(255,197,108,0.15); }
-    .btn-save-gold:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-
-    /* Stitch glass card */
-    .stitch-card {
-      background: rgba(25,24,37,0.7);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(72,71,82,0.35);
-      border-radius: 20px;
-      padding: 20px;
-      margin-bottom: 16px;
-    }
-    .stitch-card-title {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 11px;
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: #aca9b7;
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .stitch-card-title .material-symbols-outlined {
-      font-size: 16px;
-      color: #ffc56c;
-    }
-
-    /* No scrollbar */
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-  </style>
+  /* Save button */
+  .btn-save-gold {
+    width: 100%; padding: 17px; border-radius: 18px; border: none;
+    background: linear-gradient(135deg, #ffc56c 0%, #cb9743 100%);
+    color: #321f00; font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px; font-weight: 900; font-style: italic;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+    box-shadow: 0 12px 32px rgba(255,197,108,0.28);
+    transition: transform .15s, box-shadow .15s;
+  }
+  .btn-save-gold:active { transform: scale(0.98); }
+  .btn-save-gold:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+</style>
 </head>
-<body class="dark font-body antialiased">
+<body class="text-on-surface font-body selection:bg-primary/30 antialiased overflow-x-hidden" style="overflow-x:hidden;max-width:100vw;">
 
-<!-- Grain overlay -->
 <div class="grainy-overlay"></div>
+<div id="toast"></div>
+<div id="splash"><div class="spinner"></div></div>
 
-<!-- Top nav -->
-<header class="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 pb-4"
-        style="background:rgba(3,3,10,0.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(72,71,82,0.2);padding-top:max(16px,env(safe-area-inset-top))">
-  <a href="dashboard.html" class="flex items-center justify-center w-10 h-10 rounded-full"
-     style="background:rgba(255,197,108,0.08);border:1px solid rgba(255,197,108,0.15);">
-    <span class="material-symbols-outlined text-primary" style="font-size:20px;color:#ffc56c;">arrow_back</span>
-  </a>
-  <div class="text-center">
-    <p class="font-headline italic font-black text-xl uppercase tracking-tight" style="color:#ffc56c;letter-spacing:-0.02em;">KÖRPERMASSE</p>
-    <p class="text-[10px] font-bold uppercase tracking-widest" style="color:#aca9b7;" id="page-sub">Woche ? von 13</p>
+<div id="main" style="display:none">
+
+<!-- ── Top Nav ── -->
+<nav class="fixed top-0 w-full z-50 bg-neutral-950/80 backdrop-blur-xl flex justify-between items-center px-6 pb-4 shadow-[0_8px_32px_rgba(0,0,0,0.8)]" style="padding-top:max(16px,env(safe-area-inset-top))">
+  <div class="flex items-center gap-3">
+    <span class="material-symbols-outlined text-amber-500" style="font-variation-settings:'FILL' 1">workspace_premium</span>
+    <span class="text-xl font-black tracking-tighter text-amber-500 italic font-headline uppercase">90TC</span>
   </div>
-  <div class="w-10 h-10"></div>
-</header>
+  <span class="font-headline tracking-tighter uppercase font-bold text-amber-500 text-sm" id="page-sub">—</span>
+  <div class="absolute bottom-0 left-0 bg-gradient-to-r from-transparent via-amber-500/20 to-transparent h-[1px] w-full"></div>
+</nav>
 
-<div id="app">
-  <div class="splash" id="loading" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#03030A;z-index:100;">
-    <div class="spinner" style="width:32px;height:32px;border:3px solid rgba(255,197,108,0.2);border-top-color:#ffc56c;border-radius:50%;animation:spin 0.7s linear infinite;"></div>
-    <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
-  </div>
-  <div id="main" style="display:none">
-    <div class="page no-scrollbar">
+<main class="max-w-lg mx-auto relative" style="overflow-x:clip;padding-bottom:calc(200px + env(safe-area-inset-bottom));">
 
-      <!-- Info Card -->
-      <div class="stitch-card" style="background:rgba(255,197,108,0.06);border-color:rgba(255,197,108,0.18);margin-bottom:16px;">
-        <div style="display:flex;gap:12px;align-items:flex-start;">
-          <span class="material-symbols-outlined" style="font-size:20px;color:#ffc56c;flex-shrink:0;margin-top:1px;" aria-hidden="true">info</span>
-          <div style="font-size:13px;line-height:1.6;color:#aca9b7;">
-            <strong style="color:#efecfb;">Messung immer morgens</strong>, nüchtern, vor dem Essen.<br>
-            Maßband eng anliegen — nicht einschneiden.
-          </div>
-        </div>
-      </div>
-
-      <!-- Gewicht -->
-      <div class="stitch-card">
-        <div class="stitch-card-title">
-          <span class="material-symbols-outlined">monitor_weight</span>
-          Körpergewicht
-        </div>
-        <div class="input-row">
-          <div class="input-group">
-            <label class="input-label">Diese Woche</label>
-            <div class="input-with-unit">
-              <input type="number" id="gewicht" placeholder="80.0" step="0.1" min="30" max="300">
-              <span class="input-unit">kg</span>
-            </div>
-          </div>
-          <div class="input-group">
-            <label class="input-label">Vorwoche</label>
-            <div class="input-with-unit">
-              <input type="number" id="gewicht-prev" placeholder="—" readonly>
-              <span class="input-unit">kg</span>
+  <!-- ── HERO ── -->
+  <div class="masse-hero">
+    <div class="masse-hero-bg"></div>
+    <div class="masse-hero-overlay"></div>
+    <div style="height:calc(max(16px,env(safe-area-inset-top)) + 64px);flex-shrink:0;"></div>
+    <div class="masse-hero-content">
+      <span class="font-headline font-bold text-primary tracking-[0.28em] text-[9px] uppercase opacity-70 mb-2 block">KÖRPER TRACKING</span>
+      <h1 class="font-headline font-black italic uppercase tracking-tighter mb-3" style="font-size:clamp(2.4rem,11vw,3.6rem);line-height:0.88;letter-spacing:-0.04em;text-shadow:0 0 40px rgba(255,197,108,0.25);">
+        BODY<span class="text-primary">MASS</span>
+      </h1>
+      <!-- Weight delta hero card -->
+      <div class="rounded-[22px] p-5 relative overflow-hidden" style="background:rgba(12,12,20,0.9);border:1px solid rgba(255,197,108,0.15);box-shadow:0 20px 50px rgba(0,0,0,0.6);">
+        <svg class="absolute bottom-0 left-0 w-full h-16 opacity-15" preserveAspectRatio="none" viewBox="0 0 100 40">
+          <path d="M0,32 Q25,28 40,18 T70,12 T100,6" fill="none" stroke="#ffc56c" stroke-width="1.5"/>
+        </svg>
+        <div class="relative z-10 text-center">
+          <span class="font-label text-[9px] font-bold tracking-[0.2em] uppercase block mb-2" style="color:rgba(172,169,183,0.6);">Gesamtveränderung Gewicht</span>
+          <div class="font-headline font-black italic text-primary" style="font-size:3.2rem;line-height:1;letter-spacing:-0.05em;text-shadow:0 0 32px rgba(255,197,108,0.4);" id="hero-weight-delta">—</div>
+          <div class="flex items-center justify-center gap-2 mt-2" id="hero-weight-pill" style="display:none!important">
+            <div class="flex items-center gap-1 rounded-full px-3 py-1 border" id="hero-pill-inner" style="background:rgba(255,197,108,0.1);border-color:rgba(255,197,108,0.25);">
+              <span class="material-symbols-outlined text-primary" style="font-size:14px;" id="hero-trend-icon">trending_down</span>
+              <span class="font-label font-bold text-primary text-xs" id="hero-week-label">DIESE WOCHE</span>
             </div>
           </div>
         </div>
-        <div id="gewicht-delta" style="font-size:13px;color:#aca9b7;margin-top:10px;font-weight:600;"></div>
       </div>
+    </div>
+  </div>
 
-      <!-- Körpermaße -->
-      <div class="stitch-card">
-        <div class="stitch-card-title">
-          <span class="material-symbols-outlined">straighten</span>
-          Umfänge in cm
-        </div>
-        <div class="maße-grid">
+  <!-- ── METRICS GRID ── -->
+  <div class="px-4 flex flex-col gap-4">
 
-          <div class="maß-input-wrap">
-            <label class="maß-label">Schulter</label>
-            <input type="number" class="maß-input" id="schulter" placeholder="—" step="0.1">
-            <span class="maß-unit">cm</span>
-          </div>
+    <!-- Grid label -->
+    <div class="flex items-center gap-3 px-1">
+      <p class="font-label text-[9px] uppercase tracking-widest text-on-surface-variant font-bold">Aktuelle Werte</p>
+      <div class="flex-1 h-[1px]" style="background:rgba(72,71,82,0.35)"></div>
+    </div>
 
-          <div class="maß-input-wrap">
-            <label class="maß-label">Brust</label>
-            <input type="number" class="maß-input" id="brust" placeholder="—" step="0.1">
-            <span class="maß-unit">cm</span>
-          </div>
-
-          <div class="maß-input-wrap">
-            <label class="maß-label">Arm rechts</label>
-            <input type="number" class="maß-input" id="arm_rechts" placeholder="—" step="0.1">
-            <span class="maß-unit">cm</span>
-          </div>
-
-          <div class="maß-input-wrap">
-            <label class="maß-label">Arm links</label>
-            <input type="number" class="maß-input" id="arm_links" placeholder="—" step="0.1">
-            <span class="maß-unit">cm</span>
-          </div>
-
-          <div class="maß-input-wrap">
-            <label class="maß-label">Bauch oben</label>
-            <label class="maß-label-hint">5 cm über Nabel</label>
-            <input type="number" class="maß-input" id="bauch_oben" placeholder="—" step="0.1">
-            <span class="maß-unit">cm</span>
-          </div>
-
-          <div class="maß-input-wrap">
-            <label class="maß-label">Bauch Mitte</label>
-            <label class="maß-label-hint">Am Nabel</label>
-            <input type="number" class="maß-input" id="bauch_mitte" placeholder="—" step="0.1">
-            <span class="maß-unit">cm</span>
-          </div>
-
-          <div class="maß-input-wrap">
-            <label class="maß-label">Bauch unten</label>
-            <label class="maß-label-hint">5 cm unter Nabel</label>
-            <input type="number" class="maß-input" id="bauch_unten" placeholder="—" step="0.1">
-            <span class="maß-unit">cm</span>
-          </div>
-
-          <div class="maß-input-wrap">
-            <label class="maß-label">Hüfte</label>
-            <label class="maß-label-hint">Breiteste Stelle</label>
-            <input type="number" class="maß-input" id="huefte" placeholder="—" step="0.1">
-            <span class="maß-unit">cm</span>
-          </div>
-
-          <div class="maß-input-wrap">
-            <label class="maß-label">Bein rechts</label>
-            <input type="number" class="maß-input" id="bein_rechts" placeholder="—" step="0.1">
-            <span class="maß-unit">cm</span>
-          </div>
-
-          <div class="maß-input-wrap">
-            <label class="maß-label">Bein links</label>
-            <input type="number" class="maß-input" id="bein_links" placeholder="—" step="0.1">
-            <span class="maß-unit">cm</span>
-          </div>
-
-        </div>
+    <!-- Metric cards 2-col grid -->
+    <div class="grid grid-cols-2 gap-3" id="metrics-grid">
+      <!-- Filled by JS -->
+      <div class="col-span-2 text-center py-8 opacity-40">
+        <span class="material-symbols-outlined text-4xl block mb-2">straighten</span>
+        <p class="font-headline font-bold uppercase tracking-widest text-sm">Noch keine Maße</p>
+        <p class="text-on-surface-variant text-xs mt-1">Tipp "Neue Maße eingeben"</p>
       </div>
+    </div>
 
-      <!-- Vergleich zur Vorwoche -->
-      <div class="stitch-card" id="compare-card" style="display:none">
-        <div class="stitch-card-title">
-          <span class="material-symbols-outlined">compare_arrows</span>
-          Vergleich Vorwoche
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 60px 60px 60px;gap:4px;font-size:10px;color:#757481;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;padding-bottom:8px;border-bottom:1px solid rgba(72,71,82,0.3);">
+    <!-- Vergleich hidden table (preserved for JS) -->
+    <div id="compare-card" style="display:none">
+      <div class="flex items-center gap-3 px-1 mt-1">
+        <p class="font-label text-[9px] uppercase tracking-widest text-on-surface-variant font-bold">Vergleich Vorwoche</p>
+        <div class="flex-1 h-[1px]" style="background:rgba(72,71,82,0.35)"></div>
+      </div>
+      <div class="rounded-[20px] overflow-hidden mt-3" style="background:rgba(12,12,20,0.85);border:1px solid rgba(255,255,255,0.06);">
+        <div class="grid px-4 py-2 border-b" style="grid-template-columns:1fr 52px 52px 52px;gap:4px;font-size:9px;color:rgba(117,116,129,0.7);font-weight:700;text-transform:uppercase;letter-spacing:0.08em;border-color:rgba(72,71,82,0.25);">
           <span>Maß</span><span style="text-align:center;">Vorher</span><span style="text-align:center;">Jetzt</span><span style="text-align:center;">Δ</span>
         </div>
-        <div id="compare-rows"></div>
+        <div id="compare-rows" class="px-4 py-1"></div>
       </div>
-
-      <div id="save-error" class="msg-error" style="display:none;margin-bottom:16px;"></div>
-
-      <button class="btn-save-gold" onclick="save()" id="btn-save">
-        <span class="material-symbols-outlined" style="font-size:20px;">straighten</span>
-        <span id="btn-save-text">Maße speichern (+60 XP)</span>
-      </button>
-
-      <div style="height:16px"></div>
     </div>
+
+  </div><!-- /.px-4 -->
+
+</main>
+
+<!-- ── NEW ENTRY FAB ── -->
+<div style="position:fixed;bottom:calc(90px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:200;pointer-events:auto;">
+  <button onclick="openSheet()" style="background:linear-gradient(135deg,#ffc56c,#cb9743);border:none;border-radius:100px;padding:14px 28px;display:flex;align-items:center;gap:10px;cursor:pointer;box-shadow:0 12px 40px rgba(255,197,108,0.45),inset 0 1px 0 rgba(255,255,255,0.2);white-space:nowrap;">
+    <span class="material-symbols-outlined" style="font-size:20px;color:#321f00;font-variation-settings:'FILL' 1;">add</span>
+    <span style="font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:0.04em;color:#321f00;">Neue Maße eingeben</span>
+  </button>
+</div>
+
+</div><!-- #main -->
+
+<!-- ── ENTRY BOTTOM SHEET ── -->
+<div class="sheet-overlay" id="entry-sheet" onclick="maybeCloseSheet(event)">
+  <div class="sheet-panel" id="entry-panel">
+    <div class="sheet-handle"></div>
+    <div class="flex items-center justify-between mb-5">
+      <p class="font-headline font-black italic uppercase text-primary" style="font-size:1.1rem;letter-spacing:-0.01em;">Maße eintragen</p>
+      <button onclick="closeSheet()" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+        <span class="material-symbols-outlined text-on-surface-variant" style="font-size:18px;">close</span>
+      </button>
+    </div>
+
+    <!-- Info hint -->
+    <div class="rounded-[16px] p-4 mb-5 flex gap-3" style="background:rgba(255,197,108,0.06);border:1px solid rgba(255,197,108,0.15);">
+      <span class="material-symbols-outlined text-primary flex-shrink-0" style="font-size:18px;margin-top:1px;">info</span>
+      <p style="font-size:12px;line-height:1.6;color:rgba(172,169,183,0.8);"><strong style="color:#e4e1ef;">Morgens messen</strong>, nüchtern, vor dem Essen. Maßband eng anlegen — nicht einschneiden.</p>
+    </div>
+
+    <!-- Gewicht -->
+    <div class="rounded-[20px] p-4 mb-4" style="background:rgba(18,18,26,0.8);border:1px solid rgba(255,255,255,0.06);">
+      <p class="font-label text-[9px] uppercase tracking-widest font-bold mb-3 flex items-center gap-2" style="color:rgba(172,169,183,0.7);">
+        <span class="material-symbols-outlined text-primary" style="font-size:15px;">monitor_weight</span>
+        Körpergewicht
+      </p>
+      <div class="weight-row">
+        <div class="input-group">
+          <label class="input-label">Diese Woche</label>
+          <div class="input-with-unit">
+            <input type="number" id="gewicht" placeholder="80.0" step="0.1" min="30" max="300">
+            <span class="input-unit">kg</span>
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Vorwoche</label>
+          <div class="input-with-unit">
+            <input type="number" id="gewicht-prev" placeholder="—" readonly>
+            <span class="input-unit">kg</span>
+          </div>
+        </div>
+      </div>
+      <div id="gewicht-delta" style="font-size:12px;color:#aca9b7;margin-top:8px;font-weight:600;"></div>
+    </div>
+
+    <!-- Umfänge -->
+    <div class="rounded-[20px] p-4 mb-4" style="background:rgba(18,18,26,0.8);border:1px solid rgba(255,255,255,0.06);">
+      <p class="font-label text-[9px] uppercase tracking-widest font-bold mb-3 flex items-center gap-2" style="color:rgba(172,169,183,0.7);">
+        <span class="material-symbols-outlined text-primary" style="font-size:15px;">straighten</span>
+        Umfänge in cm
+      </p>
+      <div class="maße-grid">
+
+        <div class="maß-input-wrap">
+          <label class="maß-label">Schulter</label>
+          <input type="number" class="maß-input" id="schulter" placeholder="—" step="0.1">
+          <span class="maß-unit">cm</span>
+        </div>
+
+        <div class="maß-input-wrap">
+          <label class="maß-label">Brust</label>
+          <input type="number" class="maß-input" id="brust" placeholder="—" step="0.1">
+          <span class="maß-unit">cm</span>
+        </div>
+
+        <div class="maß-input-wrap">
+          <label class="maß-label">Arm rechts</label>
+          <input type="number" class="maß-input" id="arm_rechts" placeholder="—" step="0.1">
+          <span class="maß-unit">cm</span>
+        </div>
+
+        <div class="maß-input-wrap">
+          <label class="maß-label">Arm links</label>
+          <input type="number" class="maß-input" id="arm_links" placeholder="—" step="0.1">
+          <span class="maß-unit">cm</span>
+        </div>
+
+        <div class="maß-input-wrap">
+          <label class="maß-label">Bauch oben</label>
+          <label class="maß-label" style="font-size:8px;opacity:0.55;margin-top:-2px;">5 cm über Nabel</label>
+          <input type="number" class="maß-input" id="bauch_oben" placeholder="—" step="0.1">
+          <span class="maß-unit">cm</span>
+        </div>
+
+        <div class="maß-input-wrap">
+          <label class="maß-label">Bauch Mitte</label>
+          <label class="maß-label" style="font-size:8px;opacity:0.55;margin-top:-2px;">Am Nabel</label>
+          <input type="number" class="maß-input" id="bauch_mitte" placeholder="—" step="0.1">
+          <span class="maß-unit">cm</span>
+        </div>
+
+        <div class="maß-input-wrap">
+          <label class="maß-label">Bauch unten</label>
+          <label class="maß-label" style="font-size:8px;opacity:0.55;margin-top:-2px;">5 cm unter Nabel</label>
+          <input type="number" class="maß-input" id="bauch_unten" placeholder="—" step="0.1">
+          <span class="maß-unit">cm</span>
+        </div>
+
+        <div class="maß-input-wrap">
+          <label class="maß-label">Hüfte</label>
+          <label class="maß-label" style="font-size:8px;opacity:0.55;margin-top:-2px;">Breiteste Stelle</label>
+          <input type="number" class="maß-input" id="huefte" placeholder="—" step="0.1">
+          <span class="maß-unit">cm</span>
+        </div>
+
+        <div class="maß-input-wrap">
+          <label class="maß-label">Bein rechts</label>
+          <input type="number" class="maß-input" id="bein_rechts" placeholder="—" step="0.1">
+          <span class="maß-unit">cm</span>
+        </div>
+
+        <div class="maß-input-wrap">
+          <label class="maß-label">Bein links</label>
+          <input type="number" class="maß-input" id="bein_links" placeholder="—" step="0.1">
+          <span class="maß-unit">cm</span>
+        </div>
+
+      </div>
+    </div>
+
+    <div id="save-error" class="msg-error" style="display:none;margin-bottom:14px;"></div>
+
+    <button class="btn-save-gold" onclick="save()" id="btn-save">
+      <span class="material-symbols-outlined" style="font-size:20px;">straighten</span>
+      <span id="btn-save-text">Maße speichern (+60 XP)</span>
+    </button>
+
+    <div style="height:8px"></div>
   </div>
 </div>
 
-<!-- Split-Island Bottom Nav -->
+<!-- ── Split Island Nav ── -->
 <div style="position:fixed;bottom:calc(16px + env(safe-area-inset-bottom));left:12px;right:12px;z-index:50;display:flex;align-items:flex-end;justify-content:space-between;gap:10px;pointer-events:none;">
-  <!-- Left island: Start | Training -->
-  <div style="flex:1;display:flex;align-items:center;justify-content:space-around;height:60px;background:rgba(18,17,26,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.07);border-radius:22px;overflow:hidden;pointer-events:auto;">
-    <a href="dashboard.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;padding:8px 4px;color:#757481;">
-      <span class="material-symbols-outlined" style="font-size:22px;">home</span>
-      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Start</span>
+  <div style="flex:1;display:flex;height:60px;background:rgba(11,11,19,0.97);backdrop-filter:blur(32px);border:1px solid rgba(255,255,255,0.07);border-radius:22px;box-shadow:0 8px 40px rgba(0,0,0,0.8),inset 0 1px 0 rgba(255,255,255,0.055);overflow:hidden;pointer-events:auto;">
+    <a href="dashboard.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:rgba(255,255,255,0.38);font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">
+      <span class="material-symbols-outlined" style="font-size:22px;font-variation-settings:'FILL' 0">home</span>
+      Start
     </a>
-    <div style="width:1px;height:28px;background:rgba(255,255,255,0.07);flex-shrink:0;"></div>
-    <a href="training.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;padding:8px 4px;color:#757481;">
-      <span class="material-symbols-outlined" style="font-size:22px;">fitness_center</span>
-      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Training</span>
+    <a href="training.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:rgba(255,255,255,0.38);font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">
+      <span class="material-symbols-outlined" style="font-size:22px;font-variation-settings:'FILL' 0">fitness_center</span>
+      Training
     </a>
   </div>
-  <!-- Center: Essen FAB -->
-  <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:4px;margin-bottom:6px;pointer-events:auto;">
-    <a href="essen.html" style="text-decoration:none;display:block;">
-      <div style="width:60px;height:60px;border-radius:20px;background:linear-gradient(135deg,#ffc56c,#cb9743);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(255,197,108,0.55);">
-        <span class="material-symbols-outlined" style="font-size:26px;color:#321f00;">restaurant</span>
-      </div>
+  <a href="essen.html" style="width:64px;height:64px;border-radius:22px;background:linear-gradient(135deg,#ffc56c,#cb9743);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(255,197,108,0.45),inset 0 1px 0 rgba(255,255,255,0.25);flex-shrink:0;pointer-events:auto;text-decoration:none;">
+    <span class="material-symbols-outlined" style="font-size:28px;color:#321f00;font-variation-settings:'FILL' 1">restaurant</span>
+  </a>
+  <div style="flex:1;display:flex;height:60px;background:rgba(11,11,19,0.97);backdrop-filter:blur(32px);border:1px solid rgba(255,255,255,0.07);border-radius:22px;box-shadow:0 8px 40px rgba(0,0,0,0.8),inset 0 1px 0 rgba(255,255,255,0.055);overflow:hidden;pointer-events:auto;">
+    <a href="fortschritt.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:rgba(255,255,255,0.38);font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">
+      <span class="material-symbols-outlined" style="font-size:22px;font-variation-settings:'FILL' 0">query_stats</span>
+      Stats
     </a>
-    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#ffc56c;">Essen</span>
-  </div>
-  <!-- Right island: Stats | Profil -->
-  <div style="flex:1;display:flex;align-items:center;justify-content:space-around;height:60px;background:rgba(18,17,26,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.07);border-radius:22px;overflow:hidden;pointer-events:auto;">
-    <a href="fortschritt.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;padding:8px 4px;color:#757481;">
-      <span class="material-symbols-outlined" style="font-size:22px;">query_stats</span>
-      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Stats</span>
-    </a>
-    <div style="width:1px;height:28px;background:rgba(255,255,255,0.07);flex-shrink:0;"></div>
-    <a href="profil.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;padding:8px 4px;color:#757481;">
-      <span class="material-symbols-outlined" style="font-size:22px;">person</span>
-      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Profil</span>
+    <a href="profil.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:rgba(255,255,255,0.38);font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">
+      <span class="material-symbols-outlined" style="font-size:22px;font-variation-settings:'FILL' 0">person</span>
+      Profil
     </a>
   </div>
 </div>
@@ -461,8 +454,115 @@ let currentWoche = 1
 let alreadySaved = false
 
 const FELDER = ['schulter','brust','arm_rechts','arm_links','bauch_oben','bauch_mitte','bauch_unten','huefte','bein_rechts','bein_links']
-const LABELS = ['Schulter','Brust','Arm rechts','Arm links','Bauch oben','Bauch mitte','Bauch unten','Hüfte','Bein rechts','Bein links']
+const LABELS = ['Schulter','Brust','Arm R.','Arm L.','Bauch oben','Bauch Mitte','Bauch unten','Hüfte','Bein R.','Bein L.']
+const ICONS  = ['accessibility','self_improvement','sports_gymnastics','sports_gymnastics','monitor_weight','monitor_weight','monitor_weight','hdr_strong','directions_walk','directions_walk']
+// Improvement direction: 1 = bigger is better, -1 = smaller is better, 0 = neutral
+const IMPROVE_DIR = {
+  schulter:1, brust:1, arm_rechts:1, arm_links:1,
+  bauch_oben:-1, bauch_mitte:-1, bauch_unten:-1,
+  huefte:-1, bein_rechts:0, bein_links:0
+}
 
+// ── Sheet ─────────────────────────────────────────────
+function openSheet() {
+  const overlay = document.getElementById('entry-sheet')
+  overlay.style.display = 'flex'
+  requestAnimationFrame(() => overlay.classList.add('open'))
+}
+function closeSheet() {
+  const overlay = document.getElementById('entry-sheet')
+  overlay.classList.remove('open')
+  setTimeout(() => { overlay.style.display = 'none' }, 360)
+}
+function maybeCloseSheet(e) {
+  if (e.target === document.getElementById('entry-sheet')) closeSheet()
+}
+
+// ── Sparkline builder ─────────────────────────────────
+function buildSparkline(prev, curr, color) {
+  // Simple 2-point trend line
+  const hasData = prev !== null || curr !== null
+  if (!hasData) return `<svg width="48" height="24" viewBox="0 0 48 24"><line x1="0" y1="12" x2="48" y2="12" stroke="rgba(255,255,255,0.1)" stroke-width="1.5" stroke-dasharray="3,2"/></svg>`
+
+  const p = prev ?? curr
+  const c = curr ?? prev
+  const min = Math.min(p, c) - 1
+  const max = Math.max(p, c) + 1
+  const range = max - min || 1
+  const y1 = 22 - ((p - min) / range) * 18
+  const y2 = 22 - ((c - min) / range) * 18
+
+  return `<svg width="48" height="24" viewBox="0 0 48 24" style="overflow:visible">
+    <line x1="0" y1="${y1.toFixed(1)}" x2="48" y2="${y2.toFixed(1)}" stroke="${color}" stroke-width="1.8" stroke-linecap="round" opacity="0.5"/>
+    <circle cx="48" cy="${y2.toFixed(1)}" r="2.5" fill="${color}" opacity="0.8"/>
+  </svg>`
+}
+
+// ── Render dashboard cards ─────────────────────────────
+function renderMetricCards(curr, prev) {
+  const grid = document.getElementById('metrics-grid')
+  let html = ''
+
+  // Weight card — full width
+  const w = curr?.gewicht_gleitend ?? null
+  const wp = prev?.gewicht_gleitend ?? null
+  const wDelta = w !== null && wp !== null ? (w - wp) : null
+  const wColor = wDelta === null ? '#ffc56c' : (wDelta < 0 ? '#00ed7d' : wDelta > 0 ? '#ff7351' : '#aca9b7')
+  const wIcon  = wDelta === null ? 'remove' : (wDelta < 0 ? 'south' : wDelta > 0 ? 'north' : 'horizontal_rule')
+
+  html += `
+  <div class="metric-card highlighted col-span-2" style="flex-direction:row;align-items:center;gap:14px;padding:18px 20px;">
+    <div style="flex:1">
+      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:rgba(172,169,183,0.6);">Gewicht</span>
+      <div style="display:flex;align-items:baseline;gap:4px;margin-top:4px;">
+        <span class="font-headline font-black italic text-primary" style="font-size:2rem;line-height:1;letter-spacing:-0.04em;">${w !== null ? w.toFixed(1) : '—'}</span>
+        <span style="font-size:10px;font-weight:700;color:rgba(172,169,183,0.5);">KG</span>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+      ${buildSparkline(wp, w, '#ffc56c')}
+      <div style="display:flex;align-items:center;gap:3px;">
+        <span class="material-symbols-outlined" style="font-size:13px;color:${wColor};">${wIcon}</span>
+        <span style="font-size:11px;font-weight:700;color:${wColor};">${wDelta !== null ? (wDelta > 0 ? '+' : '') + wDelta.toFixed(1) + ' kg' : '—'}</span>
+      </div>
+    </div>
+  </div>`
+
+  // Individual measurement cards
+  FELDER.forEach((f, i) => {
+    const val  = curr?.[f] ?? null
+    const pval = prev?.[f] ?? null
+    const delta = val !== null && pval !== null ? val - pval : null
+    const dir  = IMPROVE_DIR[f]
+    let dColor = 'rgba(172,169,183,0.5)'
+    if (delta !== null && delta !== 0) {
+      if (dir === 0) dColor = 'rgba(172,169,183,0.5)'
+      else dColor = (delta * dir < 0) ? '#ff7351' : '#00ed7d'
+    }
+    const dIcon = delta === null ? 'remove' : (delta < 0 ? 'south' : delta > 0 ? 'north' : 'horizontal_rule')
+    const sparkColor = dColor === '#00ed7d' ? '#00ed7d' : dColor === '#ff7351' ? '#ff7351' : '#ffc56c'
+
+    html += `
+    <div class="metric-card">
+      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:rgba(172,169,183,0.55);">${LABELS[i]}</span>
+      <div style="display:flex;align-items:baseline;gap:3px;margin-top:2px;">
+        <span class="font-headline font-black italic text-primary" style="font-size:1.65rem;line-height:1;letter-spacing:-0.04em;">${val !== null ? val.toFixed(1) : '—'}</span>
+        <span style="font-size:9px;font-weight:700;color:rgba(172,169,183,0.4);">CM</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:4px;">
+        <div style="display:flex;align-items:center;gap:2px;">
+          <span class="material-symbols-outlined" style="font-size:12px;color:${dColor};">${dIcon}</span>
+          <span style="font-size:11px;font-weight:700;color:${dColor};">${delta !== null ? (delta > 0 ? '+' : '') + delta.toFixed(1) : '—'}</span>
+        </div>
+        ${buildSparkline(pval, val, sparkColor)}
+      </div>
+    </div>`
+  })
+
+  grid.innerHTML = html
+}
+
+// ── Save ──────────────────────────────────────────────
 function gv(id) { const v = document.getElementById(id)?.value; return v ? parseFloat(v) : null }
 
 async function save() {
@@ -481,7 +581,7 @@ async function save() {
   }
   FELDER.forEach(f => { data[f] = gv(f) })
 
-  const { error } = await sb.from('weekly_checks').upsert(data, {onConflict:'user_id,woche_nr'})
+  const { error } = await sb.from('weekly_checks').upsert(data, { onConflict: 'user_id,woche_nr' })
 
   if (error) {
     errEl.textContent = error.message; errEl.style.display = 'block'
@@ -491,26 +591,24 @@ async function save() {
 
   const profileUpdates = {}
   if (!alreadySaved) {
-    profileUpdates.xp_gesamt = (profile.xp_gesamt||0) + 60
-    profileUpdates.coins = (profile.coins||0) + 60
+    profileUpdates.xp_gesamt = (profile.xp_gesamt || 0) + 60
+    profileUpdates.coins = (profile.coins || 0) + 60
     alreadySaved = true
   }
 
-  // Auto-Makro-Update wenn neues Gewicht + PAL gespeichert
   const newWeight = gv('gewicht')
   let macroToast = ''
   if (newWeight && profile.pal_stunden) {
     const stunden = typeof profile.pal_stunden === 'string'
-      ? JSON.parse(profile.pal_stunden)
-      : profile.pal_stunden
+      ? JSON.parse(profile.pal_stunden) : profile.pal_stunden
     const anpassung = profile.kalorienanpassung || 300
     const m = calculateMacros(newWeight, profile.geschlecht, stunden, profile.ziel, anpassung, profile.groesse_cm || 0)
-    profileUpdates.gewicht_kg      = newWeight
-    profileUpdates.kalorien_ziel   = m.kalorien
-    profileUpdates.protein_ziel_g  = m.protein
-    profileUpdates.fett_ziel_g     = m.fett
-    profileUpdates.carbs_ziel_g    = m.carbs
-    macroToast = ` · Makros: ${m.kalorien} kcal / ${m.protein}g P`
+    profileUpdates.gewicht_kg     = newWeight
+    profileUpdates.kalorien_ziel  = m.kalorien
+    profileUpdates.protein_ziel_g = m.protein
+    profileUpdates.fett_ziel_g    = m.fett
+    profileUpdates.carbs_ziel_g   = m.carbs
+    macroToast = ` · Makros: ${m.kalorien} kcal`
   }
 
   if (Object.keys(profileUpdates).length) {
@@ -520,8 +618,14 @@ async function save() {
   showToast('+60 XP — Gespeichert! 📏' + macroToast)
   btnText.textContent = '✓ Gespeichert'
   setTimeout(() => { btn.disabled = false; btnText.textContent = 'Maße speichern (+60 XP)' }, 2000)
+
+  // Re-render cards with new values
+  const newCurr = { ...data }
+  renderMetricCards(newCurr, prevCheck)
+  closeSheet()
 }
 
+// ── Init ──────────────────────────────────────────────
 async function init() {
   const ctx = await requireProfile()
   if (!ctx) return
@@ -529,12 +633,18 @@ async function init() {
   currentProfile = profile
 
   const dayNr = calcDayNr(profile.startdatum)
-  currentWoche = Math.ceil(dayNr / 7)
-  document.getElementById('page-sub').textContent = `Woche ${currentWoche} von 13 · Tag ${dayNr}`
+  currentWoche = Math.max(1, Math.ceil((dayNr || 1) / 7))
+  document.getElementById('page-sub').textContent = dayNr > 0 ? `WOCHE ${currentWoche}` : 'VORBEREITUNG'
 
-  // Load current week
-  const { data: curr } = await sb.from('weekly_checks')
-    .select('*').eq('user_id', user.id).eq('woche_nr', currentWoche).maybeSingle()
+  // Load current + prev week
+  const [{ data: curr }, { data: prev }] = await Promise.all([
+    sb.from('weekly_checks').select('*').eq('user_id', user.id).eq('woche_nr', currentWoche).maybeSingle(),
+    currentWoche > 1
+      ? sb.from('weekly_checks').select('*').eq('user_id', user.id).eq('woche_nr', currentWoche - 1).maybeSingle()
+      : Promise.resolve({ data: null })
+  ])
+
+  prevCheck = prev
 
   if (curr) {
     alreadySaved = true
@@ -542,45 +652,68 @@ async function init() {
     FELDER.forEach(f => { if (curr[f]) document.getElementById(f).value = curr[f] })
   }
 
-  // Load previous week
-  if (currentWoche > 1) {
-    const { data: prev } = await sb.from('weekly_checks')
-      .select('*').eq('user_id', user.id).eq('woche_nr', currentWoche - 1).maybeSingle()
-    prevCheck = prev
-
-    if (prev?.gewicht_gleitend) {
-      document.getElementById('gewicht-prev').value = prev.gewicht_gleitend
-      const delta = (curr?.gewicht_gleitend || 0) - prev.gewicht_gleitend
-      if (curr?.gewicht_gleitend) {
-        const deltaEl = document.getElementById('gewicht-delta')
-        const sign = delta > 0 ? '+' : ''
-        deltaEl.textContent = `Veränderung: ${sign}${delta.toFixed(1)} kg`
-        deltaEl.style.color = delta < 0 ? '#11f080' : delta > 0 ? '#ff7351' : '#aca9b7'
-      }
-    }
-
-    if (prev) {
-      document.getElementById('compare-card').style.display = 'block'
-      document.getElementById('compare-rows').innerHTML = FELDER.map((f, i) => {
-        const prevVal = prev[f]
-        const currVal = curr?.[f]
-        if (!prevVal) return ''
-        const delta = currVal ? currVal - prevVal : null
-        const deltaHtml = delta != null
-          ? `<span class="${delta < 0 ? 'delta-neg' : delta > 0 ? 'delta-pos' : 'delta-zero'}">${delta > 0 ? '+' : ''}${delta.toFixed(1)}</span>`
-          : '<span class="delta-zero">—</span>'
-        return `
-          <div class="compare-row">
-            <span class="compare-label">${LABELS[i]}</span>
-            <span class="compare-prev">${prevVal}</span>
-            <span class="compare-curr">${currVal ?? '—'}</span>
-            <span class="compare-delta">${deltaHtml}</span>
-          </div>`
-      }).join('')
+  if (prev?.gewicht_gleitend) {
+    document.getElementById('gewicht-prev').value = prev.gewicht_gleitend
+    if (curr?.gewicht_gleitend) {
+      const delta = curr.gewicht_gleitend - prev.gewicht_gleitend
+      const sign = delta > 0 ? '+' : ''
+      const el = document.getElementById('gewicht-delta')
+      el.textContent = `Veränderung: ${sign}${delta.toFixed(1)} kg`
+      el.style.color = delta < 0 ? '#00ed7d' : delta > 0 ? '#ff7351' : '#aca9b7'
     }
   }
 
-  document.getElementById('loading').style.display = 'none'
+  // Hero weight delta — start vs current
+  const startWeight = profile.gewicht_kg || null
+  const currWeight  = curr?.gewicht_gleitend ?? null
+  const heroDelta   = startWeight && currWeight ? currWeight - startWeight : null
+  const heroDeltaEl = document.getElementById('hero-weight-delta')
+
+  if (heroDelta !== null) {
+    heroDeltaEl.textContent = (heroDelta > 0 ? '+' : '') + heroDelta.toFixed(1) + ' kg'
+    heroDeltaEl.style.color = heroDelta < 0 ? '#00ed7d' : heroDelta > 0 ? '#ff7351' : '#ffc56c'
+    const pillEl = document.getElementById('hero-weight-pill')
+    pillEl.style.removeProperty('display')
+    document.getElementById('hero-trend-icon').textContent = heroDelta < 0 ? 'trending_down' : 'trending_up'
+    const inner = document.getElementById('hero-pill-inner')
+    if (heroDelta < 0) {
+      inner.style.background = 'rgba(0,237,125,0.1)'
+      inner.style.borderColor = 'rgba(0,237,125,0.25)'
+      inner.querySelector('span').style.color = '#00ed7d'
+      inner.querySelector('span:last-child').style.color = '#00ed7d'
+    }
+    document.getElementById('hero-week-label').textContent = `SEIT START`
+  } else if (currWeight) {
+    heroDeltaEl.textContent = currWeight.toFixed(1) + ' kg'
+  } else {
+    heroDeltaEl.textContent = '— kg'
+  }
+
+  // Render metric cards
+  renderMetricCards(curr, prev)
+
+  // Comparison table (hidden, for completeness)
+  if (prev) {
+    document.getElementById('compare-card').style.display = 'block'
+    document.getElementById('compare-rows').innerHTML = FELDER.map((f, i) => {
+      const pv = prev[f]; const cv = curr?.[f]
+      if (!pv) return ''
+      const delta = cv ? cv - pv : null
+      const dir = IMPROVE_DIR[f]
+      let cls = 'color:rgba(172,169,183,0.5)'
+      if (delta !== null && delta !== 0) {
+        cls = (delta * (dir || -1) < 0) ? 'color:#ff7351' : 'color:#00ed7d'
+      }
+      return `<div style="display:grid;grid-template-columns:1fr 52px 52px 52px;gap:4px;padding:8px 0;border-bottom:1px solid rgba(72,71,82,0.2);font-size:12px;align-items:center;">
+        <span style="color:rgba(172,169,183,0.7);font-weight:600;">${LABELS[i]}</span>
+        <span style="text-align:center;font-family:'Space Grotesk';font-style:italic;font-weight:900;">${pv}</span>
+        <span style="text-align:center;font-family:'Space Grotesk';font-style:italic;font-weight:900;">${cv ?? '—'}</span>
+        <span style="text-align:center;font-weight:700;${cls}">${delta !== null ? (delta > 0 ? '+' : '') + delta.toFixed(1) : '—'}</span>
+      </div>`
+    }).join('')
+  }
+
+  document.getElementById('splash').style.display = 'none'
   document.getElementById('main').style.display = 'block'
 }
 
