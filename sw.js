@@ -1,5 +1,5 @@
 // 90TC Service Worker — Offline Splash + Cache
-const CACHE_NAME = '90tc-v6'
+const CACHE_NAME = '90tc-v7'
 const STATIC = [
   '/index.html',
   '/login.html',
@@ -11,6 +11,7 @@ const STATIC = [
   '/js/quotes.js',
   '/manifest.json',
   '/icon.svg',
+  '/og-image.svg',
 ]
 
 self.addEventListener('install', e => {

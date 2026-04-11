@@ -80,26 +80,6 @@ tailwind.config = {
   #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   #toast.error { border-color: #ffb4ab; color: #ffb4ab; }
 
-  /* Scanner Overlay */
-  .scanner-wrap { position:fixed;inset:0;z-index:300;background:#000;display:none;overflow:hidden; }
-  .scanner-wrap.active { display:block; }
-  #scanner-qr-div { position:absolute;inset:0;width:100%;height:100%; }
-  #scanner-qr-div video { width:100%;height:100%;object-fit:cover !important; }
-  #scanner-qr-div img { display:none; }
-  .scanner-close {
-    position:absolute;top:max(20px,env(safe-area-inset-top));right:20px;
-    background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.2);
-    border-radius:50%;width:46px;height:46px;color:#fff;font-size:20px;
-    cursor:pointer;display:flex;align-items:center;justify-content:center;
-    z-index:10;backdrop-filter:blur(10px);
-  }
-  .scanner-status {
-    position:absolute;bottom:max(40px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);
-    background:rgba(0,0,0,0.6);backdrop-filter:blur(10px);
-    border-radius:20px;padding:10px 24px;color:#fff;font-size:13px;font-weight:600;
-    white-space:nowrap;z-index:10;
-  }
-
   /* Product Sheet */
   .produkt-sheet { position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.75);backdrop-filter:blur(14px);display:none;align-items:flex-end; }
   .produkt-sheet.active { display:flex; }
@@ -364,10 +344,6 @@ tailwind.config = {
         <span class="material-symbols-outlined text-primary" style="font-size:21px;">arrow_forward</span>
       </button>
     </div>
-    <!-- Scan button -->
-    <button id="btn-scan" style="width:52px;height:52px;flex-shrink:0;background:rgba(255,197,108,0.1);border:1.5px solid rgba(255,197,108,0.28);border-radius:18px;display:flex;align-items:center;justify-content:center;transition:all .15s;" class="active:scale-[0.93]">
-      <span class="material-symbols-outlined text-primary" style="font-size:22px;font-variation-settings:'FILL' 1;">barcode_scanner</span>
-    </button>
   </div>
 </div>
 
@@ -404,13 +380,6 @@ tailwind.config = {
 </div>
 
 </div><!-- #main -->
-
-<!-- ── Scanner Overlay ── -->
-<div class="scanner-wrap" id="scanner-wrap">
-  <div id="scanner-qr-div"></div>
-  <button class="scanner-close" id="btn-close-scanner">✕</button>
-  <div class="scanner-status" id="scanner-status">Kamera wird gestartet…</div>
-</div>
 
 <!-- ── Product Sheet ── -->
 <div class="produkt-sheet" id="produkt-sheet">
@@ -488,7 +457,6 @@ tailwind.config = {
 <div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script src="js/config.js"></script>
 <script src="js/gamification.js"></script>
 <script src="js/auth.js"></script>
@@ -599,7 +567,6 @@ async function fsGet(params) {
 async function lookupBarcode(code) {
   const fields = 'product_name,product_name_de,generic_name_de,generic_name,brands,nutriments,image_small_url,code'
 
-  // FatSecret: barcode → ID → detail (chained but fast)
   const fsPromise = (async () => {
     const fs = await fsGet({ method:'food.find_id_for_barcode', barcode:code })
     if (!fs?.food_id?.value) return null
@@ -737,40 +704,6 @@ function parseOFFProduct(p) {
     fett100: n.fat_100g != null ? Math.round(n.fat_100g*10)/10 : null,
     carbs100: n.carbohydrates_100g != null ? Math.round(n.carbohydrates_100g*10)/10 : null
   }
-}
-
-// ── Scanner ────────────────────────────────────────────
-let html5Scanner = null
-
-async function openScanner() {
-  if (navigator.vibrate) navigator.vibrate(8)
-  document.getElementById('scanner-wrap').classList.add('active')
-  document.getElementById('scanner-status').textContent = 'Kamera wird gestartet…'
-  try {
-    const formats = [Html5QrcodeSupportedFormats.EAN_13,Html5QrcodeSupportedFormats.EAN_8,Html5QrcodeSupportedFormats.CODE_128,Html5QrcodeSupportedFormats.UPC_A,Html5QrcodeSupportedFormats.UPC_E]
-    html5Scanner = new Html5Qrcode('scanner-qr-div', { formatsToSupport:formats, verbose:false })
-    await html5Scanner.start({ facingMode:'environment' },
-      { fps: 15 },
-      async (code) => {
-        await stopScanner()
-        showLoadingSheet()                          // Sheet sofort öffnen
-        const product = await lookupBarcode(code)
-        if (product) showSheet(product)
-        else { closeSheet(); showToast('Produkt nicht gefunden','error'); setTimeout(()=>document.getElementById('search-input')?.focus(),400) }
-      }, () => {})
-    document.getElementById('scanner-status').textContent = 'Barcode in den Rahmen halten'
-  } catch(e) {
-    document.getElementById('scanner-status').textContent = 'Kamera nicht verfügbar'
-    showToast('Kamera-Zugriff verweigert','error')
-  }
-}
-
-async function stopScanner() {
-  if (html5Scanner) {
-    try { await html5Scanner.stop(); html5Scanner.clear() } catch(e) {}
-    html5Scanner = null; document.getElementById('scanner-qr-div').innerHTML = ''
-  }
-  document.getElementById('scanner-wrap').classList.remove('active')
 }
 
 // ── Search ─────────────────────────────────────────────
@@ -1146,8 +1079,6 @@ async function loadStandardday() {
 }
 
 // ── Wire up ────────────────────────────────────────────
-document.getElementById('btn-scan').addEventListener('click', openScanner)
-document.getElementById('btn-close-scanner').addEventListener('click', stopScanner)
 document.getElementById('btn-add').addEventListener('click', addMeal)
 document.getElementById('btn-cancel-sheet').addEventListener('click', closeSheet)
 document.getElementById('btn-transfer').addEventListener('click', transferToCheckin)
