@@ -651,7 +651,7 @@ async function searchProducts(query) {
       })
   }
 
-  // FatSecret search (parallel to OFF for speed)
+  // Both start in parallel immediately
   const fsPromise = (async () => {
     try {
       const d = await fsGet({ method:'foods.search', search_expression:query, max_results:20, page_number:0 })
@@ -661,14 +661,15 @@ async function searchProducts(query) {
     } catch(e) { return [] }
   })()
 
-  // OpenFoodFacts search (DE first, world fallback)
   const offPromise = (async () => {
     for (const base of ['https://de.openfoodfacts.org', 'https://world.openfoodfacts.org']) {
       try {
-        const url = `${base}/cgi/search.pl?` + new URLSearchParams({
+        const ctrl = new AbortController()
+        const t = setTimeout(() => ctrl.abort(), 8000)
+        const r = await fetch(`${base}/cgi/search.pl?` + new URLSearchParams({
           search_terms: query, action: 'process', json: '1', page_size: '40', fields
-        })
-        const r = await fetch(url, { signal: AbortSignal.timeout(8000) })
+        }), { signal: ctrl.signal })
+        clearTimeout(t)
         if (r.ok) {
           const d = await r.json()
           const result = rankAndFilter(d.products || [])
@@ -679,10 +680,16 @@ async function searchProducts(query) {
     return []
   })()
 
-  // Return whichever resolves first with results, merge both
-  const [fsResults, offResults] = await Promise.all([fsPromise, offPromise])
+  // Wait for OpenFoodFacts — it's fast and has good German coverage
+  const offResults = await offPromise
 
-  // Merge: OFF results first (better for German products), FS fills gaps
+  // If OFF has solid results, return immediately (don't wait for FS)
+  if (offResults.length >= 5) return offResults
+
+  // OFF returned little/nothing — wait up to 3s more for FatSecret (already running)
+  const fsResults = await Promise.race([fsPromise, new Promise(r => setTimeout(() => r([]), 3000))])
+
+  // Merge: OFF first, FS fills gaps
   const seen = new Set()
   const merged = []
   for (const r of [...offResults, ...fsResults]) {
