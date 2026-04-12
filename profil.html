@@ -376,6 +376,72 @@ tailwind.config = {
         </div>
         <span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
       </a>
+      <!-- Notifications -->
+      <div id="notif-card" style="border-radius:20px;border:1px solid rgba(255,197,108,0.15);background:rgba(13,13,20,0.8);padding:20px;margin-top:4px;">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
+          <div style="width:40px;height:40px;border-radius:14px;background:rgba(255,197,108,0.1);border:1px solid rgba(255,197,108,0.2);display:flex;align-items:center;justify-content:center;">
+            <span class="material-symbols-outlined" style="font-size:20px;color:#ffc56c;font-variation-settings:'FILL' 1">notifications</span>
+          </div>
+          <div style="flex:1;">
+            <div class="font-headline" style="font-size:14px;font-weight:800;color:#e4e1ef;">Erinnerungen</div>
+            <div style="font-size:11px;color:#757481;margin-top:1px;">Check-in-Reminder per Notification</div>
+          </div>
+          <!-- Master toggle -->
+          <button id="notif-master-btn" onclick="toggleNotifications()" style="padding:8px 16px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;border:1px solid rgba(255,197,108,0.25);background:rgba(255,197,108,0.07);color:#ffc56c;font-family:'Space Grotesk',sans-serif;text-transform:uppercase;letter-spacing:.04em;">
+            Aktivieren
+          </button>
+        </div>
+        <div id="notif-settings" style="display:none;border-top:1px solid rgba(255,255,255,0.06);padding-top:16px;display:flex;flex-direction:column;gap:12px;">
+          <!-- Morgen -->
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:16px;">☀️</span>
+              <div>
+                <div style="font-size:12px;font-weight:700;color:#e4e1ef;">Morgen-Reminder</div>
+                <div style="font-size:10px;color:#757481;">Erinnerung für den Check-in</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <select id="notif-morgen-h" onchange="saveNotifSettings()"
+                style="background:#0D0D14;border:1px solid rgba(72,71,82,0.4);border-radius:10px;color:#ffc56c;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;padding:6px 10px;cursor:pointer;outline:none;">
+                <option value="6">6:00</option><option value="7" selected>7:00</option><option value="8">8:00</option>
+                <option value="9">9:00</option><option value="10">10:00</option>
+              </select>
+              <label style="position:relative;display:inline-block;width:42px;height:24px;cursor:pointer;">
+                <input type="checkbox" id="notif-morgen-on" onchange="saveNotifSettings()" style="opacity:0;width:0;height:0;position:absolute;">
+                <span id="notif-morgen-track" style="position:absolute;inset:0;background:#34343f;border-radius:99px;transition:.3s;"></span>
+                <span id="notif-morgen-thumb" style="position:absolute;width:18px;height:18px;background:#757481;border-radius:50%;top:3px;left:3px;transition:.3s;"></span>
+              </label>
+            </div>
+          </div>
+          <!-- Abend -->
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:16px;">🌙</span>
+              <div>
+                <div style="font-size:12px;font-weight:700;color:#e4e1ef;">Abend-Reminder</div>
+                <div style="font-size:10px;color:#757481;">Erinnerung für den Tagesabschluss</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <select id="notif-abend-h" onchange="saveNotifSettings()"
+                style="background:#0D0D14;border:1px solid rgba(72,71,82,0.4);border-radius:10px;color:#89ceff;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;padding:6px 10px;cursor:pointer;outline:none;">
+                <option value="19">19:00</option><option value="20">20:00</option>
+                <option value="21" selected>21:00</option><option value="22">22:00</option>
+              </select>
+              <label style="position:relative;display:inline-block;width:42px;height:24px;cursor:pointer;">
+                <input type="checkbox" id="notif-abend-on" onchange="saveNotifSettings()" style="opacity:0;width:0;height:0;position:absolute;">
+                <span id="notif-abend-track" style="position:absolute;inset:0;background:#34343f;border-radius:99px;transition:.3s;"></span>
+                <span id="notif-abend-thumb" style="position:absolute;width:18px;height:18px;background:#757481;border-radius:50%;top:3px;left:3px;transition:.3s;"></span>
+              </label>
+            </div>
+          </div>
+          <p id="notif-hint" style="font-size:10px;color:#454450;line-height:1.5;margin-top:4px;">
+            Reminder werden angezeigt wenn du die App öffnest und noch nicht eingecheckt hast.
+          </p>
+        </div>
+      </div>
+
       <div class="group flex items-center justify-between p-5 bg-surface-container-lowest rounded-[20px] border border-error/20 active:scale-[0.98] transition-all mt-8 cursor-pointer" id="btn-reset">
         <div class="flex items-center gap-4">
           <div class="w-10 h-10 rounded-xl bg-error/10 flex items-center justify-center">
@@ -665,10 +731,109 @@ async function init() {
   if (!ctx) return
   currentProfile = ctx.profile
   renderProfile(ctx.profile)
+  initNotifUI()
   document.getElementById('splash').style.display = 'none'
   document.getElementById('main').style.display   = 'block'
 }
 init()
+
+// ── Notifications UI ───────────────────────────────────
+function _setToggle(trackId, thumbId, inputId, on) {
+  const track = document.getElementById(trackId)
+  const thumb = document.getElementById(thumbId)
+  const input = document.getElementById(inputId)
+  if (!track || !thumb || !input) return
+  input.checked = on
+  track.style.background = on ? '#ffc56c' : '#34343f'
+  thumb.style.background = on ? '#321f00' : '#757481'
+  thumb.style.left = on ? '21px' : '3px'
+}
+
+function initNotifUI() {
+  if (!('Notification' in window)) {
+    document.getElementById('notif-card').style.display = 'none'
+    return
+  }
+  const prefs = getNotifPrefs()
+  const enabled = !!prefs.enabled && Notification.permission === 'granted'
+  updateMasterBtn(enabled)
+  if (enabled) {
+    document.getElementById('notif-settings').style.display = 'flex'
+    document.getElementById('notif-morgen-h').value = prefs.morgenStunde || 7
+    document.getElementById('notif-abend-h').value  = prefs.abendStunde  || 21
+    _setToggle('notif-morgen-track','notif-morgen-thumb','notif-morgen-on', !!prefs.morgen)
+    _setToggle('notif-abend-track', 'notif-abend-thumb', 'notif-abend-on',  !!prefs.abend)
+  }
+}
+
+function updateMasterBtn(enabled) {
+  const btn = document.getElementById('notif-master-btn')
+  if (!btn) return
+  if (enabled) {
+    btn.textContent = 'Aktiv ✓'
+    btn.style.background = 'rgba(0,237,125,0.1)'
+    btn.style.borderColor = 'rgba(0,237,125,0.3)'
+    btn.style.color = '#00ed7d'
+  } else {
+    btn.textContent = 'Aktivieren'
+    btn.style.background = 'rgba(255,197,108,0.07)'
+    btn.style.borderColor = 'rgba(255,197,108,0.25)'
+    btn.style.color = '#ffc56c'
+  }
+}
+
+async function toggleNotifications() {
+  if (!('Notification' in window)) {
+    if (typeof showToast === 'function') showToast('Dein Browser unterstützt keine Notifications', 'error')
+    return
+  }
+  const prefs = getNotifPrefs()
+  if (prefs.enabled && Notification.permission === 'granted') {
+    // Disable
+    prefs.enabled = false
+    saveNotifPrefs(prefs)
+    updateMasterBtn(false)
+    document.getElementById('notif-settings').style.display = 'none'
+    if (typeof showToast === 'function') showToast('Erinnerungen deaktiviert')
+    return
+  }
+  // Enable → request permission
+  const result = await Notification.requestPermission()
+  if (result !== 'granted') {
+    if (typeof showToast === 'function') showToast('Bitte erlaube Notifications in deinen Browser-Einstellungen', 'error')
+    return
+  }
+  prefs.enabled = true
+  prefs.morgen = true
+  prefs.abend  = true
+  prefs.morgenStunde = 7
+  prefs.abendStunde  = 21
+  saveNotifPrefs(prefs)
+  updateMasterBtn(true)
+  document.getElementById('notif-settings').style.display = 'flex'
+  _setToggle('notif-morgen-track','notif-morgen-thumb','notif-morgen-on', true)
+  _setToggle('notif-abend-track', 'notif-abend-thumb', 'notif-abend-on',  true)
+  if (typeof showToast === 'function') showToast('Erinnerungen aktiviert 🔔')
+}
+
+function saveNotifSettings() {
+  const prefs = getNotifPrefs()
+  prefs.morgen      = document.getElementById('notif-morgen-on').checked
+  prefs.abend       = document.getElementById('notif-abend-on').checked
+  prefs.morgenStunde= parseInt(document.getElementById('notif-morgen-h').value)
+  prefs.abendStunde = parseInt(document.getElementById('notif-abend-h').value)
+  saveNotifPrefs(prefs)
+  // Update toggle visuals
+  _setToggle('notif-morgen-track','notif-morgen-thumb','notif-morgen-on', prefs.morgen)
+  _setToggle('notif-abend-track', 'notif-abend-thumb', 'notif-abend-on',  prefs.abend)
+}
+
+function getNotifPrefs() {
+  try { return JSON.parse(localStorage.getItem('90tc_notif_prefs') || '{}') } catch { return {} }
+}
+function saveNotifPrefs(prefs) {
+  localStorage.setItem('90tc_notif_prefs', JSON.stringify(prefs))
+}
 </script>
 </body>
 </html>

@@ -1,14 +1,16 @@
 // 90TC Service Worker — Offline Splash + Cache
-const CACHE_NAME = '90tc-v16'
+const CACHE_NAME = '90tc-v18'
 const STATIC = [
   '/index.html',
   '/login.html',
   '/dashboard.html',
+  '/kalender.html',
   '/css/style.css',
   '/js/config.js',
   '/js/auth.js',
   '/js/gamification.js',
   '/js/quotes.js',
+  '/js/notifications.js',
   '/manifest.json',
   '/icon.svg',
   '/og-image.svg',

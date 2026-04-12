@@ -284,6 +284,47 @@
     </a>
   </section>
 
+  <!-- Wochenrückblick -->
+  <div id="wochenrueckblick" style="display:none;">
+    <div style="background:rgba(18,18,26,0.8);border:1px solid rgba(255,197,108,0.18);border-radius:24px;padding:20px 20px 18px;position:relative;">
+      <!-- Header -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div>
+          <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.18em;color:rgba(255,197,108,.45);margin-bottom:4px;">RÜCKBLICK</div>
+          <div class="font-headline" id="wb-title" style="font-size:1.2rem;font-weight:900;font-style:italic;text-transform:uppercase;color:#e4e1ef;">Woche 1</div>
+        </div>
+        <button id="wb-close" onclick="dismissWochenrueckblick()"
+          style="width:32px;height:32px;border-radius:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);
+          display:flex;align-items:center;justify-content:center;cursor:pointer;color:#757481;font-size:14px;">✕</button>
+      </div>
+      <!-- Stats 2×2 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div id="wb-checkins" style="background:#0D0D14;border-radius:16px;padding:14px 14px 12px;border:1px solid rgba(72,71,82,0.25);">
+          <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#757481;margin-bottom:6px;">Check-ins</div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:1.8rem;font-weight:900;font-style:italic;color:#ffc56c;line-height:1;" class="wb-val">—</div>
+          <div style="font-size:9px;color:#757481;margin-top:2px;">von 7 Tagen</div>
+        </div>
+        <div id="wb-workouts" style="background:#0D0D14;border-radius:16px;padding:14px 14px 12px;border:1px solid rgba(72,71,82,0.25);">
+          <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#757481;margin-bottom:6px;">Workouts</div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:1.8rem;font-weight:900;font-style:italic;color:#00ed7d;line-height:1;" class="wb-val">—</div>
+          <div style="font-size:9px;color:#757481;margin-top:2px;">diese Woche</div>
+        </div>
+        <div id="wb-kcal" style="background:#0D0D14;border-radius:16px;padding:14px 14px 12px;border:1px solid rgba(72,71,82,0.25);">
+          <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#757481;margin-bottom:6px;">Ø Kalorien</div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:1.8rem;font-weight:900;font-style:italic;color:#89ceff;line-height:1;" class="wb-val">—</div>
+          <div style="font-size:9px;color:#757481;margin-top:2px;">kcal / Tag</div>
+        </div>
+        <div id="wb-score" style="background:#0D0D14;border-radius:16px;padding:14px 14px 12px;border:1px solid rgba(72,71,82,0.25);">
+          <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#757481;margin-bottom:6px;">Ø Score</div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:1.8rem;font-weight:900;font-style:italic;color:#ffc56c;line-height:1;" class="wb-val">—</div>
+          <div style="font-size:9px;color:#757481;margin-top:2px;">von 7 Faktoren</div>
+        </div>
+      </div>
+      <!-- Motivations-Message -->
+      <div id="wb-msg" style="margin-top:14px;padding:12px 14px;background:rgba(255,197,108,0.05);border:1px solid rgba(255,197,108,0.12);border-radius:14px;font-size:12px;line-height:1.55;color:#aca9b7;display:none;"></div>
+    </div>
+  </div>
+
   <!-- Mindset des Tages -->
   <div class="flex items-start gap-3 px-1">
     <span class="material-symbols-outlined text-primary/40 flex-shrink-0 mt-0.5" style="font-size:20px;font-variation-settings:'FILL' 1">format_quote</span>
@@ -345,6 +386,18 @@
       <span id="s-train-sub" class="font-label text-[9px] text-on-surface-variant uppercase tracking-widest">Heute</span>
     </div>
   </section>
+
+  <!-- Kalender Link -->
+  <a href="kalender.html" style="display:flex;align-items:center;gap:14px;background:rgba(137,206,255,0.05);border:1px solid rgba(137,206,255,0.14);border-radius:18px;padding:14px 18px;text-decoration:none;">
+    <div style="width:40px;height:40px;border-radius:13px;background:rgba(137,206,255,0.1);border:1px solid rgba(137,206,255,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <span class="material-symbols-outlined" style="font-size:20px;color:#89ceff;font-variation-settings:'FILL' 1">calendar_month</span>
+    </div>
+    <div style="flex:1;">
+      <div class="font-headline" style="font-size:13px;font-weight:800;color:#e4e1ef;text-transform:uppercase;letter-spacing:.02em;">90-Tage Kalender</div>
+      <div style="font-size:11px;color:#757481;margin-top:1px;">Alle Tage auf einen Blick</div>
+    </div>
+    <span class="material-symbols-outlined" style="font-size:18px;color:#757481;">chevron_right</span>
+  </a>
 
   </div><!-- /.px-4 body -->
 
@@ -463,6 +516,7 @@
 <script src="js/gamification.js"></script>
 <script src="js/quotes.js"></script>
 <script src="js/auth.js"></script>
+<script src="js/notifications.js"></script>
 <script>
 async function init() {
   const ctx = await requireProfile()
@@ -550,12 +604,13 @@ async function init() {
     if (typeof countUp === 'function') countUp(streakEl, profile.streak_aktuell || 0, 800)
   }, 300)
 
-  // Weekly reminder
+  // Weekly reminder + Wochenrückblick
   const wocheNr = Math.ceil(dayNr / 7)
   if (wocheNr > 1) {
     const { data: wc } = await sb.from('weekly_checks')
       .select('id').eq('user_id', user.id).eq('woche_nr', wocheNr).maybeSingle()
     if (!wc) document.getElementById('weekly-rem').style.display = 'flex'
+    maybeShowWochenrueckblick(user, profile, wocheNr)
   }
 
   // Load today data in parallel
@@ -622,6 +677,65 @@ async function init() {
   }
 }
 init()
+
+// ── Wochenrückblick ──────────────────────────────────────────────────────────
+async function maybeShowWochenrueckblick(user, profile, wocheNr) {
+  if (wocheNr < 2) return
+  const prevWoche = wocheNr - 1
+  const dismissKey = '90tc_wb_w' + prevWoche + '_' + profile.id.slice(0,8)
+  if (localStorage.getItem(dismissKey)) return
+
+  // Date range for previous week
+  const start = new Date(profile.startdatum)
+  start.setDate(start.getDate() + (prevWoche - 1) * 7)
+  const end = new Date(start)
+  end.setDate(start.getDate() + 6)
+  const s = start.toISOString().split('T')[0]
+  const e = end.toISOString().split('T')[0]
+
+  const [{ data: entries }, { data: sessions }] = await Promise.all([
+    sb.from('daily_entries')
+      .select('checkin_morgen,checkin_abend,kalorien_ist,score_von_7,training_gemacht')
+      .eq('user_id', user.id).gte('datum', s).lte('datum', e),
+    sb.from('training_sessions')
+      .select('id').eq('user_id', user.id).gte('datum', s).lte('datum', e)
+  ])
+
+  const rows = entries || []
+  const checkinDays = rows.filter(r => r.checkin_morgen || r.checkin_abend).length
+  const workouts = (sessions || []).length
+  const kcalRows = rows.filter(r => r.kalorien_ist > 0)
+  const avgKcal = kcalRows.length ? Math.round(kcalRows.reduce((a,r) => a + r.kalorien_ist, 0) / kcalRows.length) : null
+  const scoreRows = rows.filter(r => r.score_von_7 != null)
+  const avgScore = scoreRows.length ? (scoreRows.reduce((a,r) => a + r.score_von_7, 0) / scoreRows.length).toFixed(1) : null
+
+  // Fill card
+  document.getElementById('wb-title').textContent = `Woche ${prevWoche}`
+  document.getElementById('wb-checkins').querySelector('.wb-val').textContent = checkinDays + '/7'
+  document.getElementById('wb-workouts').querySelector('.wb-val').textContent = workouts
+  document.getElementById('wb-kcal').querySelector('.wb-val').textContent = avgKcal ? avgKcal.toLocaleString('de-DE') : '—'
+  document.getElementById('wb-score').querySelector('.wb-val').textContent = avgScore ? avgScore + '/7' : '—'
+
+  // Motivational message
+  const msgEl = document.getElementById('wb-msg')
+  let msg = ''
+  if (checkinDays >= 7) msg = '🏆 Perfekte Woche — alle 7 Tage eingecheckt. Das ist Disziplin.'
+  else if (checkinDays >= 5) msg = '💪 Starke Woche. Noch ein bisschen konsistenter und du bist unschlagbar.'
+  else if (checkinDays >= 3) msg = '📈 Solide Basis. Diese Woche eine Schippe drauf — du schaffst das.'
+  else msg = '💡 Rückschläge gehören dazu. Neue Woche, neuer Anlauf — heute zählt.'
+  if (msg) { msgEl.textContent = msg; msgEl.style.display = 'block' }
+
+  // Store dismiss key on element
+  document.getElementById('wochenrueckblick').dataset.dismissKey = dismissKey
+  document.getElementById('wochenrueckblick').style.display = 'block'
+}
+
+function dismissWochenrueckblick() {
+  const el = document.getElementById('wochenrueckblick')
+  const key = el.dataset.dismissKey
+  if (key) localStorage.setItem(key, '1')
+  el.style.display = 'none'
+}
 
 // ── Onboarding Wizard ────────────────────────────────────────────────────────
 const WIZ_STEPS = [

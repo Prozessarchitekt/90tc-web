@@ -249,6 +249,31 @@
 
     .bnav { display:none !important; }
 
+    /* ── Tab Bar ── */
+    .ci-tabs {
+      display:flex; gap:0; background:#0D0D14; border-radius:16px;
+      padding:4px; margin-bottom:22px; border:1px solid rgba(72,71,82,0.3);
+    }
+    .ci-tab {
+      flex:1; padding:10px 6px; border-radius:12px; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; gap:5px;
+      font-family:'Space Grotesk',sans-serif; font-size:11px; font-weight:700;
+      text-transform:uppercase; letter-spacing:0.06em; color:#757481;
+      transition:all .2s; border:none; background:none;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .ci-tab.active { background:#191825; color:#ffc56c; box-shadow:0 2px 8px rgba(0,0,0,0.5); }
+    .ci-tab:active { transform:scale(0.97); }
+
+    /* ── Prompt chips ── */
+    .prompt-chip {
+      flex:1; background:#0D0D14; border-radius:16px;
+      border:1px solid rgba(72,71,82,0.3); padding:13px 12px;
+      text-align:left; cursor:pointer; transition:all .18s;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .prompt-chip:active { transform:scale(0.97); }
+
     /* ── New premium redesign ─────────────────────────── */
     /* Section header */
     .ci-header { display:flex;align-items:center;gap:12px;margin-bottom:22px; }
@@ -351,6 +376,19 @@
   <div class="splash" id="loading"><div class="spinner"></div></div>
 
   <div id="main" class="no-scrollbar" style="display:none;">
+
+    <!-- Tab Bar -->
+    <div class="ci-tabs" id="ci-tabs">
+      <button class="ci-tab" id="tab-morgen" onclick="showTab('morgen')">
+        <span style="font-size:15px;">☀️</span> Morgen
+      </button>
+      <button class="ci-tab" id="tab-abend" onclick="showTab('abend')">
+        <span style="font-size:15px;">🌙</span> Abend
+      </button>
+      <button class="ci-tab" id="tab-tagebuch" onclick="showTab('tagebuch')">
+        <span style="font-size:15px;">📓</span> Notiz
+      </button>
+    </div>
 
     <!-- Done banner -->
     <div id="done-banner" style="display:none;">
@@ -624,6 +662,59 @@
       </button>
     </div>
 
+    <!-- 📓 TAGEBUCH SECTION -->
+    <div id="tagebuch-section" style="display:none;padding-bottom:8px;">
+
+      <div class="ci-header">
+        <span class="material-symbols-outlined" style="font-size:34px;color:#a78bfa;font-variation-settings:'FILL' 1;flex-shrink:0;">menu_book</span>
+        <div>
+          <div class="ci-title" style="color:#efecfb;">Tages-<span style="color:#a78bfa;">Notiz</span></div>
+          <div class="ci-sub">Gedanken · Erkenntnisse · Mindset</div>
+        </div>
+      </div>
+
+      <!-- Freies Textfeld -->
+      <div class="ci-panel glass" style="margin-bottom:14px;">
+        <span class="ci-panel-lbl">Was willst du heute festhalten?</span>
+        <textarea id="notiz-text" class="clean-textarea"
+          placeholder="Schreib drauflos — kein Druck, kein Format. Was beschäftigt dich? Was war heute wichtig? Was willst du morgen anders machen?"
+          rows="6" maxlength="2000" style="min-height:130px;"
+          oninput="updateNotizCount()"></textarea>
+        <div style="display:flex;justify-content:flex-end;margin-top:6px;">
+          <span id="notiz-count" style="font-size:10px;color:#484752;">0 / 2000</span>
+        </div>
+      </div>
+
+      <!-- Prompt-Chips -->
+      <div style="margin-bottom:6px;">
+        <span class="ci-panel-lbl" style="margin-bottom:10px;display:block;">Starthilfe</span>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;">
+          <button class="prompt-chip" onclick="addNotizPrompt('Was hat mich heute überrascht?\n')">
+            <div style="font-size:18px;margin-bottom:4px;">💡</div>
+            <div style="font-size:11px;font-weight:700;color:#ffc56c;">Überraschung</div>
+          </button>
+          <button class="prompt-chip" onclick="addNotizPrompt('Ich bin dankbar für:\n')">
+            <div style="font-size:18px;margin-bottom:4px;">🙏</div>
+            <div style="font-size:11px;font-weight:700;color:#00ed7d;">Dankbarkeit</div>
+          </button>
+          <button class="prompt-chip" onclick="addNotizPrompt('Meine Erkenntnis für morgen:\n')">
+            <div style="font-size:18px;margin-bottom:4px;">🎯</div>
+            <div style="font-size:11px;font-weight:700;color:#89ceff;">Erkenntnis</div>
+          </button>
+          <button class="prompt-chip" onclick="addNotizPrompt('Ich bin stolz auf:\n')">
+            <div style="font-size:18px;margin-bottom:4px;">🏆</div>
+            <div style="font-size:11px;font-weight:700;color:#a78bfa;">Stolz</div>
+          </button>
+        </div>
+      </div>
+
+      <button class="btn-save-gold" onclick="saveTagebuch()" id="btn-tagebuch"
+        style="background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;box-shadow:0 8px 28px rgba(124,58,237,0.3);">
+        <span class="material-symbols-outlined" style="font-size:20px;font-variation-settings:'FILL' 1;">save</span>
+        <span>Notiz speichern</span>
+      </button>
+    </div>
+
     <div style="height:16px;"></div>
   </div>
 </div>
@@ -860,6 +951,56 @@ function closeScore() {
 
 function v(id) { return document.getElementById(id)?.value }
 
+function showTab(tab) {
+  ;['morgen','abend','tagebuch'].forEach(t => {
+    const sec = document.getElementById(t + '-section')
+    const btn = document.getElementById('tab-' + t)
+    if (sec) sec.style.display = t === tab ? 'block' : 'none'
+    if (btn) btn.classList.toggle('active', t === tab)
+  })
+  const titles = { morgen:'MORGEN', abend:'ABEND', tagebuch:'TAGEBUCH' }
+  document.getElementById('page-title').textContent = titles[tab] || 'CHECK-IN'
+  const banner = document.getElementById('done-banner')
+  banner.style.display = tab === 'morgen' && alreadyMorgen ? 'flex'
+    : tab === 'abend' && alreadyAbend ? 'flex' : 'none'
+}
+
+function updateNotizCount() {
+  const len = (document.getElementById('notiz-text')?.value || '').length
+  const el = document.getElementById('notiz-count')
+  if (el) el.textContent = len + ' / 2000'
+}
+
+function addNotizPrompt(text) {
+  const ta = document.getElementById('notiz-text')
+  if (!ta) return
+  const cur = ta.value
+  ta.value = cur + (cur && !cur.endsWith('\n') ? '\n' : '') + text
+  ta.focus()
+  updateNotizCount()
+}
+
+async function saveTagebuch() {
+  const btn = document.getElementById('btn-tagebuch')
+  const text = (document.getElementById('notiz-text')?.value || '').trim()
+  if (!text) { showToast('Schreib zuerst etwas ✍️'); return }
+  btn.disabled = true
+  btn.querySelector('span:last-child').textContent = 'Speichern...'
+  const today = getToday()
+  localStorage.setItem('90tc_notiz_' + today, text)
+  try {
+    await sb.from('daily_entries').upsert({
+      user_id: currentProfile.id,
+      datum: today,
+      tag_nr: calcDayNr(currentProfile.startdatum),
+      notiz: text
+    }, { onConflict: 'user_id,datum' })
+  } catch (_) {}
+  showToast('Notiz gespeichert 📓')
+  btn.querySelector('span:last-child').textContent = '✓ Gespeichert'
+  setTimeout(() => { btn.disabled = false; btn.querySelector('span:last-child').textContent = 'Notiz speichern' }, 2000)
+}
+
 async function init() {
   const ctx = await requireProfile()
   if (!ctx) return
@@ -944,20 +1085,19 @@ async function init() {
   })
   updateRings()
 
-  // Determine which section to show
-  const mode = new URLSearchParams(location.search).get('mode')
-  const showMorgen = mode === 'morgen' || (!mode && !alreadyMorgen)
-  const showAbend  = mode === 'abend'  || (!mode && alreadyMorgen)
-
-  if (showAbend) {
-    document.getElementById('abend-section').style.display = 'block'
-    document.getElementById('page-title').textContent = 'ABEND'
-    document.getElementById('done-banner').style.display = alreadyAbend ? 'flex' : 'none'
-  } else {
-    document.getElementById('morgen-section').style.display = 'block'
-    document.getElementById('page-title').textContent = 'MORGEN'
-    document.getElementById('done-banner').style.display = alreadyMorgen ? 'flex' : 'none'
+  // Load Tagebuch note
+  const savedNotiz = localStorage.getItem('90tc_notiz_' + getToday()) || entry?.notiz || ''
+  if (savedNotiz && document.getElementById('notiz-text')) {
+    document.getElementById('notiz-text').value = savedNotiz
+    updateNotizCount()
   }
+
+  // Determine which tab to show
+  const mode = new URLSearchParams(location.search).get('mode')
+  const activeTab = mode === 'tagebuch' ? 'tagebuch'
+    : (mode === 'abend' || (!mode && alreadyMorgen)) ? 'abend'
+    : 'morgen'
+  showTab(activeTab)
 
   document.getElementById('loading').style.display = 'none'
   document.getElementById('main').style.display = 'block'
