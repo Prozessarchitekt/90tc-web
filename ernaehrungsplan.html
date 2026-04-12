@@ -496,10 +496,14 @@ function getActivePlan() { return plans.find(p => p.id === activePlanId) || plan
 function cm() { return getActivePlan()?.meals || emptyMeals() } // current meals shorthand
 
 const MEAL_META = {
-  frühstück:  { label:'Frühstück',  icon:'free_breakfast', color:'#ffc56c', border:'rgba(255,197,108,0.28)', bg:'rgba(255,197,108,0.07)', photo:'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=600&q=70' },
-  mittagessen:{ label:'Mittagessen',icon:'restaurant',     color:'#f0a500', border:'rgba(240,165,0,0.25)',   bg:'rgba(240,165,0,0.06)',   photo:'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&q=70' },
-  abendessen: { label:'Abendessen', icon:'nights_stay',    color:'#89ceff', border:'rgba(137,206,255,0.25)', bg:'rgba(137,206,255,0.06)', photo:'https://images.unsplash.com/photo-1559847844-5315695dadae?w=600&q=70' },
-  snack:      { label:'Snack',      icon:'nutrition',      color:'#00ed7d', border:'rgba(0,237,125,0.22)',   bg:'rgba(0,237,125,0.05)',   photo:'https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?w=600&q=70' },
+  frühstück:  { label:'Frühstück',  icon:'free_breakfast', color:'#ffc56c', border:'rgba(255,197,108,0.28)', bg:'rgba(255,197,108,0.07)', photo:'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=600&q=70',
+    emoji:'🌅', hint:'Starte deinen Tag mit Proteinen & komplexen Carbs', suggest:['Haferflocken','Ei (Hühnerei)','Magerquark','Skyr','Vollkornbrot','Banane','Joghurt (3,5 %)'] },
+  mittagessen:{ label:'Mittagessen',icon:'restaurant',     color:'#f0a500', border:'rgba(240,165,0,0.25)',   bg:'rgba(240,165,0,0.06)',   photo:'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&q=70',
+    emoji:'☀️', hint:'Deine größte Mahlzeit — Protein + Carbs + Gemüse', suggest:['Hähnchenbrust','Weißer Reis (gekocht)','Brokkoli','Pasta (gekocht)','Lachs','Kartoffel','Süßkartoffel'] },
+  abendessen: { label:'Abendessen', icon:'nights_stay',    color:'#89ceff', border:'rgba(137,206,255,0.25)', bg:'rgba(137,206,255,0.06)', photo:'https://images.unsplash.com/photo-1559847844-5315695dadae?w=600&q=70',
+    emoji:'🌙', hint:'Leicht, proteinreich, wenig Carbs', suggest:['Hähnchenbrust','Magerquark','Lachs','Hüttenkäse','Spinat','Brokkoli','Thunfisch (Wasser)'] },
+  snack:      { label:'Snack',      icon:'nutrition',      color:'#00ed7d', border:'rgba(0,237,125,0.22)',   bg:'rgba(0,237,125,0.05)',   photo:'https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?w=600&q=70',
+    emoji:'⚡', hint:'Protein-Snack zwischen den Mahlzeiten', suggest:['Magerquark','Skyr','Eiweißpulver (Whey)','Banane','Apfel','Mandeln','Erdnussbutter'] },
 }
 
 // ── Toast ──────────────────────────────────────
@@ -681,7 +685,8 @@ function renderMealCards() {
     const mealFett = items.reduce((s,f) => s+(f.fett||0), 0)
     const mealCarbs = items.reduce((s,f) => s+(f.carbs||0), 0)
 
-    const foodRows = items.length ? items.map((f,i) => `
+    const isEmpty = items.length === 0
+    const foodRows = !isEmpty ? items.map((f,i) => `
       <div class="food-item-row">
         <div style="flex:1;min-width:0">
           <div style="font-size:13px;font-weight:700;color:#e4e1ef;">${f.name}</div>
@@ -692,20 +697,38 @@ function renderMealCards() {
           <span class="material-symbols-outlined" style="font-size:16px;">close</span>
         </button>
       </div>`).join('')
-    : `<div style="font-size:12px;color:#484752;font-style:italic;padding:10px 0;">Noch keine Produkte · Tippe "+" um zu suchen</div>`
+    : `<button onclick="openSearch('${key}')" style="width:100%;padding:18px 16px;border-radius:18px;background:rgba(255,255,255,0.03);border:1.5px dashed rgba(72,71,82,0.3);cursor:pointer;text-align:left;transition:all .15s;" class="active:scale-[.98]">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="font-size:28px;">${m.emoji}</span>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:${m.color};margin-bottom:3px;">+ ${m.label} planen</div>
+            <div style="font-size:11px;color:#484752;line-height:1.4;">${m.hint}</div>
+          </div>
+        </div>
+      </button>`
 
-    const macroBar = items.length ? `
-      <div style="display:flex;gap:8px;margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);">
+    const macroBar = !isEmpty ? `
+      <div style="display:flex;gap:8px;margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);flex-wrap:wrap;">
         <span style="font-size:10px;font-weight:700;color:#89ceff;">P ${Math.round(mealProt)}g</span>
-        <span style="font-size:10px;color:rgba(255,255,255,0.2);">·</span>
+        <span style="font-size:10px;color:rgba(255,255,255,0.15);">·</span>
         <span style="font-size:10px;font-weight:700;color:#00ed7d;">F ${Math.round(mealFett)}g</span>
-        <span style="font-size:10px;color:rgba(255,255,255,0.2);">·</span>
+        <span style="font-size:10px;color:rgba(255,255,255,0.15);">·</span>
         <span style="font-size:10px;font-weight:700;color:#aca9b7;">C ${Math.round(mealCarbs)}g</span>
       </div>` : ''
 
+    const addMoreBtn = !isEmpty ? `
+      <button class="plan-add-btn" onclick="openSearch('${key}')" style="border-color:${m.border};color:${m.color}80;margin-top:12px;">
+        <span class="material-symbols-outlined" style="font-size:18px;color:${m.color};">add</span>
+        Weiteres Produkt
+      </button>` : ''
+
+    const itemCountBadge = !isEmpty
+      ? `<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.35);">${items.length} Produkt${items.length !== 1 ? 'e' : ''}</div>`
+      : `<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#2e2e3a;">Leer</div>`
+
     return `
-    <div class="meal-plan-card" style="border-color:${m.border};">
-      <img class="meal-bg" src="${m.photo}" alt="">
+    <div class="meal-plan-card" style="border-color:${isEmpty ? 'rgba(72,71,82,0.2)' : m.border};">
+      <img class="meal-bg" src="${m.photo}" alt="" style="${isEmpty ? 'opacity:0.4;' : ''}">
       <div class="meal-overlay"></div>
       <div class="meal-content">
         <div class="meal-head">
@@ -715,17 +738,14 @@ function renderMealCards() {
             </div>
             <div>
               <div class="meal-title" style="color:${m.color}">${m.label}</div>
-              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.35);">${items.length} Produkt${items.length !== 1 ? 'e' : ''}</div>
+              ${itemCountBadge}
             </div>
           </div>
           <div class="meal-kcal" style="color:${m.color}">${mealKcal ? mealKcal+' kcal' : '—'}</div>
         </div>
         <div>${foodRows}</div>
         ${macroBar}
-        <button class="plan-add-btn" onclick="openSearch('${key}')" style="border-color:${m.border};color:${m.color}80;">
-          <span class="material-symbols-outlined" style="font-size:18px;color:${m.color};">add</span>
-          Produkt hinzufügen
-        </button>
+        ${addMoreBtn}
       </div>
     </div>`
   }).join('')
@@ -1072,7 +1092,7 @@ async function searchProducts(query) {
       .filter(p => p && p.name && p.name !== '—' && p.kcal100 != null)
   }
 
-  // Launch ALL sources in parallel — no early return
+  // Start ALL sources in parallel immediately
   const edamamPromise = searchEdamam(query)
 
   const fsPromise = (async () => {
@@ -1099,52 +1119,101 @@ async function searchProducts(query) {
     return []
   })()
 
-  // Wait for all (FS capped at 4s to not block)
-  const [edamamResults, offResults, fsResults] = await Promise.all([
-    edamamPromise,
+  // Wait for Edamam first (usually fast)
+  const edamamResults = await edamamPromise
+
+  // Early return only if Edamam has RELEVANT results (name actually matches the query)
+  // This prevents English-only Edamam results blocking German OFF results
+  const relevantEdamam = edamamResults.filter(r => matchScore(r.name, q) >= 40)
+  if (relevantEdamam.length >= 3) {
+    const localMatches = searchLocal(query)
+    const edSeen = new Set(edamamResults.map(r => r.name.toLowerCase()))
+    const combined = [
+      ...localMatches.filter(f => !edSeen.has(f.name.toLowerCase())),
+      ...edamamResults,
+    ]
+    combined.sort((a,b) => {
+      const sa = a._local ? matchScore(a.name,q)+50 : matchScore(a.name,q)
+      const sb = b._local ? matchScore(b.name,q)+50 : matchScore(b.name,q)
+      return sb - sa
+    })
+    return combined
+  }
+
+  // Edamam had no/few relevant results → wait for OFF+FS (best German database)
+  const [offResults, fsResults] = await Promise.all([
     offPromise,
-    Promise.race([fsPromise, new Promise(r => setTimeout(() => r([]), 4000))]),
+    Promise.race([fsPromise, new Promise(r => setTimeout(() => r([]), 3000))]),
   ])
 
-  // Merge & deduplicate — OFF prioritized for German terms
   const seen = new Set()
   const merged = []
-  // Interleave: prefer higher-scoring sources
-  const allSources = [...offResults, ...edamamResults, ...fsResults]
-  for (const item of allSources) {
+  for (const item of [...offResults, ...edamamResults, ...fsResults]) {
     const key = item.name.toLowerCase()
     if (!seen.has(key)) { seen.add(key); merged.push(item) }
   }
 
-  // Local DB always at top if relevant
   const localMatches = searchLocal(query)
   const localSeen = new Set(merged.map(r => r.name.toLowerCase()))
   const combined = [
     ...localMatches.filter(f => !localSeen.has(f.name.toLowerCase())),
     ...merged,
   ]
-
-  // Re-rank everything by query relevance
-  combined.sort((a, b) => {
-    const sa = a._local ? matchScore(a.name, q) + 50 : matchScore(a.name, q)
-    const sb = b._local ? matchScore(b.name, q) + 50 : matchScore(b.name, q)
+  combined.sort((a,b) => {
+    const sa = a._local ? matchScore(a.name,q)+50 : matchScore(a.name,q)
+    const sb = b._local ? matchScore(b.name,q)+50 : matchScore(b.name,q)
     return sb - sa
   })
-
   return combined
 }
 
 // ── Barcode Scanner ────────────────────────────
 let _pScanStream = null, _pScanDetector = null, _pScanRAF = null, _pScanActive = false
 
+function openBarcodeManualEntry() {
+  // Fallback for iOS / browsers without BarcodeDetector
+  const el = document.getElementById('plan-search-results')
+  el.innerHTML = `
+    <div style="padding:4px 0 20px;">
+      <p style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;color:#484752;margin-bottom:10px;">BARCODE EINGEBEN</p>
+      <p style="font-size:12px;color:#757481;margin-bottom:14px;line-height:1.5;">Barcode-Nummer vom Produkt abtippen (EAN-13, z.B. 4001686307854)</p>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <input type="text" inputmode="numeric" id="manual-barcode-input"
+          placeholder="4 001686 307854"
+          style="flex:1;background:rgba(13,13,23,0.9);border:1.5px solid rgba(72,71,82,0.4);border-radius:14px;color:#e4e1ef;font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;padding:13px 14px;outline:none;min-width:0;"
+          onkeydown="if(event.key==='Enter'){event.target.blur();lookupManualBarcode()}">
+        <button onclick="lookupManualBarcode()" id="manual-barcode-btn"
+          style="width:50px;height:50px;border-radius:14px;background:linear-gradient(135deg,#ffc56c,#cb9743);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+          <span class="material-symbols-outlined" style="font-size:22px;color:#321f00;">search</span>
+        </button>
+      </div>
+      <p style="font-size:10px;color:#2e2e3a;margin-top:10px;">Oder such einfach nach dem Produktnamen oben ↑</p>
+    </div>`
+  document.getElementById('plan-search-input').value = ''
+  setTimeout(() => document.getElementById('manual-barcode-input')?.focus(), 100)
+}
+
+async function lookupManualBarcode() {
+  const inp = document.getElementById('manual-barcode-input')
+  const btn = document.getElementById('manual-barcode-btn')
+  if (!inp) return
+  const code = inp.value.replace(/\s/g,'').trim()
+  if (!code) return
+  inp.disabled = true
+  if (btn) btn.innerHTML = '<div style="width:20px;height:20px;border:2px solid rgba(50,31,0,0.3);border-top-color:#321f00;border-radius:50%;animation:spin .7s linear infinite;"></div>'
+  await handlePlanBarcode(code)
+  if (inp) inp.disabled = false
+  if (btn) btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:22px;color:#321f00;">search</span>'
+}
+
 async function openPlanScanner() {
   if (!('BarcodeDetector' in window)) {
-    showToast('Scanner nicht verfügbar — bitte Chrome auf Android verwenden')
+    openBarcodeManualEntry()
     return
   }
   try {
     _pScanDetector = new BarcodeDetector({ formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39'] })
-  } catch(e) { showToast('Scanner konnte nicht gestartet werden'); return }
+  } catch(e) { openBarcodeManualEntry(); return }
   try {
     _pScanStream = await navigator.mediaDevices.getUserMedia({
       video:{ facingMode:'environment', width:{ideal:1280}, height:{ideal:720} }
@@ -1223,11 +1292,19 @@ async function handlePlanBarcode(code) {
     }
   } catch(e) {}
 
-  document.getElementById('plan-scanner-status').textContent = '❌ Produkt nicht gefunden'
-  setTimeout(() => {
-    _pScanActive = true
-    scanPlanFrame(document.getElementById('plan-scanner-video'))
-  }, 2000)
+  // Scanner overlay still open → show status and retry
+  const statusEl = document.getElementById('plan-scanner-status')
+  if (statusEl && document.getElementById('plan-scanner-overlay').style.display !== 'none') {
+    statusEl.textContent = '❌ Produkt nicht gefunden'
+    setTimeout(() => {
+      _pScanActive = true
+      scanPlanFrame(document.getElementById('plan-scanner-video'))
+    }, 2000)
+  } else {
+    // Manual entry path
+    showToast('Barcode nicht gefunden — bitte Produktnamen suchen')
+    showRecentFoods()
+  }
 }
 
 function openPlanMenge(food) {
@@ -1256,14 +1333,40 @@ function showRecentFoods() {
   try {
     _recentFoods = JSON.parse(localStorage.getItem('90tc_recent_plan_foods')||'[]')
   } catch(e) { _recentFoods = [] }
+
+  const m = activeMeal ? MEAL_META[activeMeal] : null
+  const hint = m ? `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px 10px;border-radius:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(72,71,82,0.2);margin-bottom:14px;">
+    <span style="font-size:22px;">${m.emoji}</span>
+    <div>
+      <div style="font-size:12px;font-weight:700;color:#aca9b7;">${m.hint}</div>
+    </div>
+  </div>` : ''
+
+  // Meal-specific suggestions as tap chips
+  const suggestions = m?.suggest || []
+  const suggestHtml = suggestions.length ? (() => {
+    const chips = suggestions.map(name => {
+      const food = LOCAL_FOODS.find(f => f.name === name)
+      if (!food) return ''
+      return `<button onclick="openPlanMenge(LOCAL_FOODS.find(f=>f.name==='${name.replace(/'/g,"\\'")}'))"
+        style="padding:8px 14px;border-radius:50px;border:1.5px solid rgba(72,71,82,0.3);background:rgba(18,18,26,0.8);color:#aca9b7;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s;display:flex;align-items:center;gap:6px;flex-shrink:0;">
+        <span style="font-size:11px;font-weight:700;color:#ffc56c;">${food.kcal100} kcal</span>
+        ${food.name}
+      </button>`
+    }).filter(Boolean).join('')
+    return `<p style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;color:#484752;margin-bottom:8px;">VORSCHLÄGE FÜR ${(m?.label||'').toUpperCase()}</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">${chips}</div>`
+  })() : ''
+
   if (!_recentFoods.length) {
-    el.innerHTML = `<div style="text-align:center;padding:40px 0 20px;">
-      <span class="material-symbols-outlined" style="font-size:48px;color:#1a1a24;display:block;margin-bottom:12px;font-variation-settings:'FILL' 1;">restaurant</span>
-      <p style="color:#484752;font-size:13px;line-height:1.6;">Suche ein Lebensmittel<br>oder scanne einen Barcode</p>
-    </div>`
+    el.innerHTML = hint + suggestHtml +
+      `<p style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;color:#484752;margin:4px 0 8px;">ODER SUCHEN</p>
+       <div style="text-align:center;padding:16px 0 4px;color:#2e2e3a;font-size:12px;">Tippe oben oder scanne einen Barcode</div>`
     return
   }
-  el.innerHTML = `<p style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;color:#484752;margin-bottom:10px;">ZULETZT HINZUGEFÜGT</p>` +
+
+  el.innerHTML = hint + suggestHtml +
+    `<p style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;color:#484752;margin-bottom:10px;">ZULETZT VERWENDET</p>` +
     _recentFoods.map((p,i) => renderPlanResultRow(p, i, 'recent')).join('')
 }
 
