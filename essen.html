@@ -596,6 +596,50 @@ function searchLocal(query) {
   ).map(f => ({ ...f, barcode: '', _local: true }))
 }
 
+// ── Edamam Food Database ──────────────────────────────
+const EDAMAM_APP_ID  = '76b14197'
+const EDAMAM_APP_KEY = '665adfdf09e2e03e0e653799976b01b8'
+
+async function searchEdamam(query) {
+  try {
+    const ctrl = new AbortController()
+    const t = setTimeout(() => ctrl.abort(), 7000)
+    const r = await fetch('https://api.edamam.com/api/food-database/v2/parser?' + new URLSearchParams({
+      ingr: query,
+      app_id: EDAMAM_APP_ID,
+      app_key: EDAMAM_APP_KEY,
+      'nutrition-type': 'logging',
+    }), { signal: ctrl.signal })
+    clearTimeout(t)
+    if (!r.ok) return []
+    const d = await r.json()
+    const q = query.trim().toLowerCase()
+    return (d.hints || [])
+      .map(h => parseEdamamFood(h.food))
+      .filter(f => f && f.name && f.name !== '—' && f.kcal100 != null)
+      .sort((a, b) => {
+        const na = a.name.toLowerCase(), nb = b.name.toLowerCase()
+        if (na.startsWith(q) !== nb.startsWith(q)) return na.startsWith(q) ? -1 : 1
+        return 0
+      })
+  } catch(e) { return [] }
+}
+
+function parseEdamamFood(food) {
+  if (!food) return null
+  const n = food.nutrients || {}
+  return {
+    name: food.label || '—',
+    brand: food.brand || '',
+    barcode: '',
+    image: food.image || null,
+    kcal100:    n.ENERC_KCAL != null ? Math.round(n.ENERC_KCAL)        : null,
+    protein100: n.PROCNT     != null ? Math.round(n.PROCNT * 10) / 10  : null,
+    fett100:    n.FAT        != null ? Math.round(n.FAT    * 10) / 10  : null,
+    carbs100:   n.CHOCDF     != null ? Math.round(n.CHOCDF * 10) / 10  : null,
+  }
+}
+
 // ── FatSecret ─────────────────────────────────────────
 let _fsToken = null, _fsTokenExp = 0
 
@@ -684,7 +728,8 @@ async function searchProducts(query) {
       })
   }
 
-  // Both start in parallel immediately
+  // Alle drei APIs parallel starten
+  const edamamPromise = searchEdamam(query)
   const fsPromise = (async () => {
     try {
       const d = await fsGet({ method:'foods.search', search_expression:query, max_results:20, page_number:0 })
@@ -713,24 +758,32 @@ async function searchProducts(query) {
     return []
   })()
 
-  // Wait for OpenFoodFacts — it's fast and has good German coverage
-  const offResults = await offPromise
+  // Edamam ist primäre Quelle — auf sie warten
+  const edamamResults = await edamamPromise
 
-  // If OFF has solid results, return immediately (don't wait for FS)
-  if (offResults.length >= 5) return offResults
+  // Wenn Edamam gute Ergebnisse hat → sofort zurückgeben (+ lokale oben)
+  if (edamamResults.length >= 3) {
+    const localMatches = searchLocal(query)
+    const edSeen = new Set(edamamResults.map(r => r.name.toLowerCase()))
+    const newLocals = localMatches.filter(f => !edSeen.has(f.name.toLowerCase()))
+    return [...newLocals, ...edamamResults]
+  }
 
-  // OFF returned little/nothing — wait up to 3s more for FatSecret (already running)
-  const fsResults = await Promise.race([fsPromise, new Promise(r => setTimeout(() => r([]), 3000))])
+  // Edamam hat wenig → OFF und FS als Fallback abwarten
+  const [offResults, fsResults] = await Promise.all([
+    offPromise,
+    Promise.race([fsPromise, new Promise(r => setTimeout(() => r([]), 3000))]),
+  ])
 
-  // Merge: OFF first, FS fills gaps
+  // Merge: Edamam + OFF + FS, Duplikate raus
   const seen = new Set()
   const merged = []
-  for (const r of [...offResults, ...fsResults]) {
+  for (const r of [...edamamResults, ...offResults, ...fsResults]) {
     const key = r.name.toLowerCase()
     if (!seen.has(key)) { seen.add(key); merged.push(r) }
   }
 
-  // Prepend local DB matches (instant, always available)
+  // Lokale DB immer oben
   const localMatches = searchLocal(query)
   const finalSeen = new Set(merged.map(r => r.name.toLowerCase()))
   const newLocals = localMatches.filter(f => !finalSeen.has(f.name.toLowerCase()))
