@@ -766,10 +766,31 @@ function closeSearch() {
   activeMeal = null
 }
 
+let _searchDebounce = null
+
 function onPlanSearchInput(e) {
-  const hasVal = e.target.value.trim().length > 0
-  document.getElementById('plan-search-clear').style.display = hasVal ? 'flex' : 'none'
-  if (!hasVal) showRecentFoods()
+  const val = e.target.value.trim()
+  document.getElementById('plan-search-clear').style.display = val ? 'flex' : 'none'
+
+  clearTimeout(_searchDebounce)
+
+  if (!val) { showRecentFoods(); return }
+
+  // Instant: show local results immediately
+  const localHits = searchLocal(val)
+  if (localHits.length) {
+    _srPlan = localHits
+    const el = document.getElementById('plan-search-results')
+    el.innerHTML = `<p style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;color:#484752;margin-bottom:8px;">SOFORT-ERGEBNISSE</p>` +
+      localHits.map((p,i) => renderPlanResultRow(p, i, 'search')).join('') +
+      `<div style="display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(72,71,82,0.15);">
+        <div style="width:14px;height:14px;border:2px solid #2e2e3a;border-top-color:#ffc56c;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;"></div>
+        <span style="font-size:11px;color:#484752;">Weitere Ergebnisse werden geladen…</span>
+      </div>`
+  }
+
+  // Debounced: fire full API search after pause in typing
+  _searchDebounce = setTimeout(() => doPlanSearch(), val.length >= 3 ? 350 : 600)
 }
 
 function clearPlanSearch() {
@@ -866,7 +887,10 @@ function confirmAdd() {
 }
 
 // Search input Enter key
-document.getElementById('plan-search-input').addEventListener('keydown', e => { if (e.key === 'Enter') { e.target.blur(); doPlanSearch() } })
+// Enter fires search immediately, bypassing debounce
+document.getElementById('plan-search-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { clearTimeout(_searchDebounce); e.target.blur(); doPlanSearch() }
+})
 
 // ── Lokale Lebensmitteldatenbank ────────────────
 const LOCAL_FOODS = [
@@ -894,10 +918,26 @@ const LOCAL_FOODS = [
   { name:'Spinat',               brand:'Generisch', kcal100:23,  protein100:2.9,  fett100:0.4,  carbs100:3.6,  image:null, aliases:['blattspinat'] },
   { name:'Banane',               brand:'Generisch', kcal100:89,  protein100:1.1,  fett100:0.3,  carbs100:23.0, image:null, aliases:['banana'] },
   { name:'Apfel',                brand:'Generisch', kcal100:52,  protein100:0.3,  fett100:0.2,  carbs100:14.0, image:null, aliases:['apple'] },
+  { name:'Erdbeeren',            brand:'Generisch', kcal100:32,  protein100:0.7,  fett100:0.4,  carbs100:7.7,  image:null, aliases:['erdbeere','strawberry'] },
+  { name:'Blaubeeren',           brand:'Generisch', kcal100:57,  protein100:0.7,  fett100:0.3,  carbs100:14.0, image:null, aliases:['heidelbeeren','blueberry','beeren'] },
   { name:'Mandeln',              brand:'Generisch', kcal100:579, protein100:21.0, fett100:50.0, carbs100:22.0, image:null, aliases:['almonds'] },
   { name:'Erdnussbutter',        brand:'Generisch', kcal100:588, protein100:25.0, fett100:50.0, carbs100:20.0, image:null, aliases:['peanut butter','erdnussmus'] },
   { name:'Avocado',              brand:'Generisch', kcal100:160, protein100:2.0,  fett100:15.0, carbs100:9.0,  image:null, aliases:[] },
   { name:'Olivenöl',             brand:'Generisch', kcal100:884, protein100:0.0,  fett100:100.0,carbs100:0.0,  image:null, aliases:['öl','olive oil'] },
+  { name:'Rapsöl',               brand:'Generisch', kcal100:884, protein100:0.0,  fett100:100.0,carbs100:0.0,  image:null, aliases:['canola','rapso'] },
+  { name:'Butter',               brand:'Generisch', kcal100:741, protein100:0.7,  fett100:81.0, carbs100:0.6,  image:null, aliases:[] },
+  { name:'Frischkäse',           brand:'Generisch', kcal100:143, protein100:6.0,  fett100:12.0, carbs100:3.0,  image:null, aliases:['cream cheese','frischkaese'] },
+  { name:'Zitronensaft',         brand:'Generisch', kcal100:22,  protein100:0.4,  fett100:0.2,  carbs100:6.5,  image:null, aliases:['lemon juice','zitrone','lemon'] },
+  { name:'Wasser',               brand:'Generisch', kcal100:0,   protein100:0.0,  fett100:0.0,  carbs100:0.0,  image:null, aliases:['mineralwasser','wasser still','wasser sprudel'] },
+  { name:'Kaffee (schwarz)',      brand:'Generisch', kcal100:2,   protein100:0.3,  fett100:0.0,  carbs100:0.3,  image:null, aliases:['kaffee','coffee'] },
+  { name:'Honig',                brand:'Generisch', kcal100:304, protein100:0.3,  fett100:0.0,  carbs100:82.0, image:null, aliases:['honey'] },
+  { name:'Hafermilch',           brand:'Generisch', kcal100:45,  protein100:1.0,  fett100:1.5,  carbs100:6.5,  image:null, aliases:['oat milk','oatmilk'] },
+  { name:'Mandelmilch',          brand:'Generisch', kcal100:24,  protein100:0.8,  fett100:1.4,  carbs100:2.5,  image:null, aliases:['almond milk'] },
+  { name:'Kichererbsen (Dose)',   brand:'Generisch', kcal100:139, protein100:7.2,  fett100:2.3,  carbs100:22.0, image:null, aliases:['chickpeas'] },
+  { name:'Rote Beete',           brand:'Generisch', kcal100:43,  protein100:1.6,  fett100:0.1,  carbs100:9.6,  image:null, aliases:['rote bete','beetroot','beet'] },
+  { name:'Tomaten',              brand:'Generisch', kcal100:18,  protein100:0.9,  fett100:0.2,  carbs100:3.9,  image:null, aliases:['tomate','tomato'] },
+  { name:'Zwiebel',              brand:'Generisch', kcal100:40,  protein100:1.1,  fett100:0.1,  carbs100:9.3,  image:null, aliases:['onion','zwiebeln'] },
+  { name:'Knoblauch',            brand:'Generisch', kcal100:149, protein100:6.4,  fett100:0.5,  carbs100:33.0, image:null, aliases:['garlic'] },
 ]
 
 function searchLocal(query) {
@@ -1009,26 +1049,32 @@ function parseOFFProduct(p) {
     fett100:n.fat_100g!=null?Math.round(n.fat_100g*10)/10:null, carbs100:n.carbohydrates_100g!=null?Math.round(n.carbohydrates_100g*10)/10:null }
 }
 
+// Relevance score: how well does this result match the query?
+function matchScore(name, q) {
+  const n = (name||'').toLowerCase()
+  if (n === q) return 100
+  if (n.startsWith(q)) return 80
+  if (n.includes(q)) return 60
+  // Partial word match
+  if (q.split(' ').every(w => n.includes(w))) return 40
+  return 10
+}
+
 async function searchProducts(query) {
   const q = query.trim().toLowerCase()
   const fields = 'product_name,product_name_de,generic_name,generic_name_de,brands,nutriments,image_small_url,code'
 
-  function rankOFF(prods) {
+  function parseOFFs(prods) {
     if (!Array.isArray(prods)) return []
     return prods
       .filter(p => p && (p.product_name||p.product_name_de||p.generic_name_de||p.generic_name))
       .map(parseOFFProduct)
-      .filter(p => p && p.name && p.name !== '—')
-      .sort((a,b) => {
-        const na=(a.name||'').toLowerCase(), nb=(b.name||'').toLowerCase()
-        const aS=na.startsWith(q), bS=nb.startsWith(q)
-        if(aS!==bS) return aS?-1:1
-        if(na.includes(q)!==nb.includes(q)) return na.includes(q)?-1:1
-        return 0
-      })
+      .filter(p => p && p.name && p.name !== '—' && p.kcal100 != null)
   }
 
+  // Launch ALL sources in parallel — no early return
   const edamamPromise = searchEdamam(query)
+
   const fsPromise = (async () => {
     try {
       const d = await fsGet({ method:'foods.search', search_expression:query, max_results:20, page_number:0 })
@@ -1042,38 +1088,50 @@ async function searchProducts(query) {
     for (const base of ['https://de.openfoodfacts.org','https://world.openfoodfacts.org']) {
       try {
         const ctrl = new AbortController()
-        const t = setTimeout(() => ctrl.abort(), 8000)
-        const r = await fetch(`${base}/cgi/search.pl?` + new URLSearchParams({ search_terms:query, action:'process', json:'1', page_size:'40', fields }), { signal:ctrl.signal })
+        const t = setTimeout(() => ctrl.abort(), 7000)
+        const r = await fetch(`${base}/cgi/search.pl?` + new URLSearchParams({
+          search_terms:query, action:'process', json:'1', page_size:'50', fields
+        }), { signal:ctrl.signal })
         clearTimeout(t)
-        if (r.ok) { const d = await r.json(); const res = rankOFF(d.products||[]); if (res.length) return res }
+        if (r.ok) { const d = await r.json(); const res = parseOFFs(d.products||[]); if (res.length) return res }
       } catch(e) {}
     }
     return []
   })()
 
-  const edamamResults = await edamamPromise
-
-  if (edamamResults.length >= 3) {
-    const localMatches = searchLocal(query)
-    const edSeen = new Set(edamamResults.map(r => r.name.toLowerCase()))
-    return [...localMatches.filter(f => !edSeen.has(f.name.toLowerCase())), ...edamamResults]
-  }
-
-  const [offResults, fsResults] = await Promise.all([
+  // Wait for all (FS capped at 4s to not block)
+  const [edamamResults, offResults, fsResults] = await Promise.all([
+    edamamPromise,
     offPromise,
-    Promise.race([fsPromise, new Promise(r => setTimeout(() => r([]), 3000))]),
+    Promise.race([fsPromise, new Promise(r => setTimeout(() => r([]), 4000))]),
   ])
 
+  // Merge & deduplicate — OFF prioritized for German terms
   const seen = new Set()
   const merged = []
-  for (const r of [...edamamResults, ...offResults, ...fsResults]) {
-    const key = r.name.toLowerCase()
-    if (!seen.has(key)) { seen.add(key); merged.push(r) }
+  // Interleave: prefer higher-scoring sources
+  const allSources = [...offResults, ...edamamResults, ...fsResults]
+  for (const item of allSources) {
+    const key = item.name.toLowerCase()
+    if (!seen.has(key)) { seen.add(key); merged.push(item) }
   }
 
+  // Local DB always at top if relevant
   const localMatches = searchLocal(query)
-  const finalSeen = new Set(merged.map(r => r.name.toLowerCase()))
-  return [...localMatches.filter(f => !finalSeen.has(f.name.toLowerCase())), ...merged]
+  const localSeen = new Set(merged.map(r => r.name.toLowerCase()))
+  const combined = [
+    ...localMatches.filter(f => !localSeen.has(f.name.toLowerCase())),
+    ...merged,
+  ]
+
+  // Re-rank everything by query relevance
+  combined.sort((a, b) => {
+    const sa = a._local ? matchScore(a.name, q) + 50 : matchScore(a.name, q)
+    const sb = b._local ? matchScore(b.name, q) + 50 : matchScore(b.name, q)
+    return sb - sa
+  })
+
+  return combined
 }
 
 // ── Barcode Scanner ────────────────────────────
@@ -1081,17 +1139,17 @@ let _pScanStream = null, _pScanDetector = null, _pScanRAF = null, _pScanActive =
 
 async function openPlanScanner() {
   if (!('BarcodeDetector' in window)) {
-    alert('Barcode-Scanner wird in diesem Browser nicht unterstützt.\nBitte Chrome oder Safari 17+ verwenden.')
+    showToast('Scanner nicht verfügbar — bitte Chrome auf Android verwenden')
     return
   }
   try {
     _pScanDetector = new BarcodeDetector({ formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39'] })
-  } catch(e) { alert('Scanner nicht verfügbar.'); return }
+  } catch(e) { showToast('Scanner konnte nicht gestartet werden'); return }
   try {
     _pScanStream = await navigator.mediaDevices.getUserMedia({
       video:{ facingMode:'environment', width:{ideal:1280}, height:{ideal:720} }
     })
-  } catch(e) { alert('Kamera-Zugriff verweigert. Bitte in den Einstellungen erlauben.'); return }
+  } catch(e) { showToast('Kamerazugriff verweigert — bitte in Einstellungen erlauben'); return }
   const video = document.getElementById('plan-scanner-video')
   video.srcObject = _pScanStream
   document.getElementById('plan-scanner-overlay').style.display = 'flex'
