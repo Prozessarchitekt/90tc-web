@@ -651,7 +651,6 @@ async function searchEdamam(query) {
       ingr: query,
       app_id: EDAMAM_APP_ID,
       app_key: EDAMAM_APP_KEY,
-      'nutrition-type': 'logging',
     }), { signal: ctrl.signal })
     clearTimeout(t)
     if (!r.ok) return []
@@ -934,7 +933,7 @@ async function handleBarcode(code) {
     const ctrl = new AbortController()
     const t = setTimeout(() => ctrl.abort(), 7000)
     const r = await fetch('https://api.edamam.com/api/food-database/v2/parser?' + new URLSearchParams({
-      upc: code, app_id: EDAMAM_APP_ID, app_key: EDAMAM_APP_KEY, 'nutrition-type': 'logging'
+      upc: code, app_id: EDAMAM_APP_ID, app_key: EDAMAM_APP_KEY,
     }), { signal: ctrl.signal })
     clearTimeout(t)
     if (r.ok) {
