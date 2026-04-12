@@ -1159,9 +1159,11 @@ function renderPlanBanner(planId) {
 
 // ── Helpers ──────────────────────────────────────────────────────
 function calcWeek(startdatum) {
+  if (!startdatum) return 1;
   const start = new Date(startdatum);
   const now = new Date();
   const diffDays = Math.floor((now - start) / (1000 * 60 * 60 * 24));
+  if (diffDays < 0) return 1;
   return Math.min(12, Math.max(1, Math.floor(diffDays / 7) + 1));
 }
 
