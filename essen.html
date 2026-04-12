@@ -266,10 +266,26 @@ tailwind.config = {
 
   <div class="px-4 flex flex-col gap-3">
 
-  <!-- ── 3. TAGESSTART: Plan laden (wenn vorhanden + noch nix eingetragen) ── -->
+  <!-- ── 3. TAGESSTART: Plan laden / erstellen ── -->
   <div id="load-plan-section" style="display:none">
     <p class="font-label text-[9px] uppercase tracking-widest text-on-surface-variant font-bold mb-2 px-1">Tagesstart</p>
-    <button onclick="openPlanPicker()" class="w-full flex items-center justify-between px-5 py-4 rounded-[18px] border active:scale-[.98] transition-all" style="background:rgba(255,197,108,0.07);border-color:rgba(255,197,108,0.22);box-shadow:0 0 24px rgba(255,197,108,0.06);">
+
+    <!-- Kein Plan vorhanden → Ernährungsplan erstellen -->
+    <a id="btn-create-plan" href="ernaehrungsplan.html" class="w-full flex items-center justify-between px-5 py-4 rounded-[18px] border active:scale-[.98] transition-all" style="display:none;background:rgba(0,237,125,0.07);border-color:rgba(0,237,125,0.22);box-shadow:0 0 24px rgba(0,237,125,0.06);text-decoration:none;">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-[14px] flex items-center justify-center flex-shrink-0" style="background:rgba(0,237,125,0.15);border:1px solid rgba(0,237,125,0.25);">
+          <span class="material-symbols-outlined" style="font-size:20px;font-variation-settings:'FILL' 1;color:#00ed7d;">add_circle</span>
+        </div>
+        <div>
+          <div class="font-headline font-black italic uppercase text-sm" style="letter-spacing:-0.01em;color:#00ed7d;">Ernährungsplan erstellen</div>
+          <div class="font-label text-[9px] uppercase tracking-widest text-on-surface-variant">Standardtag festlegen für schnelles Eintragen</div>
+        </div>
+      </div>
+      <span class="material-symbols-outlined" style="font-size:20px;color:#00ed7d;">arrow_forward_ios</span>
+    </a>
+
+    <!-- Plan vorhanden → Standardtag laden -->
+    <button id="btn-load-plan" onclick="openPlanPicker()" class="w-full flex items-center justify-between px-5 py-4 rounded-[18px] border active:scale-[.98] transition-all" style="display:none;background:rgba(255,197,108,0.07);border-color:rgba(255,197,108,0.22);box-shadow:0 0 24px rgba(255,197,108,0.06);">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-[14px] flex items-center justify-center flex-shrink-0" style="background:rgba(255,197,108,0.15);border:1px solid rgba(255,197,108,0.25);">
           <span class="material-symbols-outlined text-primary" style="font-size:20px;font-variation-settings:'FILL' 1;">calendar_today</span>
@@ -1416,10 +1432,13 @@ async function init() {
   todayMeals = meals || []
   renderMeals()
 
-  // Show "Standardtag laden" if plan(s) exist and no meals logged yet today
+  // Tagesstart-Sektion: immer zeigen wenn noch nichts eingetragen
   const savedPlans = getPlans()
-  if (savedPlans.length > 0 && todayMeals.length === 0) {
+  if (todayMeals.length === 0) {
     document.getElementById('load-plan-section').style.display = 'block'
+    const hasPlans = savedPlans.length > 0
+    document.getElementById('btn-create-plan').style.display = hasPlans ? 'none' : 'flex'
+    document.getElementById('btn-load-plan').style.display   = hasPlans ? 'flex' : 'none'
     const lbl = document.getElementById('plan-count-label')
     if (lbl) lbl.textContent = savedPlans.length === 1
       ? savedPlans[0].name
