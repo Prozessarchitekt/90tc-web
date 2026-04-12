@@ -387,9 +387,16 @@ async function init() {
   document.getElementById('s-training').textContent = trainDays
   document.getElementById('s-perfect').textContent  = perfectDays
 
-  // Weight Chart
+  // Weight Chart — include profile starting weight as first data point
   const weightData = (entries||[]).filter(e => e.gewicht_kg)
-  if (weightData.length > 1) {
+  // Prepend profile.gewicht_kg as "Start" if no daily entry exists for the start date
+  if (profile.gewicht_kg && profile.startdatum) {
+    const hasStartEntry = weightData.some(e => e.datum === profile.startdatum)
+    if (!hasStartEntry) {
+      weightData.unshift({ datum: profile.startdatum, gewicht_kg: profile.gewicht_kg, _synthetic: true })
+    }
+  }
+  if (weightData.length >= 1) {
     const labels  = weightData.map(e => { const d = new Date(e.datum+'T00:00:00'); return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}) })
     const weights = weightData.map(e => e.gewicht_kg)
     const avg     = weights.map((_, i) => { const slice = weights.slice(Math.max(0,i-6),i+1); return parseFloat((slice.reduce((s,v)=>s+v,0)/slice.length).toFixed(1)) })
