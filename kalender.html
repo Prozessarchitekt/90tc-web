@@ -212,6 +212,7 @@ tailwind.config = {
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js"></script>
+<script src="js/gamification.js"></script>
 <script src="js/auth.js"></script>
 <script>
 let _entries = {}   // date → entry row
@@ -263,8 +264,15 @@ function openDayDetail(tagNr, dateStr) {
 
 async function init() {
   const ctx = await requireProfile()
-  if (!ctx) return
+  if (!ctx) { document.getElementById('splash').style.display = 'none'; return }
   const { user, profile } = ctx
+
+  if (!profile.startdatum) {
+    document.getElementById('splash').style.display = 'none'
+    document.getElementById('main').style.display = 'block'
+    document.getElementById('cal-grid').innerHTML = '<p style="color:#757481;font-size:13px;grid-column:1/-1;padding:20px 0;">Starte erst die Challenge um den Kalender zu nutzen.</p>'
+    return
+  }
 
   _startDate = profile.startdatum
   _todayStr = new Date().toISOString().split('T')[0]
