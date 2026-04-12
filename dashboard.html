@@ -335,6 +335,17 @@
     </div>
   </div>
 
+  <!-- Weekly Photo Reminder -->
+  <a href="fotos.html" id="foto-rem" style="display:none" class="flex items-center gap-3 rounded-[16px] px-4 py-3 text-on-surface"
+     style="background:rgba(255,197,108,0.07);border:1px solid rgba(255,197,108,0.22);">
+    <span style="font-size:20px;">📸</span>
+    <div class="flex-1">
+      <div class="font-headline font-black text-xs uppercase" id="foto-rem-title">Wochenfoto</div>
+      <div class="text-on-surface-variant text-[10px]" id="foto-rem-sub">Halte deinen Fortschritt fest</div>
+    </div>
+    <span class="material-symbols-outlined text-primary text-lg">chevron_right</span>
+  </a>
+
   <!-- Weekly Reminder -->
   <a href="maße.html" id="weekly-rem" style="display:none" class="flex items-center gap-3 bg-primary/10 border border-primary/20 rounded-[16px] px-4 py-3 text-on-surface">
     <span class="text-lg">📏</span>
@@ -604,13 +615,20 @@ async function init() {
     if (typeof countUp === 'function') countUp(streakEl, profile.streak_aktuell || 0, 800)
   }, 300)
 
-  // Weekly reminder + Wochenrückblick
+  // Weekly reminder + Wochenrückblick + Foto-Reminder
   const wocheNr = Math.ceil(dayNr / 7)
   if (wocheNr > 1) {
     const { data: wc } = await sb.from('weekly_checks')
       .select('id').eq('user_id', user.id).eq('woche_nr', wocheNr).maybeSingle()
     if (!wc) document.getElementById('weekly-rem').style.display = 'flex'
     maybeShowWochenrueckblick(user, profile, wocheNr)
+  }
+  // Photo reminder: show from day 8 if current week photos not yet taken
+  if (dayNr >= 8 && !localStorage.getItem('90tc_foto_woche_' + wocheNr)) {
+    const tagStart = (wocheNr - 1) * 7 + 1
+    document.getElementById('foto-rem-title').textContent = `Woche ${wocheNr} · Tag ${tagStart} — Foto`
+    document.getElementById('foto-rem-sub').textContent = 'Gleiche Pose, gleiches Licht — jetzt aufnehmen'
+    document.getElementById('foto-rem').style.display = 'flex'
   }
 
   // Load today data in parallel

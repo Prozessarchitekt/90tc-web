@@ -260,6 +260,19 @@ tailwind.config = {
       </div>
     </div>
 
+    <!-- ── Wochenfoto Reminder ── -->
+    <div id="foto-reminder" style="display:none;
+      background:rgba(255,197,108,0.07);border:1px solid rgba(255,197,108,0.25);
+      border-radius:18px;padding:14px 16px;display:none;align-items:center;gap:12px;">
+      <span style="font-size:22px;flex-shrink:0;">📸</span>
+      <div style="flex:1;">
+        <div class="font-headline" style="font-size:13px;font-weight:800;color:#ffc56c;text-transform:uppercase;">Wochenfoto ausstehend</div>
+        <div id="foto-reminder-sub" style="font-size:11px;color:#757481;margin-top:2px;">Halte deinen Fortschritt fest — gleiche Pose, gleiches Licht.</div>
+      </div>
+      <button onclick="document.getElementById('foto-reminder').style.display='none'"
+        style="background:none;border:none;color:#757481;font-size:16px;cursor:pointer;padding:4px;">✕</button>
+    </div>
+
     <!-- ── VERGLEICH ── -->
     <div id="compare-section" style="display:none" class="flex flex-col gap-3">
 
@@ -406,6 +419,9 @@ let photoMap = {}
 
 const WINKEL_LABELS = { vorne: 'Vorne', seite: 'Seite', hinten: 'Hinten' }
 
+// Returns the first day number of a given week (woche 1 = Tag 1, woche 2 = Tag 8 …)
+function wocheToTag(woche) { return (woche - 1) * 7 + 1 }
+
 let toastTimer
 function showToast(msg) {
   const el = document.getElementById('toast')
@@ -486,7 +502,11 @@ async function uploadFoto(input, winkel) {
   if (!photoMap[currentWoche]) photoMap[currentWoche] = {}
   photoMap[currentWoche][winkel] = { url }
 
+  // Mark this week's photos as taken in localStorage (for dashboard reminder)
+  localStorage.setItem('90tc_foto_woche_' + currentWoche, '1')
+
   renderSlot(winkel, url)
+  updateFotoReminderBanner()
   showToast('Foto gespeichert 📸')
   input.value = ''
   loadComparison()
@@ -496,11 +516,12 @@ function renderSlot(winkel, url) {
   const slot = document.getElementById('slot-' + winkel)
   if (!slot) return
   const icons = { vorne: 'person', seite: 'accessibility_new', hinten: 'directions_walk' }
+  const tagLabel = `TAG ${wocheToTag(currentWoche)}`
   if (url) {
     slot.innerHTML = `
       <img src="${url}" alt="${winkel}">
       <div class="foto-overlay">
-        <span class="foto-overlay-label">${WINKEL_LABELS[winkel] || winkel}</span>
+        <span class="foto-overlay-label">${tagLabel}</span>
         <span class="foto-delete-btn" onclick="deleteFoto(event,'${winkel}')">🗑️</span>
       </div>`
   } else {
@@ -569,8 +590,8 @@ function loadComparison() {
         </div>
       </div>
       <div class="compare-slider-labels">
-        <span>Woche ${refWeek}</span>
-        <span>Woche ${currentWoche}</span>
+        <span>Tag ${wocheToTag(refWeek)}</span>
+        <span>Tag ${wocheToTag(currentWoche)}</span>
       </div>
     </div>`
 
@@ -609,9 +630,11 @@ async function init() {
   const dayNr = calcDayNr(currentProfile.startdatum)
   currentWoche = Math.min(13, Math.max(1, Math.ceil((dayNr || 1) / 7)))
 
-  document.getElementById('page-sub').textContent = dayNr > 0 ? `WOCHE ${currentWoche} · TAG ${dayNr}` : 'VORBEREITUNG'
-  document.getElementById('upload-title').textContent = `WOCHE ${currentWoche} · FOTOS HOCHLADEN`
-  document.getElementById('topbar-info').textContent = dayNr > 0 ? `WOCHE ${currentWoche}` : 'VORBEREITUNG'
+  const tagStart = wocheToTag(currentWoche)
+  const tagEnd   = tagStart + 6
+  document.getElementById('page-sub').textContent = dayNr > 0 ? `WOCHE ${currentWoche} · TAG ${tagStart}–${tagEnd}` : 'VORBEREITUNG'
+  document.getElementById('upload-title').textContent = dayNr > 0 ? `WOCHE ${currentWoche} · TAG ${tagStart} · FOTOS` : 'WOCHE 1 · TAG 1 · FOTOS'
+  document.getElementById('topbar-info').textContent = dayNr > 0 ? `WOCHE ${currentWoche} · TAG ${tagStart}` : 'VORBEREITUNG'
 
   // Load all photos
   const { data: photos } = await sb.from('photos')
@@ -643,7 +666,7 @@ async function init() {
   for (const w of weeksWithPhotos) {
     const opt = document.createElement('option')
     opt.value = w
-    opt.textContent = `Woche ${w}`
+    opt.textContent = `Woche ${w} · Tag ${wocheToTag(w)}`
     opt.style.background = '#12121a'
     sel.appendChild(opt)
   }
@@ -655,8 +678,31 @@ async function init() {
     loadComparison()
   }
 
+  // Set localStorage flag if photos already exist for current week
+  if (photoMap[currentWoche] && Object.keys(photoMap[currentWoche]).length > 0) {
+    localStorage.setItem('90tc_foto_woche_' + currentWoche, '1')
+  }
+
+  updateFotoReminderBanner()
+
   document.getElementById('splash').style.display = 'none'
   document.getElementById('main').style.display = 'block'
+}
+
+function updateFotoReminderBanner() {
+  const banner = document.getElementById('foto-reminder')
+  if (!banner) return
+  const hasPhotos = photoMap[currentWoche] && Object.keys(photoMap[currentWoche]).length > 0
+  const dayNr = calcDayNr(currentProfile?.startdatum)
+  // Show reminder from week 2 onwards if no photos taken yet this week
+  if (!hasPhotos && dayNr >= 8) {
+    const tagStart = wocheToTag(currentWoche)
+    document.getElementById('foto-reminder-sub').textContent =
+      `Woche ${currentWoche} (Tag ${tagStart}) — gleiche Pose, gleiches Licht. Konstanz macht den Unterschied.`
+    banner.style.display = 'flex'
+  } else {
+    banner.style.display = 'none'
+  }
 }
 
 init()
