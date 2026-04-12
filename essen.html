@@ -344,8 +344,40 @@ tailwind.config = {
         <span class="material-symbols-outlined text-primary" style="font-size:21px;">arrow_forward</span>
       </button>
     </div>
+    <!-- Barcode Scanner Button -->
+    <button onclick="openScanner()" style="width:52px;height:52px;border-radius:16px;background:rgba(137,206,255,0.1);border:1.5px solid rgba(137,206,255,0.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;" class="active:scale-90">
+      <span class="material-symbols-outlined" style="font-size:22px;color:#89ceff;font-variation-settings:'FILL' 1">barcode_scanner</span>
+    </button>
   </div>
 </div>
+
+<!-- ── Barcode Scanner Overlay ── -->
+<div id="scanner-overlay" style="display:none;position:fixed;inset:0;z-index:2000;background:#000;flex-direction:column;">
+  <!-- Close -->
+  <button onclick="closeScanner()" style="position:absolute;top:calc(16px + env(safe-area-inset-top));right:16px;z-index:10;width:44px;height:44px;border-radius:14px;background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;">
+    <span class="material-symbols-outlined" style="color:#fff;font-size:22px;">close</span>
+  </button>
+  <!-- Video -->
+  <video id="scanner-video" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover;"></video>
+  <!-- Viewfinder -->
+  <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;">
+    <div style="width:80%;max-width:320px;height:130px;position:relative;">
+      <!-- Corner markers -->
+      <div style="position:absolute;top:0;left:0;width:24px;height:24px;border-top:3px solid #89ceff;border-left:3px solid #89ceff;border-radius:4px 0 0 0;"></div>
+      <div style="position:absolute;top:0;right:0;width:24px;height:24px;border-top:3px solid #89ceff;border-right:3px solid #89ceff;border-radius:0 4px 0 0;"></div>
+      <div style="position:absolute;bottom:0;left:0;width:24px;height:24px;border-bottom:3px solid #89ceff;border-left:3px solid #89ceff;border-radius:0 0 0 4px;"></div>
+      <div style="position:absolute;bottom:0;right:0;width:24px;height:24px;border-bottom:3px solid #89ceff;border-right:3px solid #89ceff;border-radius:0 0 4px 0;"></div>
+      <!-- Scan line -->
+      <div id="scan-line" style="position:absolute;left:4px;right:4px;height:2px;background:linear-gradient(90deg,transparent,#89ceff,transparent);animation:scanline 2s ease-in-out infinite;top:50%;"></div>
+    </div>
+    <p style="position:absolute;bottom:30%;color:rgba(255,255,255,0.6);font-size:13px;font-family:'Inter',sans-serif;">Barcode in den Rahmen halten</p>
+  </div>
+  <!-- Status -->
+  <div id="scanner-status" style="position:absolute;bottom:calc(40px + env(safe-area-inset-bottom));left:0;right:0;text-align:center;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:rgba(255,255,255,0.5);"></div>
+</div>
+<style>
+@keyframes scanline { 0%,100%{opacity:0.4;transform:translateY(-30px)} 50%{opacity:1;transform:translateY(30px)} }
+</style>
 
 <!-- ── Bottom Nav (Split Island) ── -->
 <div style="position:fixed;bottom:calc(16px + env(safe-area-inset-bottom));left:12px;right:12px;z-index:50;display:flex;align-items:flex-end;justify-content:space-between;gap:10px;pointer-events:none;">
@@ -828,6 +860,92 @@ function parseOFFProduct(p) {
     fett100: n.fat_100g != null ? Math.round(n.fat_100g*10)/10 : null,
     carbs100: n.carbohydrates_100g != null ? Math.round(n.carbohydrates_100g*10)/10 : null
   }
+}
+
+// ── Search ─────────────────────────────────────────────
+// ── Barcode Scanner ────────────────────────────────────
+let _scannerStream = null
+let _scannerDetector = null
+let _scannerRAF = null
+let _scannerActive = false
+
+async function openScanner() {
+  if (!('BarcodeDetector' in window)) {
+    alert('Barcode-Scanner wird in diesem Browser nicht unterstützt.\nBitte Chrome oder Safari 17+ verwenden.')
+    return
+  }
+  try {
+    _scannerDetector = new BarcodeDetector({ formats: ['ean_13','ean_8','upc_a','upc_e','code_128','code_39'] })
+  } catch(e) {
+    alert('Barcode-Scanner nicht verfügbar.'); return
+  }
+  try {
+    _scannerStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+    })
+  } catch(e) {
+    alert('Kamera-Zugriff verweigert. Bitte in den Einstellungen erlauben.'); return
+  }
+  const video = document.getElementById('scanner-video')
+  video.srcObject = _scannerStream
+  document.getElementById('scanner-overlay').style.display = 'flex'
+  document.getElementById('scanner-status').textContent = ''
+  _scannerActive = true
+  scanFrame(video)
+}
+
+async function scanFrame(video) {
+  if (!_scannerActive) return
+  try {
+    const barcodes = await _scannerDetector.detect(video)
+    if (barcodes.length > 0) {
+      const code = barcodes[0].rawValue
+      _scannerActive = false
+      document.getElementById('scanner-status').textContent = '🔍 Produkt wird gesucht…'
+      await handleBarcode(code)
+      return
+    }
+  } catch(e) {}
+  _scannerRAF = requestAnimationFrame(() => scanFrame(video))
+}
+
+function closeScanner() {
+  _scannerActive = false
+  if (_scannerRAF) cancelAnimationFrame(_scannerRAF)
+  if (_scannerStream) { _scannerStream.getTracks().forEach(t => t.stop()); _scannerStream = null }
+  document.getElementById('scanner-video').srcObject = null
+  document.getElementById('scanner-overlay').style.display = 'none'
+}
+
+async function handleBarcode(code) {
+  // Edamam UPC lookup (primär)
+  try {
+    const ctrl = new AbortController()
+    const t = setTimeout(() => ctrl.abort(), 7000)
+    const r = await fetch('https://api.edamam.com/api/food-database/v2/parser?' + new URLSearchParams({
+      upc: code, app_id: EDAMAM_APP_ID, app_key: EDAMAM_APP_KEY, 'nutrition-type': 'logging'
+    }), { signal: ctrl.signal })
+    clearTimeout(t)
+    if (r.ok) {
+      const d = await r.json()
+      const hints = d.hints || []
+      if (hints.length > 0) {
+        const food = parseEdamamFood(hints[0].food)
+        if (food?.kcal100 != null) { closeScanner(); showSheet(food); return }
+      }
+    }
+  } catch(e) {}
+
+  // FatSecret Barcode Fallback
+  const fsResult = await lookupBarcode(code)
+  if (fsResult) { closeScanner(); showSheet(fsResult); return }
+
+  // Nicht gefunden
+  document.getElementById('scanner-status').textContent = '❌ Produkt nicht gefunden'
+  setTimeout(() => {
+    _scannerActive = true
+    scanFrame(document.getElementById('scanner-video'))
+  }, 2000)
 }
 
 // ── Search ─────────────────────────────────────────────
