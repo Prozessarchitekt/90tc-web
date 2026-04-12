@@ -389,13 +389,23 @@ tailwind.config = {
       <input type="number" id="menge-val" value="100" min="1" max="9999" oninput="updateMengePreview()" style="padding-right:36px;">
       <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:11px;color:#757481;pointer-events:none">g</span>
     </div>
-    <div class="flex gap-2 flex-wrap mb-5">
+    <div class="flex gap-2 flex-wrap mb-2">
       <button class="menge-preset" onclick="setM(30)">30g</button>
       <button class="menge-preset" onclick="setM(50)">50g</button>
       <button class="menge-preset" onclick="setM(100)">100g</button>
       <button class="menge-preset" onclick="setM(150)">150g</button>
       <button class="menge-preset" onclick="setM(200)">200g</button>
       <button class="menge-preset" onclick="setM(300)">300g</button>
+    </div>
+    <div class="flex gap-2 flex-wrap mb-5">
+      <button class="menge-preset" onclick="setM(5)"   title="Teelöffel">1 TL</button>
+      <button class="menge-preset" onclick="setM(12)"  title="Esslöffel">1 EL</button>
+      <button class="menge-preset" onclick="setM(30)"  title="1 Scheibe">1 Scheibe</button>
+      <button class="menge-preset" onclick="setM(30)"  title="eine Handvoll">1 Handvoll</button>
+      <button class="menge-preset" onclick="setM(60)"  title="1 Ei">1 Ei</button>
+      <button class="menge-preset" onclick="setM(125)" title="1 Becher">1 Becher</button>
+      <button class="menge-preset" onclick="setM(200)" title="1 Glas">1 Glas</button>
+      <button class="menge-preset" onclick="setM(250)" title="1 Portion">1 Portion</button>
     </div>
     <!-- Calc preview -->
     <div class="flex gap-3 mb-5">
