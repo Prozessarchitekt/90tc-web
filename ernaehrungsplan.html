@@ -471,7 +471,12 @@ tailwind.config = {
   </div>
   <div id="plan-scanner-status" style="position:absolute;bottom:calc(44px + env(safe-area-inset-bottom));left:0;right:0;text-align:center;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:rgba(255,255,255,0.6);padding:0 20px;"></div>
 </div>
-<style>@keyframes scanline { 0%,100%{opacity:0.35;transform:translateY(-28px)} 50%{opacity:1;transform:translateY(28px)} }</style>
+<style>
+@keyframes scanline { 0%,100%{opacity:0.35;transform:translateY(-28px)} 50%{opacity:1;transform:translateY(28px)} }
+/* Strip html5-qrcode default UI so our overlay shows clean */
+#plan-qr-div section { padding:0!important; border:none!important; box-shadow:none!important; }
+#plan-qr-div #qr-shaded-region { border-color:rgba(137,206,255,0.6)!important; }
+</style>
 
 <div id="toast"></div>
 
@@ -1089,7 +1094,7 @@ async function searchProducts(query) {
     return prods
       .filter(p => p && (p.product_name||p.product_name_de||p.generic_name_de||p.generic_name))
       .map(parseOFFProduct)
-      .filter(p => p && p.name && p.name !== '—' && p.kcal100 != null)
+      .filter(p => p && p.name && p.name !== '—')  // don't require kcal — many German products lack it
   }
 
   // Start ALL sources in parallel immediately
@@ -1207,24 +1212,89 @@ async function lookupManualBarcode() {
 }
 
 async function openPlanScanner() {
-  if (!('BarcodeDetector' in window)) {
-    openBarcodeManualEntry()
-    return
+  if ('BarcodeDetector' in window) {
+    // Native path — Android Chrome
+    try {
+      _pScanDetector = new BarcodeDetector({ formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39'] })
+    } catch(e) { await _startFallbackScanner(); return }
+    try {
+      _pScanStream = await navigator.mediaDevices.getUserMedia({
+        video:{ facingMode:'environment', width:{ideal:1280}, height:{ideal:720} }
+      })
+    } catch(e) { showToast('Kamerazugriff verweigert'); return }
+    const video = document.getElementById('plan-scanner-video')
+    video.srcObject = _pScanStream
+    document.getElementById('plan-scanner-overlay').style.display = 'flex'
+    document.getElementById('plan-scanner-status').textContent = ''
+    _pScanActive = true
+    scanPlanFrame(video)
+  } else {
+    // iOS / Firefox / other — load html5-qrcode as universal fallback
+    await _startFallbackScanner()
   }
+}
+
+async function _startFallbackScanner() {
+  const overlay = document.getElementById('plan-scanner-overlay')
+  const statusEl = document.getElementById('plan-scanner-status')
+  overlay.style.display = 'flex'
+  statusEl.textContent = '⏳ Scanner wird geladen…'
+
+  // Lazy-load html5-qrcode (works on iOS Safari + Android + desktop)
+  if (!window.Html5Qrcode) {
+    try {
+      await new Promise((res, rej) => {
+        const s = document.createElement('script')
+        s.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js'
+        s.onload = res; s.onerror = rej
+        document.head.appendChild(s)
+      })
+    } catch(e) {
+      closePlanScanner()
+      openBarcodeManualEntry()
+      return
+    }
+  }
+
+  statusEl.textContent = ''
+
+  // Create/reuse container inside overlay
+  let qrDiv = document.getElementById('plan-qr-div')
+  if (!qrDiv) {
+    qrDiv = document.createElement('div')
+    qrDiv.id = 'plan-qr-div'
+    qrDiv.style.cssText = 'position:absolute;inset:0;z-index:1;overflow:hidden;'
+    overlay.insertBefore(qrDiv, overlay.firstChild)
+  }
+  qrDiv.innerHTML = ''
+  qrDiv.style.display = 'block'
+
   try {
-    _pScanDetector = new BarcodeDetector({ formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39'] })
-  } catch(e) { openBarcodeManualEntry(); return }
-  try {
-    _pScanStream = await navigator.mediaDevices.getUserMedia({
-      video:{ facingMode:'environment', width:{ideal:1280}, height:{ideal:720} }
-    })
-  } catch(e) { showToast('Kamerazugriff verweigert — bitte in Einstellungen erlauben'); return }
-  const video = document.getElementById('plan-scanner-video')
-  video.srcObject = _pScanStream
-  document.getElementById('plan-scanner-overlay').style.display = 'flex'
-  document.getElementById('plan-scanner-status').textContent = ''
-  _pScanActive = true
-  scanPlanFrame(video)
+    const scanner = new window.Html5Qrcode('plan-qr-div', { verbose: false })
+    window._pHtml5Scanner = scanner
+
+    await scanner.start(
+      { facingMode: 'environment' },
+      { fps: 10, qrbox: { width: 260, height: 100 }, aspectRatio: window.innerHeight / window.innerWidth },
+      (code) => {
+        scanner.stop().catch(() => {})
+        window._pHtml5Scanner = null
+        closePlanScanner()
+        handlePlanBarcode(code)
+      },
+      () => {} // per-frame errors — ignored
+    )
+
+    // Make video fill the overlay (html5-qrcode adds its own video element)
+    setTimeout(() => {
+      const v = qrDiv.querySelector('video')
+      if (v) v.style.cssText = 'width:100%!important;height:100%!important;object-fit:cover!important;position:absolute!important;inset:0!important;'
+    }, 500)
+
+  } catch(e) {
+    closePlanScanner()
+    openBarcodeManualEntry()
+  }
 }
 
 async function scanPlanFrame(video) {
@@ -1246,7 +1316,11 @@ function closePlanScanner() {
   _pScanActive = false
   if (_pScanRAF) cancelAnimationFrame(_pScanRAF)
   if (_pScanStream) { _pScanStream.getTracks().forEach(t => t.stop()); _pScanStream = null }
-  document.getElementById('plan-scanner-video').srcObject = null
+  if (window._pHtml5Scanner) { window._pHtml5Scanner.stop().catch(() => {}); window._pHtml5Scanner = null }
+  const video = document.getElementById('plan-scanner-video')
+  if (video?.srcObject) { try { video.srcObject.getTracks().forEach(t => t.stop()) } catch(e) {} video.srcObject = null }
+  const qrDiv = document.getElementById('plan-qr-div')
+  if (qrDiv) { qrDiv.style.display = 'none'; qrDiv.innerHTML = '' }
   document.getElementById('plan-scanner-overlay').style.display = 'none'
 }
 
