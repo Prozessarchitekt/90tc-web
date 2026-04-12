@@ -114,6 +114,46 @@
       content:''; position:absolute; right:0; top:0; bottom:0; width:12px;
       background:rgba(255,255,255,0.5); filter:blur(4px);
     }
+
+    /* ── Onboarding Wizard ── */
+    #wiz-overlay {
+      position:fixed; inset:0; z-index:600;
+      background:#03030A; overflow-y:auto; overscroll-behavior:none;
+    }
+    .wiz-card-item {
+      display:flex; align-items:flex-start; gap:16px;
+      padding:20px; border-radius:22px; cursor:pointer;
+      transition:transform .15s, box-shadow .2s;
+      -webkit-tap-highlight-color:transparent; text-decoration:none;
+    }
+    .wiz-card-item:active { transform:scale(0.97); }
+    .wiz-card-item.wc-pending {
+      background:rgba(255,197,108,0.04);
+      border:1px solid rgba(255,197,108,0.18);
+    }
+    .wiz-card-item.wc-done {
+      background:rgba(0,237,125,0.04);
+      border:1px solid rgba(0,237,125,0.22);
+    }
+    .wiz-emoji-badge {
+      width:48px; height:48px; border-radius:15px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:24px; flex-shrink:0; margin-top:2px;
+    }
+    .wc-pending .wiz-emoji-badge {
+      background:rgba(255,197,108,0.12); border:1px solid rgba(255,197,108,0.2);
+    }
+    .wc-done .wiz-emoji-badge {
+      background:rgba(0,237,125,0.1); border:1px solid rgba(0,237,125,0.2);
+    }
+    @keyframes wizSlideUp {
+      from { opacity:0; transform:translateY(24px); }
+      to   { opacity:1; transform:none; }
+    }
+    .wiz-card-item { animation:wizSlideUp .35s ease both; }
+    .wiz-card-item:nth-child(1) { animation-delay:.05s; }
+    .wiz-card-item:nth-child(2) { animation-delay:.12s; }
+    .wiz-card-item:nth-child(3) { animation-delay:.19s; }
   </style>
 </head>
 <body class="bg-background font-body text-on-surface selection:bg-primary/30 antialiased overflow-x-hidden">
@@ -347,6 +387,75 @@
   </div>
 </div>
 
+<!-- ── Onboarding Wizard Overlay ── -->
+<div id="wiz-overlay" style="display:none;">
+  <!-- BG glow -->
+  <div style="position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(ellipse at 65% 8%,rgba(255,197,108,0.2) 0%,transparent 52%),
+               radial-gradient(ellipse at 10% 88%,rgba(0,237,125,0.08) 0%,transparent 46%);"></div>
+  <div class="grainy-overlay" style="z-index:1;"></div>
+  <!-- Content -->
+  <div style="position:relative;z-index:2;max-width:440px;margin:0 auto;padding:0 22px;
+              display:flex;flex-direction:column;min-height:100dvh;
+              padding-bottom:max(52px,env(safe-area-inset-bottom));">
+
+    <!-- Top bar -->
+    <div style="padding-top:max(26px,env(safe-area-inset-top));padding-bottom:4px;
+                display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:7px;">
+        <span class="material-symbols-outlined" style="font-size:18px;color:#ffc56c;font-variation-settings:'FILL' 1">workspace_premium</span>
+        <span class="font-headline" style="font-size:14px;font-weight:900;color:#ffc56c;text-transform:uppercase;font-style:italic;letter-spacing:.06em;">90TC</span>
+      </div>
+      <button onclick="closeWizard()" style="background:none;border:none;color:#454450;font-size:12px;
+        cursor:pointer;padding:8px 0;font-family:Inter,sans-serif;letter-spacing:.03em;">
+        Überspringen
+      </button>
+    </div>
+
+    <!-- Hero intro -->
+    <div style="padding:30px 0 28px;">
+      <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.22em;
+                  color:rgba(255,197,108,.4);margin-bottom:12px;">SETUP-ASSISTENT · 3 SCHRITTE</div>
+      <h1 class="font-headline" style="font-size:clamp(2.1rem,9.5vw,2.8rem);font-weight:900;
+          font-style:italic;text-transform:uppercase;line-height:.92;color:#e4e1ef;margin-bottom:14px;">
+        Leg das<br><span style="color:#ffc56c;">Fundament.</span>
+      </h1>
+      <p style="font-size:13.5px;line-height:1.68;color:#636270;max-width:340px;">
+        Bevor du die Challenge offiziell startest, erledige diese 3 kurzen Schritte.
+        Sie machen den Unterschied zwischen einem guten Vorsatz&nbsp;—
+        und echten Ergebnissen.
+      </p>
+    </div>
+
+    <!-- Progress bar -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+      <div style="display:flex;gap:6px;flex:1;">
+        <div id="wdot0" style="height:4px;border-radius:99px;flex:1;background:rgba(255,255,255,.08);transition:background .4s;"></div>
+        <div id="wdot1" style="height:4px;border-radius:99px;flex:1;background:rgba(255,255,255,.08);transition:background .4s;"></div>
+        <div id="wdot2" style="height:4px;border-radius:99px;flex:1;background:rgba(255,255,255,.08);transition:background .4s;"></div>
+      </div>
+      <span id="wiz-count" style="font-size:11px;font-weight:700;color:#454450;white-space:nowrap;min-width:40px;text-align:right;">0 / 3</span>
+    </div>
+
+    <!-- Step cards (filled by JS) -->
+    <div id="wiz-cards" style="display:flex;flex-direction:column;gap:11px;margin-bottom:28px;"></div>
+
+    <!-- CTA -->
+    <div style="margin-top:auto;padding-top:12px;">
+      <button id="wiz-start-btn" onclick="startChallengeFromWizard()" disabled
+        style="width:100%;border-radius:18px;padding:18px;display:flex;align-items:center;
+               justify-content:center;gap:10px;cursor:not-allowed;transition:all .5s;
+               background:rgba(255,197,108,0.07);border:1px solid rgba(255,197,108,0.12);opacity:.38;">
+        <span class="material-symbols-outlined" style="font-size:22px;color:#ffc56c;font-variation-settings:'FILL' 1">rocket_launch</span>
+        <span class="font-headline" style="font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:#ffc56c;">Challenge starten 🔥</span>
+      </button>
+      <p id="wiz-hint" style="text-align:center;font-size:11px;color:#3a3945;margin-top:10px;line-height:1.5;padding-bottom:4px;">
+        Erst wenn alle 3 Schritte abgeschlossen sind<br>kannst du die Challenge offiziell starten.
+      </p>
+    </div>
+  </div>
+</div>
+
 </div><!-- #main -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -391,6 +500,8 @@ async function init() {
         if (q.author) document.getElementById('quote-author').textContent = '— ' + q.author
       }
     }
+    // Show setup wizard
+    await showWizardIfNeeded(user, profile)
     return
   }
 
@@ -511,6 +622,150 @@ async function init() {
   }
 }
 init()
+
+// ── Onboarding Wizard ────────────────────────────────────────────────────────
+const WIZ_STEPS = [
+  {
+    emoji: '🎯',
+    title: 'Ziel & Makros festlegen',
+    desc: 'Dein Kalorienziel ist das Fundament von allem. Ohne ein klares Ziel — kein messbarer Fortschritt. Wir berechnen dir deine individuellen Makros für Muskelaufbau oder Fettabbau.',
+    url: 'profil.html'
+  },
+  {
+    emoji: '📸',
+    title: 'Vor-Foto aufnehmen',
+    desc: 'Halte deinen Ausgangspunkt im Bild fest. In 90 Tagen wirst du dieses Foto nicht mehr wiedererkennen — und genau dann wirst du es nicht bereuen, es gemacht zu haben.',
+    url: 'fotos.html'
+  },
+  {
+    emoji: '🥗',
+    title: 'Ersten Ernährungsplan erstellen',
+    desc: 'Bau deinen Plan für heute. Auch ein grober Überblick reicht — er gibt dir Struktur, zeigt dir ob dein Ziel realistisch ist, und bringt dich direkt in die Handlung.',
+    url: 'ernaehrungsplan.html'
+  }
+]
+
+let _wizUser = null, _wizProfile = null
+
+function _checkPlanHasFoods() {
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i)
+      if (k && k.startsWith('90tc_plan_')) {
+        const plan = JSON.parse(localStorage.getItem(k) || '{}')
+        if (Object.values(plan).some(m => Array.isArray(m) && m.length > 0)) return true
+      }
+    }
+  } catch {}
+  return false
+}
+
+async function _getWizStatus(user, profile) {
+  const macrosDone = (profile.kalorien_ziel || 0) > 0
+
+  let photoDone = localStorage.getItem('90tc_vor_foto_done') === 'true'
+  if (!photoDone) {
+    try {
+      const { data } = await sb.from('photos').select('id').eq('user_id', user.id).limit(1)
+      photoDone = !!(data && data.length > 0)
+      if (photoDone) localStorage.setItem('90tc_vor_foto_done', 'true')
+    } catch {}
+  }
+
+  const planDone = _checkPlanHasFoods()
+  return [macrosDone, photoDone, planDone]
+}
+
+function _renderWizard(status) {
+  const doneCount = status.filter(Boolean).length
+  const cardsEl = document.getElementById('wiz-cards')
+  cardsEl.innerHTML = ''
+
+  WIZ_STEPS.forEach((step, i) => {
+    const done = status[i]
+    const card = document.createElement('div')
+    card.className = 'wiz-card-item ' + (done ? 'wc-done' : 'wc-pending')
+    card.onclick = () => { window.location.href = step.url }
+    card.innerHTML = `
+      <div class="wiz-emoji-badge">${step.emoji}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;">
+          <span class="font-headline" style="font-size:14px;font-weight:800;letter-spacing:.01em;
+            color:${done ? '#00ed7d' : '#e4e1ef'};text-transform:uppercase;line-height:1.1;">${step.title}</span>
+          <span class="material-symbols-outlined" style="font-size:17px;color:${done ? '#00ed7d' : '#ffc56c'};
+            flex-shrink:0;margin-top:1px;font-variation-settings:'FILL' ${done ? 1 : 0}">
+            ${done ? 'check_circle' : 'arrow_forward_ios'}
+          </span>
+        </div>
+        <p style="font-size:12px;line-height:1.58;color:#636270;margin:0;">${step.desc}</p>
+        ${done ? `<div style="margin-top:10px;display:inline-flex;align-items:center;gap:5px;
+          background:rgba(0,237,125,0.1);border:1px solid rgba(0,237,125,0.22);
+          border-radius:99px;padding:3px 10px;">
+          <span style="font-size:10px;font-weight:700;color:#00ed7d;letter-spacing:.06em;text-transform:uppercase;">✓ Erledigt</span>
+        </div>` : `<div style="margin-top:10px;display:inline-flex;align-items:center;gap:5px;
+          background:rgba(255,197,108,0.06);border:1px solid rgba(255,197,108,0.18);
+          border-radius:99px;padding:3px 10px;">
+          <span style="font-size:10px;font-weight:700;color:rgba(255,197,108,0.7);letter-spacing:.06em;text-transform:uppercase;">Ausstehend</span>
+        </div>`}
+      </div>`
+    cardsEl.appendChild(card)
+  })
+
+  // Progress dots
+  const dotColors = status.map((done, i) => done ? '#00ed7d' : (i === doneCount ? '#ffc56c' : 'rgba(255,255,255,0.08)'))
+  ;[0,1,2].forEach(i => {
+    const el = document.getElementById('wdot' + i)
+    if (el) el.style.background = dotColors[i]
+  })
+  document.getElementById('wiz-count').textContent = `${doneCount} / 3`
+
+  const btn = document.getElementById('wiz-start-btn')
+  const hint = document.getElementById('wiz-hint')
+  if (doneCount === 3) {
+    btn.disabled = false
+    btn.style.cssText = 'width:100%;border-radius:18px;padding:18px;display:flex;align-items:center;' +
+      'justify-content:center;gap:10px;cursor:pointer;transition:all .5s;' +
+      'background:linear-gradient(135deg,#ffc56c,#cb9743);border:none;opacity:1;' +
+      'box-shadow:0 8px 32px rgba(255,197,108,0.45);'
+    btn.querySelector('span.font-headline').style.color = '#321f00'
+    btn.querySelector('span.material-symbols-outlined').style.color = '#321f00'
+    if (hint) hint.innerHTML = '🎉 Alles erledigt! Du bist bereit.'
+    if (hint) hint.style.color = '#00ed7d'
+  }
+}
+
+async function showWizardIfNeeded(user, profile) {
+  _wizUser = user; _wizProfile = profile
+  const status = await _getWizStatus(user, profile)
+  if (status.every(Boolean)) return false
+  _renderWizard(status)
+  document.getElementById('wiz-overlay').style.display = 'block'
+  return true
+}
+
+function closeWizard() {
+  document.getElementById('wiz-overlay').style.display = 'none'
+}
+
+async function startChallengeFromWizard() {
+  closeWizard()
+  startChallenge()
+}
+
+// Re-check when returning from another page
+document.addEventListener('visibilitychange', async () => {
+  if (document.hidden) return
+  const overlay = document.getElementById('wiz-overlay')
+  if (!overlay || overlay.style.display === 'none') return
+  if (!_wizUser) return
+  // Re-fetch fresh profile for kalorien_ziel
+  try {
+    const { data: freshProfile } = await sb.from('profiles').select('kalorien_ziel').eq('id', _wizUser.id).single()
+    if (freshProfile) _wizProfile = { ..._wizProfile, ...freshProfile }
+  } catch {}
+  const status = await _getWizStatus(_wizUser, _wizProfile)
+  _renderWizard(status)
+})
 
 async function startChallenge() {
   const btn = document.getElementById('btn-start-challenge')
