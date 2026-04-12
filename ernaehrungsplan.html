@@ -791,7 +791,8 @@ function confirmAdd() {
   if (!pendingProduct || !activeMeal) return
   const g = parseFloat(document.getElementById('menge-val').value) || 100
   const f = g/100, p = pendingProduct
-  cm()[activeMeal].push({
+  const meal = activeMeal // capture before closeMenge clears it
+  cm()[meal].push({
     name: p.name,
     amount: g,
     kcal: p.kcal100!=null ? Math.round(p.kcal100*f) : 0,
@@ -799,11 +800,28 @@ function confirmAdd() {
     fett: p.fett100!=null ? Math.round(p.fett100*f*10)/10 : 0,
     carbs: p.carbs100!=null ? Math.round(p.carbs100*f*10)/10 : 0,
   })
-  closeMenge()
+  document.getElementById('menge-overlay').classList.remove('active')
+  pendingProduct = null
   renderMealCards()
   updateRings()
   savePlans()
-  showToast(`${MEAL_META[activeMeal].label}: ${p.name} hinzugefügt ✓`)
+
+  // Reset search sheet for next item — keep it open
+  const inp = document.getElementById('plan-search-input')
+  inp.value = ''
+  document.getElementById('plan-search-results').innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;padding:14px 0 8px;border-bottom:1px solid rgba(0,237,125,0.15);margin-bottom:8px;">
+      <div style="width:36px;height:36px;border-radius:10px;background:rgba(0,237,125,0.1);border:1px solid rgba(0,237,125,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <span class="material-symbols-outlined" style="font-size:18px;color:#00ed7d;font-variation-settings:'FILL' 1;">check_circle</span>
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#00ed7d;">${p.name} hinzugefügt</div>
+        <div style="font-size:11px;color:#757481;margin-top:1px;">${g}g · ${p.kcal100!=null?Math.round(p.kcal100*(g/100))+' kcal':'?'}</div>
+      </div>
+    </div>
+    <div style="text-align:center;padding:20px 0 8px;color:#484752;font-size:13px;">Nächstes Produkt suchen…</div>`
+  document.getElementById('plan-search-clear').style.display = 'none'
+  setTimeout(() => inp.focus(), 50)
 }
 
 // Search input Enter key
