@@ -427,6 +427,44 @@
         </div>
       </div>
 
+      <!-- Bevel Overnight Vitals -->
+      <div class="ci-panel" style="margin-bottom:14px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+          <span class="ci-panel-lbl" style="margin:0;">Bevel</span>
+          <span style="font-size:10px;font-weight:700;color:#757481;background:rgba(72,71,82,0.2);border-radius:20px;padding:2px 8px;letter-spacing:0.06em;">OVERNIGHT</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div class="metric-card" style="padding:14px 14px 10px;">
+            <span class="metric-lbl">Recovery</span>
+            <div class="metric-row">
+              <input type="number" id="bevel-recovery" class="metric-input" style="font-size:1.6rem;" placeholder="—" min="0" max="100">
+              <span class="metric-unit">%</span>
+            </div>
+          </div>
+          <div class="metric-card" style="padding:14px 14px 10px;">
+            <span class="metric-lbl">Schlaf-Score</span>
+            <div class="metric-row">
+              <input type="number" id="bevel-schlaf-score" class="metric-input" style="font-size:1.6rem;" placeholder="—" min="0" max="100">
+              <span class="metric-unit">%</span>
+            </div>
+          </div>
+          <div class="metric-card" style="padding:14px 14px 10px;">
+            <span class="metric-lbl">HRV</span>
+            <div class="metric-row">
+              <input type="number" id="bevel-hrv" class="metric-input" style="font-size:1.6rem;" placeholder="—" min="0" max="300">
+              <span class="metric-unit">ms</span>
+            </div>
+          </div>
+          <div class="metric-card" style="padding:14px 14px 10px;">
+            <span class="metric-lbl">Resting HR</span>
+            <div class="metric-row">
+              <input type="number" id="bevel-rhr" class="metric-input" style="font-size:1.6rem;" placeholder="—" min="30" max="120">
+              <span class="metric-unit">bpm</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Energy Level -->
       <div class="ci-panel" style="margin-bottom:14px;">
         <span class="ci-panel-lbl">Energy Level</span>
@@ -486,10 +524,8 @@
       <!-- Macro Review -->
       <div class="ci-panel" style="margin-bottom:14px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <span class="ci-panel-lbl" style="margin:0;">Macro Review</span>
-          <a href="essen.html" style="font-size:11px;font-weight:700;color:#ffc56c;text-decoration:none;background:rgba(255,197,108,0.08);border:1px solid rgba(255,197,108,0.2);padding:4px 10px;border-radius:20px;display:flex;align-items:center;gap:4px;">
-            <span class="material-symbols-outlined" style="font-size:13px;">open_in_new</span>Tracker
-          </a>
+          <span class="ci-panel-lbl" style="margin:0;">Bevel — Makros</span>
+          <span style="font-size:10px;font-weight:700;color:#757481;background:rgba(72,71,82,0.2);border-radius:20px;padding:2px 8px;letter-spacing:0.06em;">ABEND</span>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
           <div class="metric-card" style="padding:14px 14px 10px;">
@@ -757,14 +793,14 @@
       <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Training</span>
     </a>
   </div>
-  <!-- Center: Essen FAB -->
+  <!-- Center: Tagebuch FAB -->
   <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:4px;margin-bottom:6px;pointer-events:auto;">
-    <a href="essen.html" style="text-decoration:none;display:block;">
+    <a href="tagebuch.html" style="text-decoration:none;display:block;">
       <div style="width:60px;height:60px;border-radius:20px;background:linear-gradient(135deg,#ffc56c,#cb9743);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(255,197,108,0.55);">
-        <span class="material-symbols-outlined" style="font-size:26px;color:#321f00;">restaurant</span>
+        <span class="material-symbols-outlined" style="font-size:26px;color:#321f00;">menu_book</span>
       </div>
     </a>
-    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#ffc56c;">Essen</span>
+    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#ffc56c;">Tagebuch</span>
   </div>
   <!-- Right island: Stats | Profil -->
   <div style="flex:1;display:flex;align-items:center;justify-content:space-around;height:60px;background:rgba(18,17,26,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.07);border-radius:22px;overflow:hidden;pointer-events:auto;">
@@ -827,11 +863,15 @@ async function saveMorgen() {
 
   const { error } = await sb.from('daily_entries').upsert({
     user_id: profile.id, datum: today, tag_nr: dayNr,
-    gewicht_kg:    v('gewicht') ? parseFloat(v('gewicht')) : null,
-    schlaf_ist_h:  v('schlaf')  ? parseFloat(v('schlaf'))  : null,
-    energie_level: energie || null,
-    intention:     v('intention') || null,
-    ziel_heute_1:  v('z1') || null, ziel_heute_2: v('z2') || null, ziel_heute_3: v('z3') || null,
+    gewicht_kg:        v('gewicht') ? parseFloat(v('gewicht')) : null,
+    schlaf_ist_h:      v('schlaf')  ? parseFloat(v('schlaf'))  : null,
+    energie_level:     energie || null,
+    intention:         v('intention') || null,
+    ziel_heute_1:      v('z1') || null, ziel_heute_2: v('z2') || null, ziel_heute_3: v('z3') || null,
+    bevel_recovery_pct: v('bevel-recovery')     ? parseInt(v('bevel-recovery'))     : null,
+    bevel_schlaf_score: v('bevel-schlaf-score') ? parseInt(v('bevel-schlaf-score')) : null,
+    bevel_hrv_ms:       v('bevel-hrv')          ? parseInt(v('bevel-hrv'))          : null,
+    bevel_resting_hr:   v('bevel-rhr')          ? parseInt(v('bevel-rhr'))          : null,
     checkin_morgen: true,
   }, {onConflict:'user_id,datum'})
 
@@ -1026,6 +1066,10 @@ async function init() {
         energie = entry.energie_level
         document.querySelectorAll('.energie-btn')[energie-1]?.classList.add('active')
       }
+      if (entry.bevel_recovery_pct)  document.getElementById('bevel-recovery').value     = entry.bevel_recovery_pct
+      if (entry.bevel_schlaf_score)  document.getElementById('bevel-schlaf-score').value = entry.bevel_schlaf_score
+      if (entry.bevel_hrv_ms)        document.getElementById('bevel-hrv').value           = entry.bevel_hrv_ms
+      if (entry.bevel_resting_hr)    document.getElementById('bevel-rhr').value           = entry.bevel_resting_hr
     }
     if (entry.checkin_abend) {
       alreadyAbend = true
