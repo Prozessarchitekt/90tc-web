@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html class="dark" lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>90TC — Fortschrittsfotos</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#ffc56c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "surface-container-highest": "#34343f",
+        "surface-container-lowest": "#03030A",
+        "surface-container-high": "#12121A",
+        "surface": "#03030A",
+        "surface-container-low": "#0D0D14",
+        "surface-variant": "#1A1A24",
+        "on-surface-variant": "#d6c4ac",
+        "tertiary": "#00ed7d",
+        "surface-dim": "#03030A",
+        "error": "#ffb4ab",
+        "surface-bright": "#1C1C26",
+        "surface-container": "#0D0D14",
+        "secondary": "#89ceff",
+        "on-secondary": "#00344d",
+        "on-surface": "#e4e1ef",
+        "primary": "#ffc56c",
+        "outline-variant": "#34343f",
+        "primary-container": "#f0a500",
+        "on-primary": "#442c00",
+        "background": "#03030A",
+        "on-background": "#e4e1ef",
+      },
+      fontFamily: { "headline": ["Space Grotesk"], "body": ["Inter"], "label": ["Inter"] }
+    }
+  }
+}
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  body { background-color: #03030A; min-height: 100vh; }
+
+  .grainy-overlay {
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.04; pointer-events: none; z-index: 100;
+  }
+
+  /* Splash */
+  #splash { position:fixed;inset:0;z-index:9999;background:#03030A;display:flex;align-items:center;justify-content:center; }
+  .spinner { width:40px;height:40px;border:3px solid #1a1a24;border-top-color:#ffc56c;border-radius:50%;animation:spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Toast */
+  #toast {
+    position: fixed; bottom: calc(180px + env(safe-area-inset-bottom)); left: 50%;
+    transform: translateX(-50%) translateY(12px);
+    background: #12121a; color: #e4e1ef;
+    border: 1px solid rgba(255,255,255,.12);
+    padding: 10px 20px; border-radius: 9999px;
+    font-size: 13px; font-weight: 600; z-index: 500;
+    opacity: 0; transition: opacity .25s, transform .25s;
+    pointer-events: none; white-space: nowrap;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* Hero */
+  .foto-hero {
+    position: relative; width: 100%; overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .foto-hero-bg {
+    position: absolute; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse at 70% 5%, rgba(255,197,108,0.2) 0%, transparent 55%),
+      radial-gradient(ellipse at 10% 80%, rgba(0,237,125,0.07) 0%, transparent 50%),
+      linear-gradient(180deg, #080710 0%, #0d0d17 100%);
+  }
+  .foto-hero-overlay {
+    position: absolute; inset: 0; z-index: 1;
+    background: linear-gradient(180deg, transparent 20%, #03030A 100%);
+  }
+  .foto-hero-content { position: relative; z-index: 2; padding: 0 20px 24px; }
+
+  /* Foto Slot */
+  .foto-slot {
+    aspect-ratio: 3/4;
+    border-radius: 20px;
+    border: 2px dashed rgba(72,71,82,0.5);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    cursor: pointer; overflow: hidden; position: relative;
+    background: rgba(12,12,20,0.8);
+    transition: border-color .2s, background .2s;
+  }
+  .foto-slot:active { border-color: rgba(255,197,108,0.6); background: rgba(255,197,108,0.04); }
+  .foto-slot img {
+    width: 100%; height: 100%; object-fit: cover;
+    position: absolute; inset: 0;
+  }
+  .foto-slot-icon { font-size: 28px; }
+  .foto-slot-label {
+    font-size: 9px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.14em; color: rgba(117,116,129,0.7);
+    margin-top: 6px;
+  }
+  .foto-overlay {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.75));
+    padding: 16px 8px 6px;
+    display: flex; justify-content: space-between; align-items: flex-end;
+  }
+  .foto-overlay-label {
+    font-size: 10px; font-weight: 700; color: #fff;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  .foto-delete-btn { font-size: 16px; cursor: pointer; line-height: 1; }
+
+  /* Comparison Slider */
+  .compare-slider-wrap {
+    position: relative; width: 100%; aspect-ratio: 3/4;
+    border-radius: 22px; overflow: hidden;
+    background: #111; touch-action: none; user-select: none;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.7);
+  }
+  .compare-slider-before, .compare-slider-after {
+    position: absolute; inset: 0;
+  }
+  .compare-slider-before img, .compare-slider-after img {
+    width: 100%; height: 100%; object-fit: cover;
+  }
+  .compare-slider-before { clip-path: inset(0 50% 0 0); }
+  .compare-slider-divider {
+    position: absolute; top: 0; bottom: 0; left: 50%;
+    width: 2px;
+    background: linear-gradient(180deg, transparent, #ffc56c 20%, #ffc56c 80%, transparent);
+    transform: translateX(-50%); z-index: 10;
+    cursor: ew-resize;
+    box-shadow: 0 0 16px rgba(255,197,108,0.6);
+  }
+  .compare-slider-handle {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px; height: 40px;
+    background: #ffc56c; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #321f00; font-size: 18px; font-weight: 900;
+    box-shadow: 0 4px 20px rgba(255,197,108,0.5);
+  }
+  .compare-slider-labels {
+    position: absolute; bottom: 12px; left: 0; right: 0;
+    display: flex; justify-content: space-between; padding: 0 12px;
+    z-index: 11; pointer-events: none;
+  }
+  .compare-slider-labels span {
+    background: rgba(0,0,0,0.65); backdrop-filter: blur(8px);
+    color: #fff; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    padding: 4px 10px; border-radius: 100px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .compare-empty-hint {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    height: 180px; gap: 8px;
+    color: rgba(117,116,129,0.7); font-size: 14px; text-align: center;
+  }
+
+  /* Upload overlay */
+  #upload-overlay {
+    position: fixed; inset: 0; z-index: 2000;
+    background: rgba(0,0,0,0.8); backdrop-filter: blur(16px);
+    display: none; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 16px; color: #e4e1ef; font-size: 15px; font-weight: 600;
+  }
+</style>
+</head>
+<body class="text-on-surface font-body selection:bg-primary/30 antialiased overflow-x-hidden" style="overflow-x:hidden;max-width:100vw;">
+
+<div class="grainy-overlay"></div>
+<div id="toast"></div>
+<div id="splash"><div class="spinner"></div></div>
+
+<div id="main" style="display:none">
+
+<!-- ── Top Nav ── -->
+<nav class="fixed top-0 w-full z-50 bg-neutral-950/80 backdrop-blur-xl flex justify-between items-center px-6 pb-4 shadow-[0_8px_32px_rgba(0,0,0,0.8)]" style="padding-top:max(16px,env(safe-area-inset-top))">
+  <div class="flex items-center gap-3">
+    <span class="material-symbols-outlined text-amber-500" style="font-variation-settings:'FILL' 1">workspace_premium</span>
+    <span class="text-xl font-black tracking-tighter text-amber-500 italic font-headline uppercase">90TC</span>
+  </div>
+  <span class="font-headline tracking-tighter uppercase font-bold text-amber-500 text-sm" id="topbar-info">—</span>
+  <div class="absolute bottom-0 left-0 bg-gradient-to-r from-transparent via-amber-500/20 to-transparent h-[1px] w-full"></div>
+</nav>
+
+<main class="max-w-lg mx-auto relative" style="overflow-x:clip;padding-bottom:calc(200px + env(safe-area-inset-bottom));">
+
+  <!-- ── HERO ── -->
+  <div class="foto-hero">
+    <div class="foto-hero-bg"></div>
+    <div class="foto-hero-overlay"></div>
+    <div style="height:calc(max(16px,env(safe-area-inset-top)) + 64px);flex-shrink:0;"></div>
+    <div class="foto-hero-content">
+      <span class="font-headline font-bold text-primary tracking-[0.28em] text-[9px] uppercase opacity-70 mb-2 block" id="page-sub">WOCHE — · TAG —</span>
+      <h1 class="font-headline font-black italic uppercase tracking-tighter mb-2" style="font-size:clamp(2.4rem,11vw,3.8rem);line-height:0.88;letter-spacing:-0.04em;text-shadow:0 0 40px rgba(255,197,108,0.25);">
+        DIE TRANS<span class="text-primary">FORMA</span>TION.
+      </h1>
+      <p class="font-body text-on-surface-variant text-sm mt-3" style="max-width:280px;line-height:1.5;">Gleiche Uhrzeit. Gleiche Pose. Gleiches Licht. Konstanz macht den Unterschied.</p>
+    </div>
+  </div>
+
+  <!-- ── AKTUELLE WOCHE UPLOAD ── -->
+  <div class="px-4 flex flex-col gap-4">
+
+    <div class="rounded-[24px] p-5 border border-white/5 shadow-xl" style="background:rgba(12,12,20,0.85);backdrop-filter:blur(16px);">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <p class="font-headline font-black italic uppercase text-primary tracking-tight" style="font-size:0.95rem;letter-spacing:-0.01em;" id="upload-title">WOCHE 1 · FOTOS</p>
+          <p class="font-label text-[9px] uppercase tracking-widest text-on-surface-variant mt-0.5">Vorne · Seite · Hinten</p>
+        </div>
+        <div class="w-10 h-10 rounded-[14px] flex items-center justify-center" style="background:rgba(255,197,108,0.1);border:1px solid rgba(255,197,108,0.2);">
+          <span class="material-symbols-outlined text-primary" style="font-size:20px;font-variation-settings:'FILL' 1">add_a_photo</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-3">
+        <div>
+          <div class="foto-slot" id="slot-vorne" onclick="openPhotoSheet('vorne')">
+            <span class="material-symbols-outlined text-on-surface-variant foto-slot-icon" style="font-size:28px;">person</span>
+          </div>
+          <div class="foto-slot-label text-center">Vorne</div>
+          <input type="file" id="inp-vorne" accept="image/*" style="display:none" onchange="uploadFoto(this,'vorne')">
+        </div>
+        <div>
+          <div class="foto-slot" id="slot-seite" onclick="openPhotoSheet('seite')">
+            <span class="material-symbols-outlined text-on-surface-variant foto-slot-icon" style="font-size:28px;">accessibility_new</span>
+          </div>
+          <div class="foto-slot-label text-center">Seite</div>
+          <input type="file" id="inp-seite" accept="image/*" style="display:none" onchange="uploadFoto(this,'seite')">
+        </div>
+        <div>
+          <div class="foto-slot" id="slot-hinten" onclick="openPhotoSheet('hinten')">
+            <span class="material-symbols-outlined text-on-surface-variant foto-slot-icon" style="font-size:28px;">directions_walk</span>
+          </div>
+          <div class="foto-slot-label text-center">Hinten</div>
+          <input type="file" id="inp-hinten" accept="image/*" style="display:none" onchange="uploadFoto(this,'hinten')">
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Wochenfoto Reminder ── -->
+    <div id="foto-reminder" style="display:none;
+      background:rgba(255,197,108,0.07);border:1px solid rgba(255,197,108,0.25);
+      border-radius:18px;padding:14px 16px;display:none;align-items:center;gap:12px;">
+      <span style="font-size:22px;flex-shrink:0;">📸</span>
+      <div style="flex:1;">
+        <div class="font-headline" style="font-size:13px;font-weight:800;color:#ffc56c;text-transform:uppercase;">Wochenfoto ausstehend</div>
+        <div id="foto-reminder-sub" style="font-size:11px;color:#757481;margin-top:2px;">Halte deinen Fortschritt fest — gleiche Pose, gleiches Licht.</div>
+      </div>
+      <button onclick="document.getElementById('foto-reminder').style.display='none'"
+        style="background:none;border:none;color:#757481;font-size:16px;cursor:pointer;padding:4px;">✕</button>
+    </div>
+
+    <!-- ── VERGLEICH ── -->
+    <div id="compare-section" style="display:none" class="flex flex-col gap-3">
+
+      <!-- Section header -->
+      <div class="flex items-center gap-3 px-1 mt-1">
+        <p class="font-label text-[9px] uppercase tracking-widest text-on-surface-variant font-bold">Transformation Vergleich</p>
+        <div class="flex-1 h-[1px]" style="background:rgba(72,71,82,0.35)"></div>
+      </div>
+
+      <!-- Winkel selector -->
+      <div class="flex gap-2" id="winkel-tabs">
+        <button onclick="setWinkel('vorne')" id="tab-vorne"
+          class="flex-1 py-2 rounded-[14px] text-xs font-headline font-bold uppercase tracking-wide transition-all"
+          style="background:rgba(255,197,108,0.12);border:1px solid rgba(255,197,108,0.3);color:#ffc56c;">
+          Vorne
+        </button>
+        <button onclick="setWinkel('seite')" id="tab-seite"
+          class="flex-1 py-2 rounded-[14px] text-xs font-headline font-bold uppercase tracking-wide transition-all"
+          style="background:rgba(18,18,26,0.8);border:1px solid rgba(72,71,82,0.3);color:rgba(117,116,129,0.8);">
+          Seite
+        </button>
+        <button onclick="setWinkel('hinten')" id="tab-hinten"
+          class="flex-1 py-2 rounded-[14px] text-xs font-headline font-bold uppercase tracking-wide transition-all"
+          style="background:rgba(18,18,26,0.8);border:1px solid rgba(72,71,82,0.3);color:rgba(117,116,129,0.8);">
+          Hinten
+        </button>
+      </div>
+
+      <!-- Week reference selector -->
+      <div class="rounded-[18px] overflow-hidden" style="background:rgba(18,18,26,0.9);border:1px solid rgba(72,71,82,0.3);">
+        <div class="px-4 py-2 border-b" style="border-color:rgba(72,71,82,0.25);">
+          <p class="font-label text-[9px] uppercase tracking-widest text-on-surface-variant font-bold">Referenzwoche</p>
+        </div>
+        <select id="compare-week-sel" onchange="loadComparison()"
+          class="w-full bg-transparent px-4 py-3 font-headline font-bold text-sm text-on-surface"
+          style="border:none;outline:none;appearance:none;-webkit-appearance:none;">
+          <option value="" style="background:#12121a;">— Woche wählen —</option>
+        </select>
+      </div>
+
+      <!-- Hidden select for winkel (used by JS) -->
+      <select id="compare-winkel-sel" style="display:none" onchange="loadComparison()">
+        <option value="vorne">Vorne</option>
+        <option value="seite">Seite</option>
+        <option value="hinten">Hinten</option>
+      </select>
+
+      <!-- Slider -->
+      <div id="compare-grid"></div>
+    </div>
+
+  </div><!-- /.px-4 -->
+
+</main>
+
+</div><!-- #main -->
+
+<!-- ── Photo Source Sheet ── -->
+<div id="photo-sheet" style="
+  position:fixed;inset:0;z-index:3000;display:none;
+  align-items:flex-end;justify-content:center;
+  background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);"
+  onclick="closePhotoSheet(event)">
+  <div style="
+    width:100%;max-width:480px;
+    background:#0d0d17;
+    border-top:1px solid rgba(255,255,255,0.1);
+    border-radius:24px 24px 0 0;
+    padding:12px 16px calc(24px + env(safe-area-inset-bottom));
+    display:flex;flex-direction:column;gap:10px;"
+    onclick="event.stopPropagation()">
+    <div style="width:36px;height:4px;background:rgba(255,255,255,0.2);border-radius:2px;margin:0 auto 8px;"></div>
+    <p style="font-family:'Space Grotesk',sans-serif;font-weight:900;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(172,169,183,0.5);text-align:center;margin-bottom:2px;">Foto hinzufügen</p>
+    <button onclick="pickSource('cam')" style="
+      display:flex;align-items:center;gap:14px;
+      background:rgba(255,197,108,0.08);border:1px solid rgba(255,197,108,0.2);
+      border-radius:16px;padding:16px 18px;cursor:pointer;color:#e4e1ef;
+      font-family:'Inter',sans-serif;font-size:15px;font-weight:600;">
+      <span class="material-symbols-outlined" style="font-size:22px;color:#ffc56c;font-variation-settings:'FILL' 1">photo_camera</span>
+      Foto aufnehmen
+    </button>
+    <button onclick="pickSource('lib')" style="
+      display:flex;align-items:center;gap:14px;
+      background:rgba(137,206,255,0.08);border:1px solid rgba(137,206,255,0.2);
+      border-radius:16px;padding:16px 18px;cursor:pointer;color:#e4e1ef;
+      font-family:'Inter',sans-serif;font-size:15px;font-weight:600;">
+      <span class="material-symbols-outlined" style="font-size:22px;color:#89ceff;font-variation-settings:'FILL' 1">photo_library</span>
+      Aus Mediathek wählen
+    </button>
+    <button onclick="closePhotoSheet()" style="
+      background:transparent;border:1px solid rgba(255,255,255,0.08);
+      border-radius:16px;padding:14px;cursor:pointer;
+      color:rgba(172,169,183,0.5);font-family:'Inter',sans-serif;font-size:14px;font-weight:500;">
+      Abbrechen
+    </button>
+  </div>
+</div>
+
+<!-- ── Upload Overlay ── -->
+<div id="upload-overlay">
+  <div class="spinner" style="width:48px;height:48px;border-width:3px;"></div>
+  <div class="font-headline font-bold uppercase tracking-wide">Foto wird hochgeladen…</div>
+</div>
+
+<!-- ── Split Island Nav ── -->
+<div style="position:fixed;bottom:calc(16px + env(safe-area-inset-bottom));left:12px;right:12px;z-index:50;display:flex;align-items:flex-end;justify-content:space-between;gap:10px;pointer-events:none;">
+  <!-- Left island -->
+  <div style="flex:1;display:flex;height:60px;background:rgba(11,11,19,0.97);backdrop-filter:blur(32px);border:1px solid rgba(255,255,255,0.07);border-radius:22px;box-shadow:0 8px 40px rgba(0,0,0,0.8),inset 0 1px 0 rgba(255,255,255,0.055);overflow:hidden;pointer-events:auto;">
+    <a href="dashboard.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:rgba(255,255,255,0.38);font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;transition:color .15s;">
+      <span class="material-symbols-outlined" style="font-size:22px;font-variation-settings:'FILL' 0">home</span>
+      Start
+    </a>
+    <a href="training.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:rgba(255,255,255,0.38);font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;transition:color .15s;">
+      <span class="material-symbols-outlined" style="font-size:22px;font-variation-settings:'FILL' 0">fitness_center</span>
+      Training
+    </a>
+  </div>
+  <!-- Center FAB -->
+  <a href="essen.html" style="width:64px;height:64px;border-radius:22px;background:linear-gradient(135deg,#ffc56c,#cb9743);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(255,197,108,0.45),inset 0 1px 0 rgba(255,255,255,0.25);flex-shrink:0;pointer-events:auto;text-decoration:none;">
+    <span class="material-symbols-outlined" style="font-size:28px;color:#321f00;font-variation-settings:'FILL' 1">restaurant</span>
+  </a>
+  <!-- Right island -->
+  <div style="flex:1;display:flex;height:60px;background:rgba(11,11,19,0.97);backdrop-filter:blur(32px);border:1px solid rgba(255,255,255,0.07);border-radius:22px;box-shadow:0 8px 40px rgba(0,0,0,0.8),inset 0 1px 0 rgba(255,255,255,0.055);overflow:hidden;pointer-events:auto;">
+    <a href="fortschritt.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:rgba(255,255,255,0.38);font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">
+      <span class="material-symbols-outlined" style="font-size:22px;font-variation-settings:'FILL' 0">query_stats</span>
+      Stats
+    </a>
+    <a href="profil.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:rgba(255,255,255,0.38);font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">
+      <span class="material-symbols-outlined" style="font-size:22px;font-variation-settings:'FILL' 0">person</span>
+      Profil
+    </a>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/gamification.js"></script>
+<script src="js/auth.js"></script>
+<script>
+let currentUser = null
+let currentProfile = null
+let currentWoche = 1
+let photoMap = {}
+
+const WINKEL_LABELS = { vorne: 'Vorne', seite: 'Seite', hinten: 'Hinten' }
+
+// Returns the first day number of a given week (woche 1 = Tag 1, woche 2 = Tag 8 …)
+function wocheToTag(woche) { return (woche - 1) * 7 + 1 }
+
+let toastTimer
+function showToast(msg) {
+  const el = document.getElementById('toast')
+  el.textContent = msg
+  el.classList.add('show')
+  clearTimeout(toastTimer)
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2800)
+}
+
+let _activeWinkel = null
+
+function openPhotoSheet(winkel) {
+  _activeWinkel = winkel
+  document.getElementById('photo-sheet').style.display = 'flex'
+}
+
+function closePhotoSheet(e) {
+  if (e && e.target !== document.getElementById('photo-sheet')) return
+  document.getElementById('photo-sheet').style.display = 'none'
+  _activeWinkel = null
+}
+
+function pickSource(source) {
+  document.getElementById('photo-sheet').style.display = 'none'
+  if (!_activeWinkel) return
+  const inp = document.getElementById('inp-' + _activeWinkel)
+  // Reset value so same file can be re-selected
+  inp.value = ''
+  if (source === 'cam') {
+    inp.setAttribute('capture', 'environment')
+  } else {
+    inp.removeAttribute('capture')
+  }
+  inp.click()
+  _activeWinkel = null
+}
+
+async function uploadFoto(input, winkel) {
+  const file = input.files[0]
+  if (!file) return
+  if (file.size > 15 * 1024 * 1024) { showToast('Foto max. 15 MB'); return }
+
+  document.getElementById('upload-overlay').style.display = 'flex'
+
+  const ext = file.name.split('.').pop().toLowerCase() || 'jpg'
+  const path = `${currentUser.id}/woche_${currentWoche}_${winkel}.${ext}`
+
+  const { error: upErr } = await sb.storage.from('photos').upload(path, file, { upsert: true })
+  if (upErr) {
+    document.getElementById('upload-overlay').style.display = 'none'
+    showToast(upErr.message)
+    return
+  }
+
+  const { data: signedData } = await sb.storage.from('photos').createSignedUrl(path, 3600)
+  const url = signedData?.signedUrl || ''
+
+  const { error: dbErr } = await sb.from('photos').upsert({
+    user_id: currentUser.id,
+    datum: new Date().toISOString().split('T')[0],
+    woche_nr: currentWoche,
+    winkel: winkel,
+    typ: 'woche',
+    url: path,
+  }, { onConflict: 'user_id,woche_nr,winkel' })
+
+  document.getElementById('upload-overlay').style.display = 'none'
+
+  if (dbErr) {
+    await sb.from('photos').delete().eq('user_id', currentUser.id).eq('woche_nr', currentWoche).eq('winkel', winkel)
+    await sb.from('photos').insert({
+      user_id: currentUser.id,
+      datum: new Date().toISOString().split('T')[0],
+      woche_nr: currentWoche, winkel, typ: 'woche', url: path,
+    })
+  }
+
+  if (!photoMap[currentWoche]) photoMap[currentWoche] = {}
+  photoMap[currentWoche][winkel] = { url }
+
+  // Mark this week's photos as taken in localStorage (for dashboard reminder)
+  localStorage.setItem('90tc_foto_woche_' + currentWoche, '1')
+
+  renderSlot(winkel, url)
+  updateFotoReminderBanner()
+  showToast('Foto gespeichert 📸')
+  input.value = ''
+  loadComparison()
+}
+
+function renderSlot(winkel, url) {
+  const slot = document.getElementById('slot-' + winkel)
+  if (!slot) return
+  const icons = { vorne: 'person', seite: 'accessibility_new', hinten: 'directions_walk' }
+  const tagLabel = `TAG ${wocheToTag(currentWoche)}`
+  if (url) {
+    slot.innerHTML = `
+      <img src="${url}" alt="${winkel}">
+      <div class="foto-overlay">
+        <span class="foto-overlay-label">${tagLabel}</span>
+        <span class="foto-delete-btn" onclick="deleteFoto(event,'${winkel}')">🗑️</span>
+      </div>`
+  } else {
+    slot.innerHTML = `<span class="material-symbols-outlined foto-slot-icon" style="font-size:28px;color:rgba(117,116,129,0.5);">${icons[winkel]}</span>`
+  }
+}
+
+async function deleteFoto(e, winkel) {
+  e.stopPropagation()
+  if (!confirm(`${WINKEL_LABELS[winkel] || winkel}-Foto löschen?`)) return
+  const path = `${currentUser.id}/woche_${currentWoche}_${winkel}`
+  await sb.storage.from('photos').remove([path + '.jpg', path + '.jpeg', path + '.png', path + '.webp'])
+  await sb.from('photos').delete().eq('user_id', currentUser.id).eq('woche_nr', currentWoche).eq('winkel', winkel)
+  if (photoMap[currentWoche]) delete photoMap[currentWoche][winkel]
+  renderSlot(winkel, null)
+  loadComparison()
+  showToast('Foto gelöscht')
+}
+
+function setWinkel(w) {
+  document.getElementById('compare-winkel-sel').value = w
+  ;['vorne','seite','hinten'].forEach(id => {
+    const btn = document.getElementById('tab-' + id)
+    if (id === w) {
+      btn.style.background = 'rgba(255,197,108,0.12)'
+      btn.style.borderColor = 'rgba(255,197,108,0.3)'
+      btn.style.color = '#ffc56c'
+    } else {
+      btn.style.background = 'rgba(18,18,26,0.8)'
+      btn.style.borderColor = 'rgba(72,71,82,0.3)'
+      btn.style.color = 'rgba(117,116,129,0.8)'
+    }
+  })
+  loadComparison()
+}
+
+function loadComparison() {
+  const refWeek = parseInt(document.getElementById('compare-week-sel').value)
+  const winkel  = document.getElementById('compare-winkel-sel').value
+  const grid    = document.getElementById('compare-grid')
+
+  if (!refWeek || isNaN(refWeek)) {
+    grid.innerHTML = '<div class="compare-empty-hint"><span class="material-symbols-outlined" style="font-size:36px;color:rgba(117,116,129,0.4)">photo_camera</span><span>Referenzwoche auswählen</span></div>'
+    return
+  }
+
+  const refUrl  = photoMap[refWeek]?.[winkel]?.url || null
+  const currUrl = photoMap[currentWoche]?.[winkel]?.url || null
+
+  if (!refUrl && !currUrl) {
+    grid.innerHTML = '<div class="compare-empty-hint"><span class="material-symbols-outlined" style="font-size:36px;color:rgba(117,116,129,0.4)">hide_image</span><span>Noch keine Fotos für diese Kombination</span></div>'
+    return
+  }
+
+  grid.innerHTML = `
+    <div class="compare-slider-wrap" id="cmp-slider">
+      <div class="compare-slider-after">
+        ${currUrl ? `<img src="${currUrl}" alt="Jetzt" draggable="false">` : '<div style="background:#1a1a2e;width:100%;height:100%"></div>'}
+      </div>
+      <div class="compare-slider-before" id="cmp-before">
+        ${refUrl ? `<img src="${refUrl}" alt="Vorher" draggable="false">` : '<div style="background:#111;width:100%;height:100%"></div>'}
+      </div>
+      <div class="compare-slider-divider" id="cmp-divider">
+        <div class="compare-slider-handle">
+          <span class="material-symbols-outlined" style="font-size:18px;">unfold_more</span>
+        </div>
+      </div>
+      <div class="compare-slider-labels">
+        <span>Tag ${wocheToTag(refWeek)}</span>
+        <span>Tag ${wocheToTag(currentWoche)}</span>
+      </div>
+    </div>`
+
+  initSlider()
+}
+
+function initSlider() {
+  const wrap = document.getElementById('cmp-slider')
+  const before = document.getElementById('cmp-before')
+  const divider = document.getElementById('cmp-divider')
+  if (!wrap) return
+  let dragging = false
+
+  function setPos(clientX) {
+    const rect = wrap.getBoundingClientRect()
+    let pct = Math.min(100, Math.max(0, ((clientX - rect.left) / rect.width) * 100))
+    before.style.clipPath = `inset(0 ${100 - pct}% 0 0)`
+    divider.style.left = pct + '%'
+  }
+
+  divider.addEventListener('mousedown', e => { dragging = true; e.preventDefault() })
+  divider.addEventListener('touchstart', () => { dragging = true }, { passive: true })
+  wrap.addEventListener('mousemove', e => { if (dragging) setPos(e.clientX) })
+  wrap.addEventListener('touchmove', e => { if (dragging) setPos(e.touches[0].clientX) }, { passive: true })
+  const stop = () => { dragging = false }
+  document.addEventListener('mouseup', stop)
+  document.addEventListener('touchend', stop)
+}
+
+async function init() {
+  const ctx = await requireProfile()
+  if (!ctx) return
+  currentUser    = ctx.user
+  currentProfile = ctx.profile
+
+  const dayNr = calcDayNr(currentProfile.startdatum)
+  currentWoche = Math.min(13, Math.max(1, Math.ceil((dayNr || 1) / 7)))
+
+  const tagStart = wocheToTag(currentWoche)
+  const tagEnd   = tagStart + 6
+  document.getElementById('page-sub').textContent = dayNr > 0 ? `WOCHE ${currentWoche} · TAG ${tagStart}–${tagEnd}` : 'VORBEREITUNG'
+  document.getElementById('upload-title').textContent = dayNr > 0 ? `WOCHE ${currentWoche} · TAG ${tagStart} · FOTOS` : 'WOCHE 1 · TAG 1 · FOTOS'
+  document.getElementById('topbar-info').textContent = dayNr > 0 ? `WOCHE ${currentWoche} · TAG ${tagStart}` : 'VORBEREITUNG'
+
+  // Load all photos
+  const { data: photos } = await sb.from('photos')
+    .select('*').eq('user_id', currentUser.id).order('woche_nr')
+
+  if (photos?.length > 0) {
+    const paths = photos.map(p => p.url).filter(u => u && !u.startsWith('http'))
+    let signedMap = {}
+    if (paths.length > 0) {
+      const { data: signed } = await sb.storage.from('photos').createSignedUrls(paths, 3600)
+      if (signed) signed.forEach(s => { if (s.signedUrl) signedMap[s.path] = s.signedUrl })
+    }
+    for (const p of photos) {
+      if (!p.woche_nr) continue
+      if (!photoMap[p.woche_nr]) photoMap[p.woche_nr] = {}
+      const url = p.url?.startsWith('http') ? p.url : (signedMap[p.url] || '')
+      photoMap[p.woche_nr][p.winkel] = { id: p.id, url }
+    }
+  }
+
+  // Render current week
+  for (const w of ['vorne', 'seite', 'hinten']) {
+    renderSlot(w, photoMap[currentWoche]?.[w]?.url || null)
+  }
+
+  // Comparison: weeks with photos (excluding current)
+  const weeksWithPhotos = Object.keys(photoMap).map(Number).filter(w => w !== currentWoche).sort((a, b) => a - b)
+  const sel = document.getElementById('compare-week-sel')
+  for (const w of weeksWithPhotos) {
+    const opt = document.createElement('option')
+    opt.value = w
+    opt.textContent = `Woche ${w} · Tag ${wocheToTag(w)}`
+    opt.style.background = '#12121a'
+    sel.appendChild(opt)
+  }
+
+  if (weeksWithPhotos.length > 0) {
+    document.getElementById('compare-section').style.display = 'flex'
+    document.getElementById('compare-section').style.flexDirection = 'column'
+    sel.value = weeksWithPhotos[0]
+    loadComparison()
+  }
+
+  // Set localStorage flag if photos already exist for current week
+  if (photoMap[currentWoche] && Object.keys(photoMap[currentWoche]).length > 0) {
+    localStorage.setItem('90tc_foto_woche_' + currentWoche, '1')
+  }
+
+  updateFotoReminderBanner()
+
+  document.getElementById('splash').style.display = 'none'
+  document.getElementById('main').style.display = 'block'
+}
+
+function updateFotoReminderBanner() {
+  const banner = document.getElementById('foto-reminder')
+  if (!banner) return
+  const hasPhotos = photoMap[currentWoche] && Object.keys(photoMap[currentWoche]).length > 0
+  const dayNr = calcDayNr(currentProfile?.startdatum)
+  // Show reminder from week 2 onwards if no photos taken yet this week
+  if (!hasPhotos && dayNr >= 8) {
+    const tagStart = wocheToTag(currentWoche)
+    document.getElementById('foto-reminder-sub').textContent =
+      `Woche ${currentWoche} (Tag ${tagStart}) — gleiche Pose, gleiches Licht. Konstanz macht den Unterschied.`
+    banner.style.display = 'flex'
+  } else {
+    banner.style.display = 'none'
+  }
+}
+
+init()
+</script>
+</body>
+</html>

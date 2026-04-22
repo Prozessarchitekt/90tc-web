@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>90TC — Fortschritt</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ffc56c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="90TC">
+  <link rel="apple-touch-icon" href="icon.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Space+Grotesk:wght@900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode:'class',
+      theme:{ extend:{ colors:{
+        'background':'#03030A','surface':'#0d0d17',
+        'surface-container':'#191825','surface-container-low':'#12121d',
+        'surface-container-high':'#1f1e2c','surface-container-highest':'#252433',
+        'on-surface':'#efecfb','on-surface-variant':'#aca9b7',
+        'outline':'#757481','outline-variant':'#484752',
+        'primary':'#ffc56c','primary-container':'#cb9743','on-primary-container':'#321f00',
+        'secondary':'#89ceff','tertiary-dim':'#11f080','error':'#ff7351',
+      }, fontFamily:{ headline:['Space Grotesk'], body:['Inter'] } } }
+    }
+  </script>
+
+  <style>
+    :root {
+      --accent:#ffc56c; --green2:#11f080; --danger:#ff7351;
+      --muted:#757481; --text:#efecfb; --text2:#aca9b7;
+      --border:rgba(72,71,82,0.35);
+    }
+    body { background:#03030A; color:#efecfb; font-family:'Inter',sans-serif; min-height:100dvh; }
+    .grainy-overlay { pointer-events:none;position:fixed;inset:0;z-index:9999;opacity:0.035;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size:180px 180px; }
+    .splash { position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#03030A;z-index:200; }
+    .spinner { width:32px;height:32px;border:3px solid rgba(255,197,108,0.15);border-top-color:#ffc56c;border-radius:50%;animation:spin .7s linear infinite; }
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    #main { padding:max(80px,calc(env(safe-area-inset-top)+72px)) 16px 110px; max-width:600px; margin:0 auto; }
+
+    /* Cards */
+    .s-card { background:rgba(25,24,37,0.7);backdrop-filter:blur(16px);border:1.5px solid rgba(72,71,82,0.35);border-radius:20px;padding:20px;margin-bottom:14px; }
+    .s-card-title { font-family:'Space Grotesk',sans-serif;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0.12em;color:#aca9b7;margin-bottom:14px;display:flex;align-items:center;gap:8px; }
+    .s-card-title .material-symbols-outlined { font-size:14px;color:#ffc56c; }
+
+    /* Stat boxes */
+    .stat-grid { display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px; }
+    .stat-box { background:#12121d;border:1.5px solid rgba(72,71,82,0.3);border-radius:16px;padding:16px; }
+    .stat-box-val { font-family:'Space Grotesk',sans-serif;font-size:clamp(2rem,8vw,2.8rem);font-weight:900;font-style:italic;line-height:1;margin-bottom:4px; }
+    .stat-box-label { font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#aca9b7; }
+
+    /* Chart wrap */
+    .chart-wrap { height:160px;position:relative; }
+
+    /* Heatmap */
+    #heatmap { display:flex;flex-wrap:wrap;gap:5px;margin-top:4px; }
+    .heatmap-cell { width:clamp(22px,7vw,28px);height:clamp(22px,7vw,28px);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:8px;color:rgba(255,255,255,0.4); }
+
+    /* Compare table */
+    .compare-row { display:grid;grid-template-columns:1fr 52px 52px 52px;gap:4px;padding:8px 0;border-bottom:1px solid rgba(72,71,82,0.25);font-size:12px;align-items:center; }
+    .compare-row:last-child { border-bottom:none; }
+    .compare-label { color:#aca9b7;font-weight:600; }
+    .compare-prev,.compare-curr { text-align:center;font-family:'Space Grotesk',sans-serif;font-style:italic;font-weight:900;font-size:13px; }
+    .compare-delta { text-align:center; }
+    .delta-neg { color:#11f080;font-weight:700; }
+    .delta-pos { color:#ff7351;font-weight:700; }
+    .delta-zero { color:#757481;font-weight:700; }
+
+    /* Training sessions */
+    .session-item { display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(72,71,82,0.2); }
+    .session-item:last-child { border-bottom:none; }
+    .session-dot { width:8px;height:8px;border-radius:50%;background:#484752;flex-shrink:0; }
+    .session-info { flex:1;min-width:0; }
+    .session-stat { font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:900;color:#ffc56c;flex-shrink:0; }
+
+    /* PRs */
+    .pr-row { display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(72,71,82,0.2); }
+    .pr-row:last-child { border-bottom:none; }
+
+    /* Insights */
+    .insight-card { display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid rgba(72,71,82,0.2); }
+    .insight-card:last-child { border-bottom:none; }
+    .insight-icon { font-size:24px;flex-shrink:0;width:36px;text-align:center; }
+    .insight-label { font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#aca9b7;margin-bottom:2px; }
+    .insight-value { font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:900;font-style:italic;color:#ffc56c; }
+    .insight-sub { font-size:11px;color:#757481;margin-top:2px; }
+
+    /* Missions */
+    .mission-card { background:#12121d;border:1.5px solid rgba(72,71,82,0.3);border-radius:14px;padding:14px;margin-bottom:8px; }
+    .mission-card.done { border-color:rgba(17,240,128,0.3);background:rgba(17,240,128,0.04); }
+    .mission-header { display:flex;gap:10px;align-items:flex-start;margin-bottom:10px; }
+    .mission-icon { font-size:20px;flex-shrink:0; }
+    .mission-info { flex:1;min-width:0; }
+    .mission-name { font-size:13px;font-weight:700;margin-bottom:2px; }
+    .mission-desc { font-size:11px;color:#aca9b7; }
+    .mission-reward { font-size:11px;font-weight:700;color:#ffc56c;flex-shrink:0;white-space:nowrap; }
+    .mission-bar-track { height:4px;background:rgba(255,255,255,0.07);border-radius:4px;overflow:hidden;margin-bottom:5px; }
+    .mission-bar-fill { height:100%;background:#ffc56c;border-radius:4px;transition:width .5s; }
+    .mission-status { font-size:11px;color:#757481;font-weight:700; }
+    .mission-status.done { color:#11f080; }
+
+    /* Badges */
+    .badge-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px; }
+    .badge-box { background:#12121d;border:1.5px solid rgba(72,71,82,0.3);border-radius:14px;padding:12px 8px;text-align:center;transition:border-color .2s; }
+    .badge-box.earned { border-color:rgba(255,197,108,0.4);background:rgba(255,197,108,0.06); }
+    .badge-box.locked { opacity:0.4;filter:grayscale(1); }
+    .badge-emoji { font-size:22px;margin-bottom:4px; }
+    .badge-name { font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#aca9b7;line-height:1.2; }
+    .badge-box.earned .badge-name { color:#ffc56c; }
+
+    .bnav { display:none !important; }
+    .no-scrollbar::-webkit-scrollbar { display:none; }
+    .no-scrollbar { -ms-overflow-style:none;scrollbar-width:none; }
+
+    /* Cinematic Hero */
+    .stats-hero { position:relative; overflow:hidden; display:flex; flex-direction:column; margin:0; width:100%; }
+    .stats-hero-bg {
+      position:absolute; inset:0; z-index:0;
+      background:
+        radial-gradient(ellipse at 20% 15%, rgba(137,206,255,0.18) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 80%, rgba(0,237,125,0.10) 0%, transparent 50%),
+        radial-gradient(ellipse at 60% 40%, rgba(255,197,108,0.08) 0%, transparent 60%),
+        linear-gradient(180deg, #070a12 0%, #0d0d17 100%);
+    }
+    .stats-hero-overlay {
+      position:absolute; inset:0; z-index:1;
+      background:linear-gradient(180deg, transparent 30%, #03030A 100%);
+    }
+    .stats-hero-content { position:relative; z-index:2; padding:0 20px 28px; }
+    #main { padding:0 16px 120px; max-width:600px; margin:0 auto; }
+  </style>
+</head>
+<body class="dark font-body antialiased">
+
+<div class="grainy-overlay"></div>
+
+<!-- Top Nav -->
+<nav class="fixed top-0 w-full z-50 bg-neutral-950/80 backdrop-blur-xl flex justify-between items-center px-6 pb-4 shadow-[0_8px_32px_rgba(0,0,0,0.8)]" style="padding-top:max(16px,env(safe-area-inset-top))">
+  <div class="flex items-center gap-2">
+    <span class="material-symbols-outlined text-amber-500" style="font-variation-settings:'FILL' 1">workspace_premium</span>
+    <span class="text-xl font-black tracking-tighter text-amber-500 italic font-headline uppercase">90TC</span>
+  </div>
+  <span class="font-headline tracking-tighter uppercase font-bold text-amber-500 text-sm" id="topbar-day-stats"></span>
+  <div class="absolute bottom-0 left-0 bg-gradient-to-r from-transparent via-amber-500/20 to-transparent h-[1px] w-full"></div>
+</nav>
+
+<div id="app">
+  <div class="splash" id="loading"><div class="spinner"></div></div>
+  <div id="main" class="no-scrollbar" style="display:none;">
+
+    <!-- ── Cinematic Hero ── -->
+    <div class="stats-hero" style="margin:0 -16px;width:calc(100% + 32px);">
+      <div class="stats-hero-bg"></div>
+      <div class="stats-hero-overlay"></div>
+      <div style="height:calc(max(16px,env(safe-area-inset-top)) + 56px);flex-shrink:0;"></div>
+      <div class="stats-hero-content">
+        <span style="font-family:'Space Grotesk',sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.28em;color:rgba(137,206,255,0.7);display:block;margin-bottom:6px;" id="stats-hero-badge">DEIN FORTSCHRITT</span>
+        <h1 style="font-family:'Space Grotesk',sans-serif;font-size:clamp(2.6rem,11vw,4rem);font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:-0.04em;line-height:0.88;color:#e4e1ef;text-shadow:0 0 40px rgba(137,206,255,0.15);">
+          STATIS<span style="color:#89ceff;">TIK</span>
+        </h1>
+        <p style="font-size:12px;color:rgba(172,169,183,0.7);font-weight:500;margin-top:8px;" id="stats-hero-sub">Trainings · Körper · Gewicht</p>
+      </div>
+    </div>
+
+    <!-- Key Stats -->
+    <div class="stat-grid" style="margin-top:16px;">
+      <div class="stat-box">
+        <div class="stat-box-val" id="s-streak" style="color:#ffc56c;">0</div>
+        <div class="stat-box-label">🔥 Streak</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-box-val" id="s-rec" style="color:#f0b760;">0</div>
+        <div class="stat-box-label">🏆 Rekord</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-box-val" id="s-training" style="color:#11f080;">0</div>
+        <div class="stat-box-label">🏋️ Trainings</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-box-val" id="s-perfect" style="color:#89ceff;">0</div>
+        <div class="stat-box-label">⭐ Perfekte Tage</div>
+      </div>
+    </div>
+
+    <!-- Gewichtsverlauf -->
+    <div class="s-card">
+      <div class="s-card-title">
+        <span class="material-symbols-outlined">monitor_weight</span>
+        Gewichtsverlauf <span id="weight-range" style="margin-left:auto;font-weight:600;color:#757481;font-size:10px;text-transform:none;letter-spacing:0;">letzte 30 Tage</span>
+      </div>
+      <div class="chart-wrap"><canvas id="weight-chart"></canvas></div>
+      <div style="display:flex;gap:16px;margin-top:10px;">
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#aca9b7;"><span style="width:16px;height:2px;background:#ffc56c;display:inline-block;border-radius:2px;"></span>Täglich</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#aca9b7;"><span style="width:16px;height:3px;background:#f0b760;display:inline-block;border-radius:2px;"></span>7-Tage-Schnitt</span>
+      </div>
+    </div>
+
+    <!-- Score Heatmap -->
+    <div class="s-card">
+      <div class="s-card-title">
+        <span class="material-symbols-outlined">grid_view</span>
+        Tages-Scores <span style="margin-left:auto;font-weight:600;color:#757481;font-size:10px;text-transform:none;letter-spacing:0;">Letzte 30 Tage</span>
+      </div>
+      <div id="heatmap"></div>
+      <div style="display:flex;gap:12px;margin-top:10px;font-size:10px;color:#757481;flex-wrap:wrap;">
+        <span>⬜ Kein Eintrag</span>
+        <span style="color:#f0b760;">■ 1–3/7</span>
+        <span style="color:#ffc56c;">■ 4–6/7</span>
+        <span style="color:#11f080;">■ 7/7</span>
+      </div>
+    </div>
+
+    <!-- Wochenschnitt Score -->
+    <div class="s-card">
+      <div class="s-card-title"><span class="material-symbols-outlined">bar_chart</span>Wochenschnitt Score/7</div>
+      <div class="chart-wrap" style="height:140px;"><canvas id="score-chart"></canvas></div>
+    </div>
+
+    <!-- Energie-Muster -->
+    <div class="s-card" id="energie-card" style="display:none;">
+      <div class="s-card-title"><span class="material-symbols-outlined">bolt</span>Energie-Muster</div>
+      <div id="energie-insights"></div>
+    </div>
+
+    <!-- Körpermaße -->
+    <div class="s-card" id="maß-compare-card" style="display:none;">
+      <div class="s-card-title"><span class="material-symbols-outlined">straighten</span>Körpermaße <span style="margin-left:auto;font-weight:600;color:#757481;font-size:10px;text-transform:none;letter-spacing:0;">Start vs. Jetzt</span></div>
+      <div style="display:grid;grid-template-columns:1fr 52px 52px 52px;gap:4px;font-size:10px;color:#757481;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;padding-bottom:8px;border-bottom:1px solid rgba(72,71,82,0.25);">
+        <span>Maß</span><span style="text-align:center;">Start</span><span style="text-align:center;">Jetzt</span><span style="text-align:center;">Δ</span>
+      </div>
+      <div id="maß-compare"></div>
+    </div>
+
+    <!-- Training-Verlauf -->
+    <div class="s-card" id="tv-card" style="display:none;">
+      <div class="s-card-title">
+        <span class="material-symbols-outlined">fitness_center</span>
+        Letzte Einheiten <span id="tv-count" style="margin-left:auto;font-weight:600;color:#757481;font-size:10px;text-transform:none;letter-spacing:0;"></span>
+      </div>
+      <div id="tv-list"></div>
+    </div>
+
+    <!-- Persönliche Rekorde -->
+    <div class="s-card" id="pr-card" style="display:none;">
+      <div class="s-card-title">
+        <span class="material-symbols-outlined">emoji_events</span>
+        Persönliche Rekorde <span id="pr-count" style="margin-left:auto;font-weight:600;color:#757481;font-size:10px;text-transform:none;letter-spacing:0;">0</span>
+      </div>
+      <div id="pr-list"></div>
+    </div>
+
+    <!-- Wöchentliche Missionen -->
+    <div class="s-card">
+      <div class="s-card-title">
+        <span class="material-symbols-outlined">flag</span>
+        Wöchentliche Missionen <span id="mission-week" style="margin-left:auto;font-weight:600;color:#757481;font-size:10px;text-transform:none;letter-spacing:0;">Diese Woche</span>
+      </div>
+      <div id="mission-list"></div>
+    </div>
+
+    <!-- Badges -->
+    <div class="s-card">
+      <div class="s-card-title">
+        <span class="material-symbols-outlined">workspace_premium</span>
+        Badges <span id="badge-count" style="margin-left:auto;font-weight:600;color:#757481;font-size:10px;text-transform:none;letter-spacing:0;">0 von 15</span>
+      </div>
+      <div class="badge-grid" id="badge-grid"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Split-Island Bottom Nav (Stats active) -->
+<div style="position:fixed;bottom:calc(16px + env(safe-area-inset-bottom));left:12px;right:12px;z-index:50;display:flex;align-items:flex-end;justify-content:space-between;gap:10px;pointer-events:none;">
+  <!-- Left island: Start | Training -->
+  <div style="flex:1;display:flex;align-items:center;justify-content:space-around;height:60px;background:rgba(18,17,26,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.07);border-radius:22px;overflow:hidden;pointer-events:auto;">
+    <a href="dashboard.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;padding:8px 4px;color:#757481;">
+      <span class="material-symbols-outlined" style="font-size:22px;">home</span>
+      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Start</span>
+    </a>
+    <div style="width:1px;height:28px;background:rgba(255,255,255,0.07);flex-shrink:0;"></div>
+    <a href="training.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;padding:8px 4px;color:#757481;">
+      <span class="material-symbols-outlined" style="font-size:22px;">fitness_center</span>
+      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Training</span>
+    </a>
+  </div>
+  <!-- Center: Essen FAB -->
+  <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:4px;margin-bottom:6px;pointer-events:auto;">
+    <a href="essen.html" style="text-decoration:none;display:block;">
+      <div style="width:60px;height:60px;border-radius:20px;background:linear-gradient(135deg,#ffc56c,#cb9743);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(255,197,108,0.55);">
+        <span class="material-symbols-outlined" style="font-size:26px;color:#321f00;">restaurant</span>
+      </div>
+    </a>
+    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#ffc56c;">Essen</span>
+  </div>
+  <!-- Right island: Stats | Profil -->
+  <div style="flex:1;display:flex;align-items:center;justify-content:space-around;height:60px;background:rgba(18,17,26,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.07);border-radius:22px;overflow:hidden;pointer-events:auto;">
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:8px 4px;color:#ffc56c;">
+      <span class="material-symbols-outlined" style="font-size:22px;filter:drop-shadow(0 0 6px rgba(255,197,108,0.5));">query_stats</span>
+      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Stats</span>
+    </div>
+    <div style="width:1px;height:28px;background:rgba(255,255,255,0.07);flex-shrink:0;"></div>
+    <a href="profil.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;padding:8px 4px;color:#757481;">
+      <span class="material-symbols-outlined" style="font-size:22px;">person</span>
+      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Profil</span>
+    </a>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="js/config.js"></script>
+<script src="js/gamification.js"></script>
+<script src="js/auth.js"></script>
+<script>
+const ALL_BADGES = [
+  { id:'erster_schritt',   emoji:'🌱', name:'Erster Schritt',   desc:'Tag 1 abgeschlossen' },
+  { id:'eine_woche',       emoji:'💪', name:'Eine Woche',       desc:'7 Tage Streak' },
+  { id:'halbzeit',         emoji:'🏃', name:'Halbzeit-Held',    desc:'Tag 45 erreicht' },
+  { id:'streak_30',        emoji:'🔥', name:'Unaufhaltsam',     desc:'30 Tage Streak' },
+  { id:'die_letzten_10',   emoji:'⭐', name:'Die letzten 10',   desc:'Tag 80 erreicht' },
+  { id:'champion',         emoji:'🏆', name:'90TC Champion',    desc:'90 Tage abgeschlossen' },
+  { id:'proteinmaschine',  emoji:'🥩', name:'Proteinmaschine',  desc:'7× Proteinziel getroffen' },
+  { id:'wasserheld',       emoji:'💧', name:'Wasserheld',       desc:'7× Wasserziel getroffen' },
+  { id:'steps_club',       emoji:'👟', name:'10.000 Steps Club',desc:'10× Schritte erreicht' },
+  { id:'schlafkoenig',     emoji:'😴', name:'Schlafkönig',      desc:'5× ≥ 7h Schlaf' },
+  { id:'progressive',      emoji:'📈', name:'Progressive Overload',desc:'5× Progression' },
+  { id:'fruehaufsteher',   emoji:'🌅', name:'Frühaufsteher',    desc:'7× vor 7:00 Uhr' },
+  { id:'nachtaktiv',       emoji:'🌙', name:'Nachtaktiv',       desc:'3× nach 23:00 Uhr' },
+  { id:'perfekter_tag',    emoji:'⚡', name:'Perfekter Tag',    desc:'Alle 7 + Training + PR' },
+  { id:'perfekte_woche',   emoji:'💯', name:'Perfekte Woche',   desc:'7/7 Tage alle Faktoren' },
+]
+
+Chart.defaults.color = '#757481'
+Chart.defaults.borderColor = 'rgba(255,255,255,0.05)'
+
+async function init() {
+  const ctx = await requireProfile()
+  if (!ctx) return
+  const { user, profile } = ctx
+
+  const { data: entries } = await sb.from('daily_entries')
+    .select('*').eq('user_id', user.id).order('datum', { ascending: true })
+
+  const { data: badges } = await sb.from('user_badges')
+    .select('badge_id').eq('user_id', user.id)
+
+  const { data: wcs } = await sb.from('weekly_checks')
+    .select('*').eq('user_id', user.id).order('woche_nr', { ascending: true })
+
+  const [{ data: prs }, { data: trainSessions }] = await Promise.all([
+    sb.from('personal_records').select('*').eq('user_id', user.id).order('datum', { ascending: false }),
+    sb.from('training_sessions').select('id,datum,plan_name,notizen,dauer_min').eq('user_id', user.id).order('datum', { ascending: false }).limit(10)
+  ])
+
+  document.getElementById('loading').style.display = 'none'
+  document.getElementById('main').style.display = 'block'
+
+  // Topbar day
+  const dayNrStats = calcDayNr ? calcDayNr(profile.startdatum) : 0
+  const topDayEl = document.getElementById('topbar-day-stats')
+  if (topDayEl) topDayEl.textContent = dayNrStats > 0 ? `TAG ${dayNrStats} 🔥` : 'VORBEREITUNG'
+
+  // Hero sub text
+  const heroSub = document.getElementById('stats-hero-sub')
+  if (heroSub && dayNrStats > 0) heroSub.textContent = `Tag ${dayNrStats} · Challenge läuft`
+
+  const earnedIds = new Set((badges || []).map(b => b.badge_id))
+  await checkBadges(user, profile, entries, earnedIds)
+
+  // Stats
+  const trainDays   = (entries||[]).filter(e => e.training_gemacht).length
+  const perfectDays = (entries||[]).filter(e => e.score_von_7 === 7).length
+  document.getElementById('s-streak').textContent   = profile.streak_aktuell || 0
+  document.getElementById('s-rec').textContent      = profile.streak_rekord || 0
+  document.getElementById('s-training').textContent = trainDays
+  document.getElementById('s-perfect').textContent  = perfectDays
+
+  // Weight Chart — include profile starting weight as first data point
+  const weightData = (entries||[]).filter(e => e.gewicht_kg)
+  // Prepend profile.gewicht_kg as "Start" if no daily entry exists for the start date
+  if (profile.gewicht_kg && profile.startdatum) {
+    const hasStartEntry = weightData.some(e => e.datum === profile.startdatum)
+    if (!hasStartEntry) {
+      weightData.unshift({ datum: profile.startdatum, gewicht_kg: profile.gewicht_kg, _synthetic: true })
+    }
+  }
+  if (weightData.length >= 1) {
+    const labels  = weightData.map(e => { const d = new Date(e.datum+'T00:00:00'); return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}) })
+    const weights = weightData.map(e => e.gewicht_kg)
+    const avg     = weights.map((_, i) => { const slice = weights.slice(Math.max(0,i-6),i+1); return parseFloat((slice.reduce((s,v)=>s+v,0)/slice.length).toFixed(1)) })
+    new Chart(document.getElementById('weight-chart'), {
+      type: 'line',
+      data: { labels, datasets: [
+        { label:'Gewicht', data:weights, borderColor:'#ffc56c', borderWidth:1.5, pointRadius:2, pointBackgroundColor:'#ffc56c', tension:0.3, fill:false },
+        { label:'7-Tage-Schnitt', data:avg, borderColor:'#f0b760', borderWidth:2.5, pointRadius:0, tension:0.4, fill:false },
+      ]},
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } },
+        scales: { x:{ ticks:{ maxTicksLimit:6, font:{ size:10 } }, grid:{ color:'rgba(255,255,255,0.04)' } }, y:{ ticks:{ font:{ size:10 } }, grid:{ color:'rgba(255,255,255,0.04)' } } } }
+    })
+  }
+
+  // Heatmap
+  const last30 = (entries||[]).slice(-30)
+  document.getElementById('heatmap').innerHTML = last30.map(e => {
+    const s = e.score_von_7
+    let bg = '#1a1a28'
+    if (s >= 7) bg = '#11f080'
+    else if (s >= 4) bg = '#ffc56c'
+    else if (s >= 1) bg = '#f0b760'
+    return `<div class="heatmap-cell" title="Tag ${e.tag_nr}: ${s!=null?s+'/7':'Kein Score'}" style="background:${bg}">${e.tag_nr}</div>`
+  }).join('')
+
+  // Weekly Score Chart
+  if (entries?.length > 6) {
+    const weeks = {}
+    entries.forEach(e => { const w = Math.ceil(e.tag_nr/7); if (!weeks[w]) weeks[w]=[]; if (e.score_von_7!=null) weeks[w].push(e.score_von_7) })
+    const wLabels = Object.keys(weeks).map(w => 'W'+w)
+    const wScores = Object.values(weeks).map(arr => arr.length ? parseFloat((arr.reduce((s,v)=>s+v,0)/arr.length).toFixed(1)) : null)
+    new Chart(document.getElementById('score-chart'), {
+      type:'bar',
+      data:{ labels:wLabels, datasets:[{ data:wScores, backgroundColor:wScores.map(s=>s>=6?'rgba(255,197,108,0.85)':s>=4?'rgba(255,197,108,0.5)':'rgba(240,183,96,0.35)'), borderRadius:6 }] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } },
+        scales:{ y:{ min:0, max:7, ticks:{ font:{ size:10 } }, grid:{ color:'rgba(255,255,255,0.04)' } }, x:{ ticks:{ font:{ size:10 } }, grid:{ display:false } } } }
+    })
+  }
+
+  // Körpermaße comparison
+  if (wcs?.length > 1) {
+    const first = wcs[0]; const last = wcs[wcs.length-1]
+    const FELDER = ['schulter','brust','arm_rechts','arm_links','bauch_oben','bauch_mitte','bauch_unten','huefte','bein_rechts','bein_links']
+    const LABELS = ['Schulter','Brust','Arm re.','Arm li.','Bauch o.','Bauch m.','Bauch u.','Hüfte','Bein re.','Bein li.']
+    document.getElementById('maß-compare-card').style.display = 'block'
+    document.getElementById('maß-compare').innerHTML = FELDER.map((f,i) => {
+      if (!first[f]) return ''
+      const d = last[f] ? parseFloat((last[f]-first[f]).toFixed(1)) : null
+      return `<div class="compare-row">
+        <span class="compare-label">${LABELS[i]}</span>
+        <span class="compare-prev">${first[f]}</span>
+        <span class="compare-curr">${last[f]??'—'}</span>
+        <span class="compare-delta">${d!=null?`<span class="${d<0?'delta-neg':d>0?'delta-pos':'delta-zero'}">${d>0?'+':''}${d}</span>`:'—'}</span>
+      </div>`
+    }).join('')
+  }
+
+  // Training sessions
+  if (trainSessions?.length) {
+    document.getElementById('tv-card').style.display = 'block'
+    document.getElementById('tv-count').textContent = `${trainSessions.length} Einheiten`
+    document.getElementById('tv-list').innerHTML = trainSessions.map((s,i) => {
+      const dateStr = new Date(s.datum+'T00:00:00').toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'})
+      return `<div class="session-item">
+        <div class="session-dot" style="${i===0?'background:#ffc56c':''}"></div>
+        <div class="session-info">
+          <div style="font-size:13px;font-weight:700;">${s.plan_name||'Training'}</div>
+          <div style="font-size:11px;color:#757481;margin-top:2px;">${dateStr}${s.notizen?' · '+s.notizen:''}</div>
+        </div>
+        ${s.dauer_min?`<div class="session-stat">${s.dauer_min}m</div>`:''}
+      </div>`
+    }).join('')
+  }
+
+  // Personal Records
+  if (prs?.length) {
+    document.getElementById('pr-card').style.display = 'block'
+    document.getElementById('pr-count').textContent = `${prs.length} PR${prs.length!==1?'s':''}`
+    document.getElementById('pr-list').innerHTML = prs.map(pr => `
+      <div class="pr-row">
+        <div>
+          <div style="font-size:13px;font-weight:700;">${pr.uebung}</div>
+          <div style="font-size:11px;color:#757481;margin-top:2px;">${new Date(pr.datum+'T00:00:00').toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'})}</div>
+        </div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:900;font-style:italic;color:#ffc56c;">${pr.gewicht_kg}<span style="font-size:12px;font-weight:500;color:#757481;"> kg</span></div>
+      </div>`).join('')
+  }
+
+  // Badges
+  document.getElementById('badge-count').textContent = `${earnedIds.size} von ${ALL_BADGES.length}`
+  document.getElementById('badge-grid').innerHTML = ALL_BADGES.map(b =>
+    `<div class="badge-box ${earnedIds.has(b.id)?'earned':'locked'}" title="${b.desc}">
+      <div class="badge-emoji">${b.emoji}</div>
+      <div class="badge-name">${b.name}</div>
+    </div>`
+  ).join('')
+
+  if (entries?.length >= 7) renderEnergieMuster(entries, profile)
+  renderMissionen(entries, profile)
+}
+
+function renderEnergieMuster(entries, profile) {
+  const card = document.getElementById('energie-card')
+  const el = document.getElementById('energie-insights')
+  card.style.display = 'block'
+  const insights = []
+  const byDay = {}
+  entries.forEach(e => { if (!e.energie_level) return; const d = new Date(e.datum+'T00:00:00').getDay(); if (!byDay[d]) byDay[d]=[]; byDay[d].push(e.energie_level) })
+  const dayNames = ['So','Mo','Di','Mi','Do','Fr','Sa']
+  let bestDay=-1, bestAvg=0
+  Object.entries(byDay).forEach(([d,vals]) => { const avg=vals.reduce((s,v)=>s+v,0)/vals.length; if(avg>bestAvg){bestAvg=avg;bestDay=parseInt(d)} })
+  if (bestDay>=0) { const emojis=['😴','😐','⚡','🚀']; insights.push({ icon:'⚡', label:'Bester Wochentag', value:dayNames[bestDay], sub:`Ø ${bestAvg.toFixed(1)}/4 Energie ${emojis[Math.round(bestAvg)-1]||''}` }) }
+  const withBoth = entries.filter(e=>e.schlaf_ist_h&&e.energie_level)
+  if (withBoth.length>=5) {
+    const gut=withBoth.filter(e=>e.schlaf_ist_h>=7); const schlecht=withBoth.filter(e=>e.schlaf_ist_h<7)
+    if (gut.length&&schlecht.length) {
+      const avgGut=gut.reduce((s,e)=>s+e.energie_level,0)/gut.length; const avgSchlecht=schlecht.reduce((s,e)=>s+e.energie_level,0)/schlecht.length
+      if (avgGut>avgSchlecht+0.3) insights.push({ icon:'😴', label:'Schlaf macht den Unterschied', value:`+${((avgGut-avgSchlecht)/4*100).toFixed(0)}% mehr Energie`, sub:'Bei ≥7h Schlaf vs. weniger Schlaf' })
+    }
+  }
+  const trainingDays=entries.filter(e=>e.training_gemacht&&e.stimmung); const restDays=entries.filter(e=>e.training_gemacht===false&&e.stimmung)
+  if (trainingDays.length>=3&&restDays.length>=3) {
+    const avgT=trainingDays.reduce((s,e)=>s+e.stimmung,0)/trainingDays.length; const avgR=restDays.reduce((s,e)=>s+e.stimmung,0)/restDays.length
+    if (avgT>avgR+0.3) insights.push({ icon:'🏋️', label:'Training hebt deine Stimmung', value:`+${((avgT-avgR)/5*100).toFixed(0)}% bessere Stimmung`, sub:'An Trainingstagen vs. Ruhetagen' })
+  }
+  const stepsEntries=entries.filter(e=>e.schritte_ist)
+  if (stepsEntries.length>=5) {
+    const avgSteps=Math.round(stepsEntries.reduce((s,e)=>s+e.schritte_ist,0)/stepsEntries.length); const goal=profile.schritte_ziel||10000
+    insights.push({ icon:'👟', label:'Schritte-Durchschnitt', value:avgSteps.toLocaleString('de-DE'), sub:`${Math.round(avgSteps/goal*100)}% des Ziels (${goal.toLocaleString('de-DE')})` })
+  }
+  if (!insights.length) { card.style.display='none'; return }
+  el.innerHTML = insights.map(i => `<div class="insight-card"><div class="insight-icon">${i.icon}</div><div class="insight-info"><div class="insight-label">${i.label}</div><div class="insight-value">${i.value}</div><div class="insight-sub">${i.sub}</div></div></div>`).join('')
+}
+
+function renderMissionen(entries, profile) {
+  const el = document.getElementById('mission-list')
+  const thisWeekEntries = (entries||[]).slice(-7)
+  const MISSIONEN = [
+    { icon:'💧', name:'Hydrations-Champion', desc:'5× diese Woche Wasserziel erreichen', reward:'+100 XP', current:thisWeekEntries.filter(e=>e.wasser_ist_l&&profile.wasser_ziel_l&&e.wasser_ist_l>=profile.wasser_ziel_l).length, target:5 },
+    { icon:'🏋️', name:'Trainings-Krieger', desc:'4× diese Woche trainieren', reward:'+150 XP', current:thisWeekEntries.filter(e=>e.training_gemacht).length, target:4 },
+    { icon:'💪', name:'Protein-Profi', desc:'5× Proteinziel erreichen', reward:'+100 XP', current:thisWeekEntries.filter(e=>e.protein_ist_g&&profile.protein_ziel_g&&e.protein_ist_g>=profile.protein_ziel_g).length, target:5 },
+    { icon:'😴', name:'Schlaf-Meister', desc:'5× mindestens 7h schlafen', reward:'+100 XP', current:thisWeekEntries.filter(e=>e.schlaf_ist_h&&e.schlaf_ist_h>=7).length, target:5 },
+    { icon:'⭐', name:'Perfekte Woche', desc:'7 Tage Streak + alle 7 Check-ins', reward:'+300 XP 🏆', current:thisWeekEntries.filter(e=>e.checkin_morgen&&e.checkin_abend).length, target:7 },
+  ]
+  el.innerHTML = MISSIONEN.map(m => {
+    const pct=Math.min(100,Math.round(m.current/m.target*100)); const done=m.current>=m.target
+    return `<div class="mission-card ${done?'done':''}">
+      <div class="mission-header">
+        <div class="mission-icon">${m.icon}</div>
+        <div class="mission-info">
+          <div class="mission-name">${m.name} ${done?'✅':''}</div>
+          <div class="mission-desc">${m.desc}</div>
+        </div>
+        <div class="mission-reward">${m.reward}</div>
+      </div>
+      <div class="mission-bar-track"><div class="mission-bar-fill" style="width:${pct}%;${done?'background:#11f080':''}"></div></div>
+      <div class="mission-status ${done?'done':''}">${done?'Abgeschlossen! 🎉':m.current+' / '+m.target}</div>
+    </div>`
+  }).join('')
+}
+
+async function checkBadges(user, profile, entries, earnedIds) {
+  const dayNr = calcDayNr(profile.startdatum)
+  const toAward = []
+  const check = (id, cond) => { if (cond && !earnedIds.has(id)) { toAward.push({ user_id:user.id, badge_id:id }); earnedIds.add(id) } }
+  check('erster_schritt', dayNr >= 1)
+  check('eine_woche', (profile.streak_aktuell||0)>=7||(profile.streak_rekord||0)>=7)
+  check('halbzeit', dayNr >= 45)
+  check('streak_30', (profile.streak_rekord||0) >= 30)
+  check('die_letzten_10', dayNr >= 80)
+  check('champion', dayNr >= 90)
+  if (entries?.length) {
+    const trainDays   = entries.filter(e=>e.training_gemacht).length
+    const progDays    = entries.filter(e=>e.progression).length
+    const proteinHits = entries.filter(e=>e.protein_ist_g&&profile.protein_ziel_g&&e.protein_ist_g>=profile.protein_ziel_g).length
+    const waterHits   = entries.filter(e=>e.wasser_ist_l&&profile.wasser_ziel_l&&e.wasser_ist_l>=profile.wasser_ziel_l).length
+    const stepHits    = entries.filter(e=>e.schritte_ist&&profile.schritte_ziel&&e.schritte_ist>=profile.schritte_ziel).length
+    const sleepHits   = entries.filter(e=>e.schlaf_ist_h&&e.schlaf_ist_h>=7).length
+    check('proteinmaschine', proteinHits >= 7)
+    check('wasserheld', waterHits >= 7)
+    check('steps_club', stepHits >= 10)
+    check('schlafkoenig', sleepHits >= 5)
+    check('progressive', progDays >= 5)
+    check('perfekter_tag', entries.some(e=>e.score_von_7===7&&e.training_gemacht&&e.progression))
+  }
+  if (toAward.length) await sb.from('user_badges').upsert(toAward, {onConflict:'user_id,badge_id',ignoreDuplicates:true})
+}
+
+init()
+</script>
+</body>
+</html>

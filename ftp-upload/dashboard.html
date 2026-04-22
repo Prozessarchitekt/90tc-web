@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html class="dark" lang="de">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+  <title>90TC — Dashboard</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ffc56c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="90TC">
+  <link rel="apple-touch-icon" href="icon.svg">
+
+  <!-- Open Graph / Social Preview -->
+  <meta property="og:type"        content="website">
+  <meta property="og:site_name"   content="90TC — 90 Tage Challenge">
+  <meta property="og:url"         content="https://90tc-web.vercel.app/dashboard.html">
+  <meta property="og:title"       content="90TC — Deine 90-Tage-Transformation">
+  <meta property="og:description" content="Kein Bullshit. Nur Ergebnisse. Dein persönliches Fitness-Tagebuch für die 90-Tage-Challenge — Training, Ernährung, Fortschritt.">
+  <meta property="og:image"       content="https://90tc-web.vercel.app/og-image.svg">
+  <meta property="og:image:width"  content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale"      content="de_DE">
+  <meta name="twitter:card"        content="summary_large_image">
+  <meta name="twitter:title"       content="90TC — Deine 90-Tage-Transformation">
+  <meta name="twitter:description" content="Kein Bullshit. Nur Ergebnisse. Training · Ernährung · Fortschritt.">
+  <meta name="twitter:image"       content="https://90tc-web.vercel.app/og-image.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "surface-container-highest": "#34343f",
+          "surface-container-lowest": "#03030A",
+          "surface-container-high": "#12121A",
+          "surface": "#03030A",
+          "surface-container-low": "#0D0D14",
+          "surface-variant": "#1A1A24",
+          "on-surface-variant": "#d6c4ac",
+          "tertiary": "#00ed7d",
+          "surface-dim": "#03030A",
+          "error": "#ffb4ab",
+          "surface-bright": "#1C1C26",
+          "surface-container": "#0D0D14",
+          "secondary": "#89ceff",
+          "on-secondary": "#00344d",
+          "on-surface": "#e4e1ef",
+          "primary": "#ffc56c",
+          "outline-variant": "#34343f",
+          "primary-container": "#f0a500",
+          "on-primary": "#442c00",
+          "background": "#03030A",
+          "on-background": "#e4e1ef",
+        },
+        fontFamily: { "headline": ["Space Grotesk"], "body": ["Inter"], "label": ["Inter"] }
+      }
+    }
+  }
+  </script>
+  <style>
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .grainy-overlay {
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      opacity: 0.04; pointer-events: none; z-index: 100;
+    }
+    .progress-ring-glow { filter: drop-shadow(0 0 14px rgba(255,197,108,0.5)); }
+    .obsidian-gradient { background: linear-gradient(135deg, #FFC56C 0%, #CB9743 100%); }
+    .glass-card { background: rgba(18,18,26,0.7); backdrop-filter: blur(24px); }
+    body { background-color: #03030A; min-height: 100vh; }
+
+    #splash { position:fixed;inset:0;z-index:9999;background:#03030A;display:flex;align-items:center;justify-content:center; }
+    .spinner { width:40px;height:40px;border:3px solid #1a1a24;border-top-color:#ffc56c;border-radius:50%;animation:spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .pill-done { border-color: rgba(0,237,125,0.3) !important; background: rgba(0,237,125,0.05) !important; }
+    .pill-done .pill-icon-el { color: #00ed7d !important; }
+
+    /* Dashboard hero */
+    .dash-hero {
+      position:relative; width:100%; overflow:hidden;
+      min-height:340px;
+      display:flex; flex-direction:column; justify-content:flex-end;
+    }
+    .dash-hero-bg {
+      position:absolute; inset:0; z-index:0;
+      background:
+        radial-gradient(ellipse at 75% 15%, rgba(255,197,108,0.32) 0%, transparent 55%),
+        radial-gradient(ellipse at 10% 90%, rgba(0,237,125,0.10) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(203,151,67,0.08) 0%, transparent 70%),
+        linear-gradient(180deg, #0a0910 0%, #13121c 100%);
+    }
+    .dash-hero-overlay {
+      position:absolute; inset:0; z-index:1;
+      background:linear-gradient(180deg, transparent 20%, rgba(3,3,10,0.7) 75%, #03030A 100%);
+    }
+    .dash-hero-content { position:relative; z-index:2; padding:0 20px 28px; }
+    .dash-xp-bar {
+      height:6px; width:100%; background:rgba(255,255,255,0.06); border-radius:99px;
+      overflow:hidden; border:1px solid rgba(255,255,255,0.04);
+    }
+    .dash-xp-fill {
+      height:100%; border-radius:99px; position:relative;
+      background:linear-gradient(90deg,#cb9743,#ffc56c,rgba(255,255,255,0.9));
+      transition:width .7s cubic-bezier(.4,0,.2,1);
+    }
+    .dash-xp-fill::after {
+      content:''; position:absolute; right:0; top:0; bottom:0; width:12px;
+      background:rgba(255,255,255,0.5); filter:blur(4px);
+    }
+
+    /* ── Onboarding Wizard ── */
+    #wiz-overlay {
+      position:fixed; inset:0; z-index:600;
+      background:#03030A; overflow-y:auto; overscroll-behavior:none;
+    }
+    .wiz-card-item {
+      display:flex; align-items:flex-start; gap:16px;
+      padding:20px; border-radius:22px; cursor:pointer;
+      transition:transform .15s, box-shadow .2s;
+      -webkit-tap-highlight-color:transparent; text-decoration:none;
+    }
+    .wiz-card-item:active { transform:scale(0.97); }
+    .wiz-card-item.wc-pending {
+      background:rgba(255,197,108,0.04);
+      border:1px solid rgba(255,197,108,0.18);
+    }
+    .wiz-card-item.wc-done {
+      background:rgba(0,237,125,0.04);
+      border:1px solid rgba(0,237,125,0.22);
+    }
+    .wiz-emoji-badge {
+      width:48px; height:48px; border-radius:15px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:24px; flex-shrink:0; margin-top:2px;
+    }
+    .wc-pending .wiz-emoji-badge {
+      background:rgba(255,197,108,0.12); border:1px solid rgba(255,197,108,0.2);
+    }
+    .wc-done .wiz-emoji-badge {
+      background:rgba(0,237,125,0.1); border:1px solid rgba(0,237,125,0.2);
+    }
+    @keyframes wizSlideUp {
+      from { opacity:0; transform:translateY(24px); }
+      to   { opacity:1; transform:none; }
+    }
+    .wiz-card-item { animation:wizSlideUp .35s ease both; }
+    .wiz-card-item:nth-child(1) { animation-delay:.05s; }
+    .wiz-card-item:nth-child(2) { animation-delay:.12s; }
+    .wiz-card-item:nth-child(3) { animation-delay:.19s; }
+  </style>
+</head>
+<body class="bg-background font-body text-on-surface selection:bg-primary/30 antialiased overflow-x-hidden">
+<div class="grainy-overlay"></div>
+<div id="splash"><div class="spinner"></div></div>
+
+<div id="main" style="display:none">
+
+<!-- Top Nav -->
+<nav class="fixed top-0 w-full z-50 bg-neutral-950/80 backdrop-blur-xl flex justify-between items-center px-6 pb-4 shadow-[0_8px_32px_rgba(0,0,0,0.8)]" style="padding-top:max(16px,env(safe-area-inset-top))">
+  <div class="flex items-center gap-2">
+    <span class="material-symbols-outlined text-amber-500" style="font-variation-settings:'FILL' 1">workspace_premium</span>
+    <span class="text-xl font-black tracking-tighter text-amber-500 italic font-headline uppercase">90TC</span>
+  </div>
+  <span id="topbar-day" class="font-headline tracking-tighter uppercase font-bold text-amber-500 text-sm">Tag 1</span>
+  <div class="absolute bottom-0 left-0 bg-gradient-to-r from-transparent via-amber-500/20 to-transparent h-[1px] w-full"></div>
+</nav>
+
+<main class="flex flex-col w-full relative max-w-lg mx-auto"
+      style="min-height:100dvh;padding-bottom:max(100px,calc(env(safe-area-inset-bottom) + 84px));">
+
+  <!-- ── Hero Section ── -->
+  <div class="dash-hero" style="padding-top:max(72px,calc(env(safe-area-inset-top) + 56px));">
+    <div class="dash-hero-bg"></div>
+    <div class="dash-hero-overlay"></div>
+
+    <!-- Boss Banner inside hero -->
+    <div id="boss-banner" style="display:none;position:relative;z-index:3;margin:0 16px 12px;" class="bg-surface-container border border-error/30 rounded-[20px] p-4 flex items-center gap-3">
+      <span class="text-3xl">💀</span>
+      <div>
+        <div id="boss-title" class="font-headline font-black text-error text-sm uppercase tracking-tight">BOSS-WOCHE</div>
+        <div id="boss-sub" class="text-on-surface-variant text-xs mt-0.5">Zeig was du drauf hast!</div>
+      </div>
+    </div>
+
+    <div class="dash-hero-content">
+      <!-- Row: Greeting + Ring -->
+      <div class="flex items-end justify-between gap-4 mb-6">
+        <!-- Greeting -->
+        <div class="flex-1 min-w-0">
+          <span class="font-headline font-bold text-primary tracking-[0.28em] text-[9px] uppercase opacity-60 block mb-1">WILLKOMMEN ZURÜCK</span>
+          <h1 class="font-headline font-black italic tracking-tighter uppercase leading-[0.88]" style="font-size:clamp(2.4rem,11vw,3.8rem)">
+            Hey,<br><span class="text-primary drop-shadow-[0_0_20px_rgba(240,165,0,0.55)]" id="dash-greeting">Chris</span>!
+          </h1>
+        </div>
+        <!-- Progress Ring -->
+        <div class="relative flex-shrink-0" style="width:120px;height:120px;">
+          <svg class="w-full h-full -rotate-90" viewBox="0 0 256 256">
+            <circle cx="128" cy="128" fill="transparent" r="110" stroke="rgba(255,255,255,0.06)" stroke-width="14"/>
+            <circle id="ring-arc" class="progress-ring-glow" cx="128" cy="128" fill="transparent" r="110"
+              stroke="#ffc56c" stroke-linecap="round" stroke-width="14"
+              style="stroke-dasharray:691;stroke-dashoffset:691;transition:stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1)"/>
+          </svg>
+          <div class="absolute inset-0 flex flex-col items-center justify-center">
+            <span id="ring-day" class="font-headline italic font-black text-primary leading-none" style="font-size:2.6rem">1</span>
+            <span class="font-label text-[8px] uppercase tracking-widest text-on-surface-variant mt-0.5">VON 90</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- XP Power Bar -->
+      <div id="xp-bar-wrap" style="display:none;">
+        <div class="flex justify-between items-end mb-2">
+          <span id="xp-level-lbl" class="font-headline font-bold text-[10px] tracking-widest text-on-surface-variant uppercase">Level 1</span>
+          <span id="xp-val-lbl" class="font-headline font-black text-primary text-sm tracking-tighter">0 XP</span>
+        </div>
+        <div class="dash-xp-bar">
+          <div id="xp-fill" class="dash-xp-fill" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Page body ── -->
+  <div class="px-4 flex flex-col gap-3 mt-2">
+
+  <!-- Pre-Start Banner (shown when challenge not yet started) -->
+  <div id="start-banner" style="display:none">
+    <div style="background:linear-gradient(135deg,rgba(255,197,108,0.08),rgba(255,197,108,0.03));border:1px solid rgba(255,197,108,0.22);border-radius:24px;padding:28px 22px;text-align:center;">
+      <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,197,108,0.12);border:1px solid rgba(255,197,108,0.25);border-radius:100px;padding:4px 12px;margin-bottom:16px;">
+        <span class="material-symbols-outlined" style="font-size:14px;color:#ffc56c;">schedule</span>
+        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#ffc56c;">BEREIT ZUM STARTEN</span>
+      </div>
+      <h2 class="font-headline font-black italic uppercase" style="font-size:1.7rem;line-height:1;color:#e4e1ef;margin-bottom:8px;">Deine Challenge<br><span style="color:#ffc56c;">wartet auf dich.</span></h2>
+      <p style="font-size:13px;color:#757481;line-height:1.5;margin-bottom:22px;">90 Tage. Kein Kompromiss. Wenn du bereit bist, startest du — nicht früher.</p>
+      <button onclick="startChallenge()" id="btn-start-challenge"
+        style="width:100%;background:linear-gradient(135deg,#ffc56c,#cb9743);border:none;border-radius:18px;padding:16px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;box-shadow:0 8px 32px rgba(255,197,108,0.4);">
+        <span class="material-symbols-outlined" style="font-size:22px;color:#321f00;font-variation-settings:'FILL' 1">rocket_launch</span>
+        <span class="font-headline font-black uppercase" style="font-size:15px;letter-spacing:0.05em;color:#321f00;">Challenge heute starten</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Check-in Buttons -->
+  <section id="checkin-section" class="flex flex-col gap-3">
+    <!-- Morgen -->
+    <a id="btn-morgen" href="checkin.html?mode=morgen"
+       class="flex items-center justify-between px-5 py-4 rounded-[22px] transition-all active:scale-[0.98]"
+       style="background:linear-gradient(135deg,rgba(255,197,108,0.14),rgba(255,197,108,0.06));border:1px solid rgba(255,197,108,0.28);box-shadow:0 4px 24px rgba(255,197,108,0.08);text-decoration:none">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+             style="background:linear-gradient(135deg,rgba(255,197,108,0.28),rgba(255,197,108,0.12))">
+          <span class="material-symbols-outlined text-primary" style="font-size:22px;font-variation-settings:'FILL' 1">wb_sunny</span>
+        </div>
+        <div>
+          <div class="font-label text-[9px] uppercase tracking-widest mb-0.5" style="color:rgba(255,197,108,0.5)">TAGES CHECK-IN</div>
+          <div class="font-headline font-black text-base uppercase tracking-tight text-on-surface" id="btn-morgen-label">Morgen starten</div>
+        </div>
+      </div>
+      <span id="btn-morgen-icon" class="material-symbols-outlined text-primary" style="font-size:22px">arrow_forward_ios</span>
+    </a>
+
+    <!-- Abend -->
+    <a id="btn-abend" href="checkin.html?mode=abend"
+       class="flex items-center justify-between px-5 py-4 rounded-[22px] transition-all"
+       style="background:rgba(137,206,255,0.06);border:1px solid rgba(137,206,255,0.12);opacity:0.38;pointer-events:none;text-decoration:none">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+             style="background:rgba(137,206,255,0.1)">
+          <span class="material-symbols-outlined text-secondary" style="font-size:22px;font-variation-settings:'FILL' 1">bedtime</span>
+        </div>
+        <div>
+          <div class="font-label text-[9px] uppercase tracking-widest mb-0.5" style="color:rgba(137,206,255,0.4)">TAGES CHECK-IN</div>
+          <div class="font-headline font-black text-base uppercase tracking-tight text-on-surface-variant" id="btn-abend-label">Abend</div>
+        </div>
+      </div>
+      <span id="btn-abend-icon" class="material-symbols-outlined text-on-surface-variant" style="font-size:22px;opacity:0.3">lock</span>
+    </a>
+  </section>
+
+  <!-- Wochenrückblick -->
+  <div id="wochenrueckblick" style="display:none;">
+    <div style="background:rgba(18,18,26,0.8);border:1px solid rgba(255,197,108,0.18);border-radius:24px;padding:20px 20px 18px;position:relative;">
+      <!-- Header -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div>
+          <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.18em;color:rgba(255,197,108,.45);margin-bottom:4px;">RÜCKBLICK</div>
+          <div class="font-headline" id="wb-title" style="font-size:1.2rem;font-weight:900;font-style:italic;text-transform:uppercase;color:#e4e1ef;">Woche 1</div>
+        </div>
+        <button id="wb-close" onclick="dismissWochenrueckblick()"
+          style="width:32px;height:32px;border-radius:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);
+          display:flex;align-items:center;justify-content:center;cursor:pointer;color:#757481;font-size:14px;">✕</button>
+      </div>
+      <!-- Stats 2×2 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div id="wb-checkins" style="background:#0D0D14;border-radius:16px;padding:14px 14px 12px;border:1px solid rgba(72,71,82,0.25);">
+          <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#757481;margin-bottom:6px;">Check-ins</div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:1.8rem;font-weight:900;font-style:italic;color:#ffc56c;line-height:1;" class="wb-val">—</div>
+          <div style="font-size:9px;color:#757481;margin-top:2px;">von 7 Tagen</div>
+        </div>
+        <div id="wb-workouts" style="background:#0D0D14;border-radius:16px;padding:14px 14px 12px;border:1px solid rgba(72,71,82,0.25);">
+          <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#757481;margin-bottom:6px;">Workouts</div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:1.8rem;font-weight:900;font-style:italic;color:#00ed7d;line-height:1;" class="wb-val">—</div>
+          <div style="font-size:9px;color:#757481;margin-top:2px;">diese Woche</div>
+        </div>
+        <div id="wb-kcal" style="background:#0D0D14;border-radius:16px;padding:14px 14px 12px;border:1px solid rgba(72,71,82,0.25);">
+          <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#757481;margin-bottom:6px;">Ø Kalorien</div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:1.8rem;font-weight:900;font-style:italic;color:#89ceff;line-height:1;" class="wb-val">—</div>
+          <div style="font-size:9px;color:#757481;margin-top:2px;">kcal / Tag</div>
+        </div>
+        <div id="wb-score" style="background:#0D0D14;border-radius:16px;padding:14px 14px 12px;border:1px solid rgba(72,71,82,0.25);">
+          <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#757481;margin-bottom:6px;">Ø Score</div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:1.8rem;font-weight:900;font-style:italic;color:#ffc56c;line-height:1;" class="wb-val">—</div>
+          <div style="font-size:9px;color:#757481;margin-top:2px;">von 7 Faktoren</div>
+        </div>
+      </div>
+      <!-- Motivations-Message -->
+      <div id="wb-msg" style="margin-top:14px;padding:12px 14px;background:rgba(255,197,108,0.05);border:1px solid rgba(255,197,108,0.12);border-radius:14px;font-size:12px;line-height:1.55;color:#aca9b7;display:none;"></div>
+    </div>
+  </div>
+
+  <!-- Mindset des Tages -->
+  <div class="flex items-start gap-3 px-1">
+    <span class="material-symbols-outlined text-primary/40 flex-shrink-0 mt-0.5" style="font-size:20px;font-variation-settings:'FILL' 1">format_quote</span>
+    <div class="min-w-0">
+      <span class="font-label text-[9px] uppercase tracking-widest text-primary/50 block mb-0.5">MINDSET DES TAGES</span>
+      <p id="quote-text" class="italic text-on-surface-variant leading-snug" style="font-size:12px">—</p>
+      <span id="quote-author" class="font-headline italic text-[9px] text-primary/50 uppercase tracking-widest mt-0.5 block"></span>
+    </div>
+  </div>
+
+  <!-- Weekly Photo Reminder -->
+  <a href="fotos.html" id="foto-rem" style="display:none" class="flex items-center gap-3 rounded-[16px] px-4 py-3 text-on-surface"
+     style="background:rgba(255,197,108,0.07);border:1px solid rgba(255,197,108,0.22);">
+    <span style="font-size:20px;">📸</span>
+    <div class="flex-1">
+      <div class="font-headline font-black text-xs uppercase" id="foto-rem-title">Wochenfoto</div>
+      <div class="text-on-surface-variant text-[10px]" id="foto-rem-sub">Halte deinen Fortschritt fest</div>
+    </div>
+    <span class="material-symbols-outlined text-primary text-lg">chevron_right</span>
+  </a>
+
+  <!-- Weekly Reminder -->
+  <a href="maße.html" id="weekly-rem" style="display:none" class="flex items-center gap-3 bg-primary/10 border border-primary/20 rounded-[16px] px-4 py-3 text-on-surface">
+    <span class="text-lg">📏</span>
+    <div class="flex-1">
+      <div class="font-headline font-black text-xs uppercase">Zeit zum Messen!</div>
+      <div class="text-on-surface-variant text-[10px]">Wöchentlicher Check</div>
+    </div>
+    <span class="material-symbols-outlined text-primary text-lg">chevron_right</span>
+  </a>
+
+  <!-- Stats Bento Grid -->
+  <section id="stats-grid" class="grid grid-cols-2 gap-3">
+    <div class="bg-surface-container-low p-5 rounded-[24px] flex flex-col gap-1.5 border border-outline-variant/10 shadow-xl backdrop-blur-md">
+      <div class="flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-primary" style="font-size:16px;font-variation-settings:'FILL' 1">local_fire_department</span>
+        <span class="font-label text-[10px] uppercase font-bold tracking-widest text-on-surface-variant">Streak</span>
+      </div>
+      <div class="flex items-baseline gap-1">
+        <span id="s-streak" class="font-headline italic text-3xl font-black text-primary">0</span>
+        <span class="font-label text-[10px] text-on-surface-variant">TAG</span>
+      </div>
+    </div>
+    <div class="bg-surface-container-low p-5 rounded-[24px] flex flex-col gap-1.5 border border-outline-variant/10 shadow-xl backdrop-blur-md">
+      <div class="flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-secondary" style="font-size:16px">restaurant</span>
+        <span class="font-label text-[10px] uppercase font-bold tracking-widest text-on-surface-variant">Kalorien</span>
+      </div>
+      <div class="flex items-baseline gap-1">
+        <span id="s-kcal" class="font-headline italic text-3xl font-black text-secondary">—</span>
+        <span class="font-label text-[10px] text-on-surface-variant">KCAL</span>
+      </div>
+    </div>
+    <div class="bg-surface-container-low p-5 rounded-[24px] flex flex-col gap-1.5 border border-outline-variant/10 shadow-xl backdrop-blur-md">
+      <div class="flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-tertiary" style="font-size:16px">fitness_center</span>
+        <span class="font-label text-[10px] uppercase font-bold tracking-widest text-on-surface-variant">Protein</span>
+      </div>
+      <div class="flex items-baseline gap-1">
+        <span id="s-prot" class="font-headline italic text-3xl font-black text-tertiary">—</span>
+        <span class="font-label text-[10px] text-on-surface-variant">G</span>
+      </div>
+    </div>
+    <div id="stat-training" class="bg-surface-container-low p-5 rounded-[24px] flex flex-col gap-1.5 border border-outline-variant/10 shadow-xl backdrop-blur-md">
+      <div class="flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-on-surface-variant" style="font-size:16px">event_available</span>
+        <span class="font-label text-[10px] uppercase font-bold tracking-widest text-on-surface-variant">Training</span>
+      </div>
+      <span id="s-train" class="font-headline italic text-2xl font-black text-on-surface-variant uppercase">–</span>
+      <span id="s-train-sub" class="font-label text-[9px] text-on-surface-variant uppercase tracking-widest">Heute</span>
+    </div>
+  </section>
+
+  <!-- Kalender Link -->
+  <a href="kalender.html" style="display:flex;align-items:center;gap:14px;background:rgba(137,206,255,0.05);border:1px solid rgba(137,206,255,0.14);border-radius:18px;padding:14px 18px;text-decoration:none;">
+    <div style="width:40px;height:40px;border-radius:13px;background:rgba(137,206,255,0.1);border:1px solid rgba(137,206,255,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <span class="material-symbols-outlined" style="font-size:20px;color:#89ceff;font-variation-settings:'FILL' 1">calendar_month</span>
+    </div>
+    <div style="flex:1;">
+      <div class="font-headline" style="font-size:13px;font-weight:800;color:#e4e1ef;text-transform:uppercase;letter-spacing:.02em;">90-Tage Kalender</div>
+      <div style="font-size:11px;color:#757481;margin-top:1px;">Alle Tage auf einen Blick</div>
+    </div>
+    <span class="material-symbols-outlined" style="font-size:18px;color:#757481;">chevron_right</span>
+  </a>
+
+  </div><!-- /.px-4 body -->
+
+</main>
+
+<!-- Split-Island Bottom Nav (Start active) -->
+<div style="position:fixed;bottom:calc(16px + env(safe-area-inset-bottom));left:12px;right:12px;z-index:50;display:flex;align-items:flex-end;justify-content:space-between;gap:10px;pointer-events:none;">
+  <!-- Left island: Start | Training -->
+  <div style="flex:1;display:flex;align-items:center;justify-content:space-around;height:60px;background:rgba(18,17,26,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.07);border-radius:22px;overflow:hidden;pointer-events:auto;">
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:8px 4px;color:#ffc56c;">
+      <span class="material-symbols-outlined" style="font-size:22px;filter:drop-shadow(0 0 6px rgba(255,197,108,0.5));">home</span>
+      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Start</span>
+    </div>
+    <div style="width:1px;height:28px;background:rgba(255,255,255,0.07);flex-shrink:0;"></div>
+    <a href="training.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;padding:8px 4px;color:#757481;">
+      <span class="material-symbols-outlined" style="font-size:22px;">fitness_center</span>
+      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Training</span>
+    </a>
+  </div>
+  <!-- Center: Essen FAB -->
+  <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:4px;margin-bottom:6px;pointer-events:auto;">
+    <a href="essen.html" style="text-decoration:none;display:block;">
+      <div style="width:60px;height:60px;border-radius:20px;background:linear-gradient(135deg,#ffc56c,#cb9743);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(255,197,108,0.55);">
+        <span class="material-symbols-outlined" style="font-size:26px;color:#321f00;">restaurant</span>
+      </div>
+    </a>
+    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#ffc56c;">Essen</span>
+  </div>
+  <!-- Right island: Stats | Profil -->
+  <div style="flex:1;display:flex;align-items:center;justify-content:space-around;height:60px;background:rgba(18,17,26,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.07);border-radius:22px;overflow:hidden;pointer-events:auto;">
+    <a href="fortschritt.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;padding:8px 4px;color:#757481;">
+      <span class="material-symbols-outlined" style="font-size:22px;">query_stats</span>
+      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Stats</span>
+    </a>
+    <div style="width:1px;height:28px;background:rgba(255,255,255,0.07);flex-shrink:0;"></div>
+    <a href="profil.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;padding:8px 4px;color:#757481;">
+      <span class="material-symbols-outlined" style="font-size:22px;">person</span>
+      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Profil</span>
+    </a>
+  </div>
+</div>
+
+<!-- ── Onboarding Wizard Overlay ── -->
+<div id="wiz-overlay" style="display:none;">
+  <!-- BG glow -->
+  <div style="position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(ellipse at 65% 8%,rgba(255,197,108,0.2) 0%,transparent 52%),
+               radial-gradient(ellipse at 10% 88%,rgba(0,237,125,0.08) 0%,transparent 46%);"></div>
+  <div class="grainy-overlay" style="z-index:1;"></div>
+  <!-- Content -->
+  <div style="position:relative;z-index:2;max-width:440px;margin:0 auto;padding:0 22px;
+              display:flex;flex-direction:column;min-height:100dvh;
+              padding-bottom:max(52px,env(safe-area-inset-bottom));">
+
+    <!-- Top bar -->
+    <div style="padding-top:max(26px,env(safe-area-inset-top));padding-bottom:4px;
+                display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:7px;">
+        <span class="material-symbols-outlined" style="font-size:18px;color:#ffc56c;font-variation-settings:'FILL' 1">workspace_premium</span>
+        <span class="font-headline" style="font-size:14px;font-weight:900;color:#ffc56c;text-transform:uppercase;font-style:italic;letter-spacing:.06em;">90TC</span>
+      </div>
+      <button onclick="closeWizard()" style="background:none;border:none;color:#454450;font-size:12px;
+        cursor:pointer;padding:8px 0;font-family:Inter,sans-serif;letter-spacing:.03em;">
+        Überspringen
+      </button>
+    </div>
+
+    <!-- Hero intro -->
+    <div style="padding:30px 0 28px;">
+      <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.22em;
+                  color:rgba(255,197,108,.4);margin-bottom:12px;">SETUP-ASSISTENT · 3 SCHRITTE</div>
+      <h1 class="font-headline" style="font-size:clamp(2.1rem,9.5vw,2.8rem);font-weight:900;
+          font-style:italic;text-transform:uppercase;line-height:.92;color:#e4e1ef;margin-bottom:14px;">
+        Leg das<br><span style="color:#ffc56c;">Fundament.</span>
+      </h1>
+      <p style="font-size:13.5px;line-height:1.68;color:#636270;max-width:340px;">
+        Bevor du die Challenge offiziell startest, erledige diese 3 kurzen Schritte.
+        Sie machen den Unterschied zwischen einem guten Vorsatz&nbsp;—
+        und echten Ergebnissen.
+      </p>
+    </div>
+
+    <!-- Progress bar -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+      <div style="display:flex;gap:6px;flex:1;">
+        <div id="wdot0" style="height:4px;border-radius:99px;flex:1;background:rgba(255,255,255,.08);transition:background .4s;"></div>
+        <div id="wdot1" style="height:4px;border-radius:99px;flex:1;background:rgba(255,255,255,.08);transition:background .4s;"></div>
+        <div id="wdot2" style="height:4px;border-radius:99px;flex:1;background:rgba(255,255,255,.08);transition:background .4s;"></div>
+      </div>
+      <span id="wiz-count" style="font-size:11px;font-weight:700;color:#454450;white-space:nowrap;min-width:40px;text-align:right;">0 / 3</span>
+    </div>
+
+    <!-- Step cards (filled by JS) -->
+    <div id="wiz-cards" style="display:flex;flex-direction:column;gap:11px;margin-bottom:28px;"></div>
+
+    <!-- CTA -->
+    <div style="margin-top:auto;padding-top:12px;">
+      <button id="wiz-start-btn" onclick="startChallengeFromWizard()" disabled
+        style="width:100%;border-radius:18px;padding:18px;display:flex;align-items:center;
+               justify-content:center;gap:10px;cursor:not-allowed;transition:all .5s;
+               background:rgba(255,197,108,0.07);border:1px solid rgba(255,197,108,0.12);opacity:.38;">
+        <span class="material-symbols-outlined" style="font-size:22px;color:#ffc56c;font-variation-settings:'FILL' 1">rocket_launch</span>
+        <span class="font-headline" style="font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:#ffc56c;">Challenge starten 🔥</span>
+      </button>
+      <p id="wiz-hint" style="text-align:center;font-size:11px;color:#3a3945;margin-top:10px;line-height:1.5;padding-bottom:4px;">
+        Erst wenn alle 3 Schritte abgeschlossen sind<br>kannst du die Challenge offiziell starten.
+      </p>
+    </div>
+  </div>
+</div>
+
+</div><!-- #main -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/gamification.js"></script>
+<script src="js/quotes.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/notifications.js"></script>
+<script>
+async function init() {
+  const ctx = await requireProfile()
+  if (!ctx) return
+  const { user, profile } = ctx
+
+  document.getElementById('splash').style.display = 'none'
+  document.getElementById('main').style.display = 'block'
+
+  const dayNr = calcDayNr(profile.startdatum)
+  const name = profile.vorname || profile.name || 'Chris'
+  document.getElementById('dash-greeting').textContent = name
+
+  // ── Pre-challenge mode ───────────────────────────────────────────
+  if (dayNr === 0) {
+    document.getElementById('topbar-day').textContent = 'TAG 0'
+    document.getElementById('ring-day').textContent = '0'
+    document.getElementById('ring-day').style.color = '#757481'
+    document.getElementById('ring-arc').style.stroke = '#34343f'
+    document.querySelector('#ring-day + span')?.remove()
+    const ringLabel = document.createElement('span')
+    ringLabel.className = 'font-label'
+    ringLabel.style.cssText = 'font-size:8px;text-transform:uppercase;letter-spacing:0.1em;color:#757481;margin-top:2px;'
+    ringLabel.textContent = 'BEREIT?'
+    document.getElementById('ring-day').insertAdjacentElement('afterend', ringLabel)
+    document.getElementById('checkin-section').style.display = 'none'
+    document.getElementById('start-banner').style.display = 'block'
+    document.getElementById('stats-grid').style.display = 'none'
+    document.getElementById('weekly-rem').style.display = 'none'
+    document.getElementById('xp-bar-wrap').style.display = 'none'
+    if (typeof getQuoteForDay === 'function') {
+      const q = getQuoteForDay(1)
+      if (q) {
+        document.getElementById('quote-text').textContent = q.text || '—'
+        if (q.author) document.getElementById('quote-author').textContent = '— ' + q.author
+      }
+    }
+    // Show setup wizard
+    await showWizardIfNeeded(user, profile)
+    return
+  }
+
+  // ── Active challenge ─────────────────────────────────────────────
+  const pct = Math.min(Math.round((dayNr / 90) * 100), 100)
+  document.getElementById('topbar-day').textContent = `TAG ${dayNr} 🔥`
+
+  // Ring animation
+  document.getElementById('ring-day').textContent = dayNr
+  const C = 691
+  const arc = document.getElementById('ring-arc')
+  setTimeout(() => { arc.style.strokeDashoffset = C - (C * pct / 100) }, 200)
+
+  // Mindset des Tages
+  if (typeof getQuoteForDay === 'function') {
+    const q = getQuoteForDay(dayNr)
+    if (q) {
+      document.getElementById('quote-text').textContent = q.text || '—'
+      if (q.author) document.getElementById('quote-author').textContent = '— ' + q.author
+    }
+  }
+
+  // Boss-Woche
+  const bossWeeks = [[22,28],[50,56],[78,84]]
+  const bossNr = bossWeeks.findIndex(([a,b]) => dayNr >= a && dayNr <= b)
+  if (bossNr >= 0) {
+    const titles = ['BOSS-WOCHE 1 💀','BOSS-WOCHE 2 ⚡','FINALBOSS 🏆']
+    const subs = ['Woche 4 — Push beyond your limits!','Woche 8 — Du bist halb durch. Alles geben!','Letzte Woche — 90 Tage sind zum Greifen nah!']
+    document.getElementById('boss-title').textContent = titles[bossNr]
+    document.getElementById('boss-sub').textContent = subs[bossNr]
+    document.getElementById('boss-banner').style.display = 'flex'
+  }
+
+  // XP Bar
+  const xp = profile.xp_gesamt || 0
+  const level = Math.floor(xp / 500) + 1
+  const xpInLevel = xp % 500
+  document.getElementById('xp-level-lbl').textContent = `Level ${level}`
+  document.getElementById('xp-val-lbl').textContent = `${xp} XP`
+  document.getElementById('xp-bar-wrap').style.display = 'block'
+  const streakEl = document.getElementById('s-streak')
+  streakEl.textContent = profile.streak_aktuell || 0
+  setTimeout(() => {
+    document.getElementById('xp-fill').style.width = Math.round(xpInLevel / 5) + '%'
+    if (typeof countUp === 'function') countUp(document.getElementById('xp-val-lbl'), xp, 900, ' XP')
+    if (typeof countUp === 'function') countUp(streakEl, profile.streak_aktuell || 0, 800)
+  }, 300)
+
+  // Weekly reminder + Wochenrückblick + Foto-Reminder
+  const wocheNr = Math.ceil(dayNr / 7)
+  if (wocheNr > 1) {
+    const { data: wc } = await sb.from('weekly_checks')
+      .select('id').eq('user_id', user.id).eq('woche_nr', wocheNr).maybeSingle()
+    if (!wc) document.getElementById('weekly-rem').style.display = 'flex'
+    maybeShowWochenrueckblick(user, profile, wocheNr)
+  }
+  // Photo reminder: show from day 8 if current week photos not yet taken
+  if (dayNr >= 8 && !localStorage.getItem('90tc_foto_woche_' + wocheNr)) {
+    const tagStart = (wocheNr - 1) * 7 + 1
+    document.getElementById('foto-rem-title').textContent = `Woche ${wocheNr} · Tag ${tagStart} — Foto`
+    document.getElementById('foto-rem-sub').textContent = 'Gleiche Pose, gleiches Licht — jetzt aufnehmen'
+    document.getElementById('foto-rem').style.display = 'flex'
+  }
+
+  // Load today data in parallel
+  const [{ data: entry }, { data: trainSessions }] = await Promise.all([
+    sb.from('daily_entries').select('*').eq('user_id', user.id).eq('datum', getToday()).maybeSingle(),
+    sb.from('training_sessions').select('id').eq('user_id', user.id).eq('datum', getToday()).limit(1)
+  ])
+
+  // Macro stats
+  if (entry?.kalorien_ist) document.getElementById('s-kcal').textContent = entry.kalorien_ist.toLocaleString('de-DE')
+  if (entry?.protein_ist_g) document.getElementById('s-prot').textContent = Math.round(entry.protein_ist_g)
+
+  // Training
+  const trainedToday = trainSessions && trainSessions.length > 0
+  const trainEl = document.getElementById('s-train')
+  trainEl.textContent = trainedToday ? '✓' : '–'
+  trainEl.className = trainedToday
+    ? 'font-headline italic text-2xl font-black text-tertiary'
+    : 'font-headline italic text-2xl font-black text-on-surface-variant'
+  document.getElementById('s-train-sub').textContent = trainedToday ? 'Erledigt' : 'Ausstehend'
+  if (trainedToday) {
+    const statCard = document.getElementById('stat-training')
+    statCard.style.borderColor = 'rgba(0,237,125,0.2)'
+    statCard.style.background = 'rgba(0,237,125,0.04)'
+  }
+
+  // Check-in Buttons
+  const morgenDone = !!entry?.checkin_morgen
+  const abendDone  = !!entry?.checkin_abend
+  const btnMorgen  = document.getElementById('btn-morgen')
+  const btnAbend   = document.getElementById('btn-abend')
+
+  if (morgenDone) {
+    document.getElementById('btn-morgen-label').textContent = 'Morgen erledigt'
+    document.getElementById('btn-morgen-icon').textContent = 'check_circle'
+    document.getElementById('btn-morgen-icon').style.color = '#11f080'
+    btnMorgen.style.background = 'linear-gradient(135deg,rgba(17,240,128,0.1),rgba(17,240,128,0.04))'
+    btnMorgen.style.borderColor = 'rgba(17,240,128,0.25)'
+  }
+
+  if (morgenDone && !abendDone) {
+    // Unlock Abend
+    btnAbend.style.opacity = '1'
+    btnAbend.style.pointerEvents = 'auto'
+    btnAbend.style.background = 'linear-gradient(135deg,rgba(137,206,255,0.14),rgba(137,206,255,0.06))'
+    btnAbend.style.borderColor = 'rgba(137,206,255,0.28)'
+    document.getElementById('btn-abend-label').textContent = 'Abend starten'
+    document.getElementById('btn-abend-label').style.color = ''
+    document.getElementById('btn-abend-icon').textContent = 'arrow_forward_ios'
+    document.getElementById('btn-abend-icon').style.color = '#89ceff'
+    document.getElementById('btn-abend-icon').style.opacity = '1'
+  }
+
+  if (abendDone) {
+    btnAbend.style.opacity = '1'
+    btnAbend.style.pointerEvents = 'auto'
+    btnAbend.style.background = 'linear-gradient(135deg,rgba(17,240,128,0.1),rgba(17,240,128,0.04))'
+    btnAbend.style.borderColor = 'rgba(17,240,128,0.25)'
+    document.getElementById('btn-abend-label').textContent = entry.score_von_7 != null
+      ? `Score: ${entry.score_von_7}/7` : 'Abend erledigt'
+    document.getElementById('btn-abend-icon').textContent = 'check_circle'
+    document.getElementById('btn-abend-icon').style.color = '#11f080'
+    document.getElementById('btn-abend-icon').style.opacity = '1'
+  }
+}
+init()
+
+// ── Wochenrückblick ──────────────────────────────────────────────────────────
+async function maybeShowWochenrueckblick(user, profile, wocheNr) {
+  if (wocheNr < 2) return
+  const prevWoche = wocheNr - 1
+  const dismissKey = '90tc_wb_w' + prevWoche + '_' + profile.id.slice(0,8)
+  if (localStorage.getItem(dismissKey)) return
+
+  // Date range for previous week
+  const start = new Date(profile.startdatum)
+  start.setDate(start.getDate() + (prevWoche - 1) * 7)
+  const end = new Date(start)
+  end.setDate(start.getDate() + 6)
+  const s = start.toISOString().split('T')[0]
+  const e = end.toISOString().split('T')[0]
+
+  const [{ data: entries }, { data: sessions }] = await Promise.all([
+    sb.from('daily_entries')
+      .select('checkin_morgen,checkin_abend,kalorien_ist,score_von_7,training_gemacht')
+      .eq('user_id', user.id).gte('datum', s).lte('datum', e),
+    sb.from('training_sessions')
+      .select('id').eq('user_id', user.id).gte('datum', s).lte('datum', e)
+  ])
+
+  const rows = entries || []
+  const checkinDays = rows.filter(r => r.checkin_morgen || r.checkin_abend).length
+  const workouts = (sessions || []).length
+  const kcalRows = rows.filter(r => r.kalorien_ist > 0)
+  const avgKcal = kcalRows.length ? Math.round(kcalRows.reduce((a,r) => a + r.kalorien_ist, 0) / kcalRows.length) : null
+  const scoreRows = rows.filter(r => r.score_von_7 != null)
+  const avgScore = scoreRows.length ? (scoreRows.reduce((a,r) => a + r.score_von_7, 0) / scoreRows.length).toFixed(1) : null
+
+  // Fill card
+  document.getElementById('wb-title').textContent = `Woche ${prevWoche}`
+  document.getElementById('wb-checkins').querySelector('.wb-val').textContent = checkinDays + '/7'
+  document.getElementById('wb-workouts').querySelector('.wb-val').textContent = workouts
+  document.getElementById('wb-kcal').querySelector('.wb-val').textContent = avgKcal ? avgKcal.toLocaleString('de-DE') : '—'
+  document.getElementById('wb-score').querySelector('.wb-val').textContent = avgScore ? avgScore + '/7' : '—'
+
+  // Motivational message
+  const msgEl = document.getElementById('wb-msg')
+  let msg = ''
+  if (checkinDays >= 7) msg = '🏆 Perfekte Woche — alle 7 Tage eingecheckt. Das ist Disziplin.'
+  else if (checkinDays >= 5) msg = '💪 Starke Woche. Noch ein bisschen konsistenter und du bist unschlagbar.'
+  else if (checkinDays >= 3) msg = '📈 Solide Basis. Diese Woche eine Schippe drauf — du schaffst das.'
+  else msg = '💡 Rückschläge gehören dazu. Neue Woche, neuer Anlauf — heute zählt.'
+  if (msg) { msgEl.textContent = msg; msgEl.style.display = 'block' }
+
+  // Store dismiss key on element
+  document.getElementById('wochenrueckblick').dataset.dismissKey = dismissKey
+  document.getElementById('wochenrueckblick').style.display = 'block'
+}
+
+function dismissWochenrueckblick() {
+  const el = document.getElementById('wochenrueckblick')
+  const key = el.dataset.dismissKey
+  if (key) localStorage.setItem(key, '1')
+  el.style.display = 'none'
+}
+
+// ── Onboarding Wizard ────────────────────────────────────────────────────────
+const WIZ_STEPS = [
+  {
+    emoji: '🎯',
+    title: 'Ziel & Makros festlegen',
+    desc: 'Dein Kalorienziel ist das Fundament von allem. Ohne ein klares Ziel — kein messbarer Fortschritt. Wir berechnen dir deine individuellen Makros für Muskelaufbau oder Fettabbau.',
+    url: 'profil.html'
+  },
+  {
+    emoji: '📸',
+    title: 'Vor-Foto aufnehmen',
+    desc: 'Halte deinen Ausgangspunkt im Bild fest. In 90 Tagen wirst du dieses Foto nicht mehr wiedererkennen — und genau dann wirst du es nicht bereuen, es gemacht zu haben.',
+    url: 'fotos.html'
+  },
+  {
+    emoji: '🥗',
+    title: 'Ersten Ernährungsplan erstellen',
+    desc: 'Bau deinen Plan für heute. Auch ein grober Überblick reicht — er gibt dir Struktur, zeigt dir ob dein Ziel realistisch ist, und bringt dich direkt in die Handlung.',
+    url: 'ernaehrungsplan.html'
+  }
+]
+
+let _wizUser = null, _wizProfile = null
+
+function _checkPlanHasFoods() {
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i)
+      if (k && k.startsWith('90tc_plan_')) {
+        const plan = JSON.parse(localStorage.getItem(k) || '{}')
+        if (Object.values(plan).some(m => Array.isArray(m) && m.length > 0)) return true
+      }
+    }
+  } catch {}
+  return false
+}
+
+async function _getWizStatus(user, profile) {
+  const macrosDone = (profile.kalorien_ziel || 0) > 0
+
+  let photoDone = localStorage.getItem('90tc_vor_foto_done') === 'true'
+  if (!photoDone) {
+    try {
+      const { data } = await sb.from('photos').select('id').eq('user_id', user.id).limit(1)
+      photoDone = !!(data && data.length > 0)
+      if (photoDone) localStorage.setItem('90tc_vor_foto_done', 'true')
+    } catch {}
+  }
+
+  const planDone = _checkPlanHasFoods()
+  return [macrosDone, photoDone, planDone]
+}
+
+function _renderWizard(status) {
+  const doneCount = status.filter(Boolean).length
+  const cardsEl = document.getElementById('wiz-cards')
+  cardsEl.innerHTML = ''
+
+  WIZ_STEPS.forEach((step, i) => {
+    const done = status[i]
+    const card = document.createElement('div')
+    card.className = 'wiz-card-item ' + (done ? 'wc-done' : 'wc-pending')
+    card.onclick = () => { window.location.href = step.url }
+    card.innerHTML = `
+      <div class="wiz-emoji-badge">${step.emoji}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;">
+          <span class="font-headline" style="font-size:14px;font-weight:800;letter-spacing:.01em;
+            color:${done ? '#00ed7d' : '#e4e1ef'};text-transform:uppercase;line-height:1.1;">${step.title}</span>
+          <span class="material-symbols-outlined" style="font-size:17px;color:${done ? '#00ed7d' : '#ffc56c'};
+            flex-shrink:0;margin-top:1px;font-variation-settings:'FILL' ${done ? 1 : 0}">
+            ${done ? 'check_circle' : 'arrow_forward_ios'}
+          </span>
+        </div>
+        <p style="font-size:12px;line-height:1.58;color:#636270;margin:0;">${step.desc}</p>
+        ${done ? `<div style="margin-top:10px;display:inline-flex;align-items:center;gap:5px;
+          background:rgba(0,237,125,0.1);border:1px solid rgba(0,237,125,0.22);
+          border-radius:99px;padding:3px 10px;">
+          <span style="font-size:10px;font-weight:700;color:#00ed7d;letter-spacing:.06em;text-transform:uppercase;">✓ Erledigt</span>
+        </div>` : `<div style="margin-top:10px;display:inline-flex;align-items:center;gap:5px;
+          background:rgba(255,197,108,0.06);border:1px solid rgba(255,197,108,0.18);
+          border-radius:99px;padding:3px 10px;">
+          <span style="font-size:10px;font-weight:700;color:rgba(255,197,108,0.7);letter-spacing:.06em;text-transform:uppercase;">Ausstehend</span>
+        </div>`}
+      </div>`
+    cardsEl.appendChild(card)
+  })
+
+  // Progress dots
+  const dotColors = status.map((done, i) => done ? '#00ed7d' : (i === doneCount ? '#ffc56c' : 'rgba(255,255,255,0.08)'))
+  ;[0,1,2].forEach(i => {
+    const el = document.getElementById('wdot' + i)
+    if (el) el.style.background = dotColors[i]
+  })
+  document.getElementById('wiz-count').textContent = `${doneCount} / 3`
+
+  const btn = document.getElementById('wiz-start-btn')
+  const hint = document.getElementById('wiz-hint')
+  if (doneCount === 3) {
+    btn.disabled = false
+    btn.style.cssText = 'width:100%;border-radius:18px;padding:18px;display:flex;align-items:center;' +
+      'justify-content:center;gap:10px;cursor:pointer;transition:all .5s;' +
+      'background:linear-gradient(135deg,#ffc56c,#cb9743);border:none;opacity:1;' +
+      'box-shadow:0 8px 32px rgba(255,197,108,0.45);'
+    btn.querySelector('span.font-headline').style.color = '#321f00'
+    btn.querySelector('span.material-symbols-outlined').style.color = '#321f00'
+    if (hint) hint.innerHTML = '🎉 Alles erledigt! Du bist bereit.'
+    if (hint) hint.style.color = '#00ed7d'
+  }
+}
+
+async function showWizardIfNeeded(user, profile) {
+  _wizUser = user; _wizProfile = profile
+  const status = await _getWizStatus(user, profile)
+  if (status.every(Boolean)) return false
+  _renderWizard(status)
+  document.getElementById('wiz-overlay').style.display = 'block'
+  return true
+}
+
+function closeWizard() {
+  document.getElementById('wiz-overlay').style.display = 'none'
+}
+
+async function startChallengeFromWizard() {
+  closeWizard()
+  startChallenge()
+}
+
+// Re-check when returning from another page
+document.addEventListener('visibilitychange', async () => {
+  if (document.hidden) return
+  const overlay = document.getElementById('wiz-overlay')
+  if (!overlay || overlay.style.display === 'none') return
+  if (!_wizUser) return
+  // Re-fetch fresh profile for kalorien_ziel
+  try {
+    const { data: freshProfile } = await sb.from('profiles').select('kalorien_ziel').eq('id', _wizUser.id).single()
+    if (freshProfile) _wizProfile = { ..._wizProfile, ...freshProfile }
+  } catch {}
+  const status = await _getWizStatus(_wizUser, _wizProfile)
+  _renderWizard(status)
+})
+
+async function startChallenge() {
+  const btn = document.getElementById('btn-start-challenge')
+  btn.disabled = true
+  btn.querySelector('span:last-child').textContent = 'Starte...'
+  const ctx = await requireProfile()
+  if (!ctx) return
+  const today = new Date().toISOString().split('T')[0]
+  const { error } = await sb.from('profiles').update({ startdatum: today }).eq('id', ctx.user.id)
+  if (error) { showToast(error.message, 'error'); btn.disabled = false; return }
+  showToast('🚀 Challenge gestartet! TAG 1 beginnt jetzt.')
+  setTimeout(() => window.location.reload(), 1200)
+}
+</script>
+</body>
+</html>

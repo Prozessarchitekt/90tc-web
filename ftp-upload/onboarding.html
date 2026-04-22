@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>90TC — Setup</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#E8A317">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="90TC">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <style>
+    .ob-page { min-height:100vh; padding:24px 20px; display:flex; flex-direction:column; max-width:430px; margin:0 auto; }
+    .ob-content { flex:1; display:flex; flex-direction:column; gap:14px; }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="ob-page" id="ob">
+    <!-- Progress -->
+    <div class="onboarding-progress" id="ob-progress"></div>
+
+    <!-- Steps rendered by JS -->
+    <div id="ob-content" class="ob-content"></div>
+
+    <!-- Footer -->
+    <div class="ob-footer" id="ob-footer">
+      <button class="btn btn-ghost" id="btn-back" onclick="prevStep()" style="flex:1;display:none">← Zurück</button>
+      <button class="btn btn-primary" id="btn-next" onclick="nextStep()" style="flex:2">Weiter →</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/gamification.js"></script>
+<script src="js/auth.js"></script>
+<script>
+const TOTAL = 6
+let step = 0
+let user = null
+let obFotoFile = null
+const form = {
+  name: '', mein_warum: '', ziel: '',
+  geschlecht: 'maennlich', gewicht_kg: '', groesse_cm: '',
+  stunden: {...DEFAULT_STUNDEN}, anpassung: 300,
+  startdatum: new Date().toISOString().split('T')[0],
+  methode: 'tabelle', kfa: '', alter: '', vegan: false,
+}
+
+// Auth check
+requireAuth().then(u => { if (u) user = u })
+
+function renderProgress() {
+  const el = document.getElementById('ob-progress')
+  el.innerHTML = Array.from({length:TOTAL}).map((_,i) =>
+    `<div class="ob-dot ${i<=step?'active':''}"></div>`
+  ).join('')
+}
+
+function renderStep() {
+  // Persist any typed values before re-rendering
+  const fn = document.getElementById('f-name'); if (fn) form.name = fn.value
+  const fg = document.getElementById('f-gewicht'); if (fg) form.gewicht_kg = fg.value
+  const fgr = document.getElementById('f-groesse'); if (fgr) form.groesse_cm = fgr.value
+  const fkfa = document.getElementById('f-kfa'); if (fkfa) form.kfa = fkfa.value
+  const falt = document.getElementById('f-alter'); if (falt) form.alter = falt.value
+  renderProgress()
+  const back = document.getElementById('btn-back')
+  const next = document.getElementById('btn-next')
+  back.style.display = step > 0 ? 'block' : 'none'
+
+  const el = document.getElementById('ob-content')
+
+  if (step === 0) {
+    next.textContent = 'Weiter →'
+    el.innerHTML = `
+      <div>
+        <h1 class="ob-title">Hey, wer bist du? 👋</h1>
+        <p class="ob-sub">Lass uns loslegen. Die 90 Tage beginnen mit deinem Namen.</p>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Dein Name</label>
+        <input type="text" id="f-name" placeholder="z.B. Chris" value="${form.name}" oninput="form.name=this.value">
+      </div>
+      <div class="input-group">
+        <label class="input-label">💭 Warum machst du die 90TC?</label>
+        <textarea id="f-warum" placeholder="Dieser Satz erscheint, wenn du schwach wirst. Mach ihn stark..." oninput="form.mein_warum=this.value">${form.mein_warum}</textarea>
+      </div>
+    `
+    setTimeout(() => document.getElementById('f-name')?.focus(), 100)
+  }
+
+  else if (step === 1) {
+    next.textContent = 'Weiter →'
+    el.innerHTML = `
+      <div>
+        <h1 class="ob-title">Dein Ziel 🎯</h1>
+        <p class="ob-sub">Was willst du in diesen 90 Tagen erreichen?</p>
+      </div>
+      ${[
+        {val:'definieren', icon:'🔥', title:'Definieren', desc:'Fett verlieren & Muskeln sichtbar machen — Kaloriendefizit'},
+        {val:'aufbauen',   icon:'💪', title:'Aufbauen',   desc:'Muskelmasse aufbauen & stärker werden — Kalorienüberschuss'},
+        {val:'recomp',     icon:'⚡', title:'Body Recomp', desc:'Fett & Muskeln gleichzeitig verbessern — Erhaltungskalorien'},
+      ].map(g => `
+        <div class="goal-card ${form.ziel===g.val?'selected':''}" onclick="selectZiel('${g.val}')">
+          <div class="goal-card-icon">${g.icon}</div>
+          <div class="goal-card-title">${g.title}</div>
+          <div class="goal-card-desc">${g.desc}</div>
+        </div>
+      `).join('')}
+    `
+  }
+
+  else if (step === 2) {
+    next.textContent = 'Weiter →'
+    el.innerHTML = `
+      <div>
+        <h1 class="ob-title">Körperdaten 📊</h1>
+        <p class="ob-sub">Für deine persönliche Makroberechnung.</p>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Geschlecht</label>
+        <div class="toggle-group">
+          <button class="toggle-btn ${form.geschlecht==='maennlich'?'active':''}" onclick="setGeschlecht('maennlich')">♂ Männlich</button>
+          <button class="toggle-btn ${form.geschlecht==='weiblich'?'active':''}" onclick="setGeschlecht('weiblich')">♀ Weiblich</button>
+        </div>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Körpergewicht</label>
+        <div class="input-with-unit">
+          <input type="number" id="f-gewicht" placeholder="80" value="${form.gewicht_kg}" oninput="form.gewicht_kg=this.value" step="0.1" min="30" max="300">
+          <span class="input-unit">kg</span>
+        </div>
+      </div>
+      <div class="input-group">
+        <label class="input-label">Körpergröße</label>
+        <div class="input-with-unit">
+          <input type="number" id="f-groesse" placeholder="175" value="${form.groesse_cm}" oninput="form.groesse_cm=this.value" min="140" max="220">
+          <span class="input-unit">cm</span>
+        </div>
+      </div>
+    `
+  }
+
+  else if (step === 3) {
+    const kg = parseFloat(form.gewicht_kg) || 80
+    const groesse = parseFloat(form.groesse_cm) || 0
+    const kfa  = parseFloat(form.kfa) || 0
+    const alter = parseInt(form.alter) || 0
+    const gesamt = Object.values(form.stunden).reduce((s,h)=>s+h,0)
+
+    next.textContent = 'Weiter →'
+    next.disabled = form.methode === 'formel' ? gesamt !== 24 : false
+
+    el.innerHTML = `
+      <div>
+        <h1 class="ob-title">Kalorienmethode 🍽️</h1>
+        <p class="ob-sub">Wie sollen deine Makros berechnet werden?</p>
+      </div>
+
+      <div class="toggle-group" id="methode-toggle">
+        <button class="toggle-btn ${form.methode==='tabelle'?'active':''}" id="btn-tabelle">📋 90TC-Tabelle</button>
+        <button class="toggle-btn ${form.methode==='formel'?'active':''}" id="btn-formel">📊 Aktivitätsformel</button>
+      </div>
+
+      <div id="methode-content"></div>
+    `
+
+    // Methoden-Toggle via addEventListener (kein inline-onclick nötig)
+    document.getElementById('btn-tabelle').addEventListener('click', () => {
+      form.methode = 'tabelle'
+      renderStep()
+    })
+    document.getElementById('btn-formel').addEventListener('click', () => {
+      form.methode = 'formel'
+      renderStep()
+    })
+
+    const content = document.getElementById('methode-content')
+
+    if (form.methode === 'tabelle') {
+      content.innerHTML = `
+        <div style="background:var(--accent-dim);border:1px solid var(--accent-border);border-radius:var(--r-sm);padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.6">
+          Die offizielle 90TC-Methode — basiert auf Größe, KFA und Gewicht. Voraussetzung: min. 7.500 Schritte/Tag + 2–4× Krafttraining.
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label class="input-label">Körperfettanteil</label>
+            <div class="input-with-unit">
+              <input type="number" id="f-kfa" placeholder="25" value="${form.kfa}" min="3" max="60">
+              <span class="input-unit">%</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Alter (optional)</label>
+            <div class="input-with-unit">
+              <input type="number" id="f-alter" placeholder="30" value="${form.alter}" min="16" max="99">
+              <span class="input-unit">J.</span>
+            </div>
+          </div>
+        </div>
+        <div class="toggle-group">
+          <button class="toggle-btn ${!form.vegan?'active':''}" id="btn-normal">🥩 Normal</button>
+          <button class="toggle-btn ${form.vegan?'active':''}" id="btn-vegan">🌱 Vegan (+20% Protein)</button>
+        </div>
+        ${!groesse ? '<div style="font-size:12px;color:var(--gold2);margin-top:6px">⚠️ Keine Körpergröße angegeben — bitte zurückgehen.</div>' : ''}
+      `
+      document.getElementById('f-kfa').addEventListener('input', e => { form.kfa = e.target.value })
+      document.getElementById('f-alter').addEventListener('input', e => { form.alter = e.target.value })
+      document.getElementById('btn-normal').addEventListener('click', () => { form.vegan = false; renderStep() })
+      document.getElementById('btn-vegan').addEventListener('click', () => { form.vegan = true; renderStep() })
+
+    } else {
+      content.innerHTML = `
+        <div style="background:var(--accent-dim);border:1px solid var(--accent-border);border-radius:var(--r-sm);padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.6">
+          Berechnung über deinen täglichen Energieverbrauch (TDEE) basierend auf deiner Aktivitätsverteilung.
+        </div>
+        <div class="activity-total ${gesamt===24?'ok':'notok'}">
+          ${gesamt === 24 ? '✓ Perfekt! 24 Stunden' : `${gesamt}/24 Stunden — noch ${24-gesamt > 0 ? (24-gesamt)+' übrig' : Math.abs(24-gesamt)+' zu viel'}`}
+        </div>
+        ${PAL_KAT.map(k => `
+          <div class="activity-item">
+            <div class="activity-label">${k.label}</div>
+            <div class="activity-controls">
+              <button class="activity-btn" id="minus-${k.key}">−</button>
+              <span class="activity-val">${form.stunden[k.key]}</span>
+              <button class="activity-btn" id="plus-${k.key}">+</button>
+            </div>
+          </div>
+        `).join('')}
+        ${form.ziel !== 'recomp' ? `
+          <div class="input-group" style="margin-top:4px">
+            <label class="input-label">${form.ziel==='aufbauen'?'Kalorienüberschuss':'Kaloriendefizit'}</label>
+            <div class="anpassung-row">
+              ${[100,200,300,400,500].map(a => `
+                <button class="anpassung-btn ${form.anpassung===a?'active':''}" id="anp-${a}">±${a}</button>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+      `
+      PAL_KAT.forEach(k => {
+        document.getElementById('minus-' + k.key)?.addEventListener('click', () => changeStunde(k.key, -1))
+        document.getElementById('plus-'  + k.key)?.addEventListener('click', () => changeStunde(k.key,  1))
+      });
+      [100,200,300,400,500].forEach(a => {
+        document.getElementById('anp-' + a)?.addEventListener('click', () => { form.anpassung = a; renderStep() })
+      })
+    }
+  }
+
+  else if (step === 4) {
+    const kg = parseFloat(form.gewicht_kg) || 80
+    const groesse = parseFloat(form.groesse_cm) || 0
+    const kfa  = parseFloat(form.kfa) || 0
+    const alter = parseInt(form.alter) || 0
+
+    let m = null
+    let tabellenHinweis = ''
+    if (form.methode === 'tabelle' && groesse > 0 && kfa > 0) {
+      m = calculateMacrosFromTable(form.geschlecht, form.ziel, kfa, groesse, kg, alter, form.vegan)
+      if (m) tabellenHinweis = `<div style="font-size:11px;color:var(--muted);margin-top:8px;text-align:center">Gruppe: ${m.kfaGruppe} · ${m.hZeile}</div>`
+    }
+    if (!m) m = calculateMacros(kg, form.geschlecht, form.stunden, form.ziel, form.anpassung, groesse)
+
+    next.textContent = 'Weiter →'
+    next.disabled = false
+    el.innerHTML = `
+      <div>
+        <h1 class="ob-title">Deine Makros ✅</h1>
+        <p class="ob-sub">Täglich empfohlen — ${form.methode === 'tabelle' ? '90TC-Tabelle' : 'Aktivitätsformel'}.</p>
+      </div>
+
+      <div class="macro-preview">
+        <div class="macro-preview-title">Täglich empfohlen</div>
+        <div class="macro-grid4">
+          <div class="macro-box"><div class="macro-val" style="color:var(--gold2)">${m.kalorien}</div><div class="macro-lbl">kcal</div></div>
+          <div class="macro-box"><div class="macro-val" style="color:var(--accent)">${m.protein}g</div><div class="macro-lbl">Protein</div></div>
+          <div class="macro-box"><div class="macro-val" style="color:var(--purple)">${m.fett}g</div><div class="macro-lbl">Fett</div></div>
+          <div class="macro-box"><div class="macro-val" style="color:var(--green2)">${m.carbs}g</div><div class="macro-lbl">Carbs</div></div>
+        </div>
+        ${tabellenHinweis}
+      </div>
+
+      ${form.methode === 'tabelle' && kfa === 0 ? '<div style="font-size:12px;color:var(--gold2);margin-top:6px">⚠️ Kein KFA angegeben — Formel wird als Fallback genutzt.</div>' : ''}
+
+    `
+  }
+
+  else if (step === 5) {
+    next.textContent = '🚀 Challenge starten!'
+    next.disabled = false
+    const preview = obFotoFile
+      ? `<img src="${URL.createObjectURL(obFotoFile)}" style="width:100%;height:220px;object-fit:cover;border-radius:12px">`
+      : `<div style="font-size:56px;margin-bottom:10px">📷</div><div style="color:var(--text2);font-size:14px">Tippen zum Foto machen</div>`
+    el.innerHTML = `
+      <div>
+        <h1 class="ob-title">Vorher-Foto 📸</h1>
+        <p class="ob-sub">Dokumentiere deinen Start. Du wirst am Ende froh sein, es zu haben.</p>
+      </div>
+      <div onclick="document.getElementById('ob-foto-input').click()"
+        style="border:2px dashed var(--border2);border-radius:12px;padding:${obFotoFile?'0':'40px 20px'};text-align:center;cursor:pointer;background:var(--surface);overflow:hidden">
+        ${preview}
+      </div>
+      <input type="file" id="ob-foto-input" accept="image/*" capture="environment" style="display:none" onchange="handleFotoUpload(this)">
+      <div style="text-align:center;margin-top:6px;font-size:12px;color:var(--muted)">
+        ${obFotoFile ? '✓ Foto ausgewählt — jetzt Challenge starten!' : 'Optional — kannst du auch später in der App machen'}
+      </div>
+      <div id="ob-error"></div>
+    `
+  }
+}
+
+function handleFotoUpload(input) {
+  obFotoFile = input.files[0] || null
+  renderStep()
+}
+
+function selectZiel(val) { form.ziel = val; renderStep() }
+function setGeschlecht(val) { form.geschlecht = val; renderStep() }
+function setAnpassung(a) { form.anpassung = a; renderStep() }
+function changeStunde(key, delta) {
+  form.stunden[key] = Math.max(0, (form.stunden[key]||0) + delta)
+  renderStep()
+}
+
+function canProceed() {
+  if (step === 0) {
+    const el = document.getElementById('f-name')
+    if (el) form.name = el.value
+    return form.name.trim().length > 0
+  }
+  if (step === 1) return form.ziel !== ''
+  if (step === 2) {
+    const el = document.getElementById('f-gewicht')
+    if (el) form.gewicht_kg = el.value
+    return !!form.gewicht_kg && parseFloat(form.gewicht_kg) > 0
+  }
+  if (step === 3) {
+    if (form.methode === 'formel') return Object.values(form.stunden).reduce((s,h)=>s+h,0) === 24
+    return true // tabelle: kein Pflichtfeld
+  }
+  return true // step 4 + 5 always ok
+}
+
+function nextStep() {
+  if (!canProceed()) {
+    const msgs = ['Name eingeben', 'Ziel auswählen', 'Gewicht eingeben', 'Stunden müssen 24 ergeben', '', '']
+    if (msgs[step]) alert(msgs[step])
+    return
+  }
+  if (step < TOTAL - 1) { step++; renderStep() }
+  else finish()
+}
+
+function prevStep() { if (step > 0) { step--; renderStep() } }
+
+async function finish() {
+  const btn = document.getElementById('btn-next')
+  btn.disabled = true
+  btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;border-width:2px;margin:0 auto"></div>'
+
+  const kg = parseFloat(form.gewicht_kg)
+  const groesse = parseFloat(form.groesse_cm) || 0
+  const kfa     = parseFloat(form.kfa) || 0
+  const alter   = parseInt(form.alter) || 0
+  let m = null
+  if (form.methode === 'tabelle' && groesse > 0 && kfa > 0) {
+    m = calculateMacrosFromTable(form.geschlecht, form.ziel, kfa, groesse, kg, alter, form.vegan)
+  }
+  if (!m) m = calculateMacros(kg, form.geschlecht, form.stunden, form.ziel, form.anpassung)
+
+  // upsert statt insert — verhindert "duplicate key" beim Challenge-Reset
+  const { error } = await sb.from('profiles').upsert({
+    id: user.id,
+    name: form.name.trim(),
+    mein_warum: form.mein_warum.trim() || null,
+    ziel: form.ziel,
+    geschlecht: form.geschlecht,
+    gewicht_kg: parseFloat(form.gewicht_kg),
+    kalorien_ziel: m.kalorien,
+    protein_ziel_g: m.protein,
+    fett_ziel_g: m.fett,
+    carbs_ziel_g: m.carbs,
+    pal_stunden: form.stunden,
+    kalorienanpassung: form.ziel === 'recomp' ? 0 : (form.anpassung || 300),
+    startdatum: null,
+    wasser_ziel_l: 3.5,
+    schlaf_ziel_h: 8.0,
+    schritte_ziel: 10000,
+    xp_gesamt: 0,
+    coins: 0,
+    streak_aktuell: 0,
+    streak_rekord: 0,
+    letzter_checkin: null,
+  }, { onConflict: 'id' })
+
+  if (error) {
+    const errEl = document.getElementById('ob-error')
+    if (errEl) errEl.innerHTML = `<div class="msg-error">${error.message}</div>`
+    btn.disabled = false
+    btn.textContent = '🚀 Challenge starten!'
+    return
+  }
+
+  // Vorher-Foto hochladen falls ausgewählt
+  if (obFotoFile) {
+    try {
+      const ext = obFotoFile.name.split('.').pop() || 'jpg'
+      const path = `${user.id}/woche_1_vorne.${ext}`
+      const { error: upErr } = await sb.storage.from('photos').upload(path, obFotoFile, { upsert: true })
+      if (!upErr) {
+        const { data: urlData } = sb.storage.from('photos').getPublicUrl(path)
+        await sb.from('photos').insert({
+          user_id: user.id,
+          datum: new Date().toISOString().split('T')[0],
+          woche_nr: 1,
+          winkel: 'vorne',
+          typ: 'woche',
+          url: urlData.publicUrl,
+        })
+      }
+    } catch(e) { /* Foto-Upload nicht kritisch */ }
+  }
+
+  window.location.href = 'dashboard.html'
+}
+
+renderStep()
+</script>
+</body>
+</html>

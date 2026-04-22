@@ -1,0 +1,1577 @@
+<!DOCTYPE html>
+<html class="dark" lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>90TC — Ernährungsplan</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#ffc56c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+tailwind.config = {
+  darkMode:"class",
+  theme:{ extend:{
+    colors:{
+      "background":"#03030A","surface":"#03030A","surface-container":"#0D0D14",
+      "surface-container-low":"#0D0D14","surface-container-high":"#12121A",
+      "on-surface":"#e4e1ef","on-surface-variant":"#aca9b7",
+      "primary":"#ffc56c","secondary":"#89ceff","tertiary":"#00ed7d",
+      "outline-variant":"#34343f","error":"#ff7351",
+    },
+    fontFamily:{ headline:["Space Grotesk"], body:["Inter"], label:["Inter"] }
+  }}
+}
+</script>
+<style>
+  body { background:#03030A; color:#e4e1ef; font-family:'Inter',sans-serif; min-height:100dvh; overflow-x:hidden; }
+  .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; }
+  .grainy-overlay { position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:0.04;pointer-events:none;z-index:100; }
+  #splash { position:fixed;inset:0;z-index:9999;background:#03030A;display:flex;align-items:center;justify-content:center; }
+  .spinner { width:40px;height:40px;border:3px solid #1a1a24;border-top-color:#ffc56c;border-radius:50%;animation:spin .8s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  /* ── Onboarding ── */
+  .ob-step { display:none; animation:fadeIn .3s ease; }
+  .ob-step.active { display:block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+  .goal-card {
+    border-radius:20px; padding:20px; cursor:pointer; transition:all .2s;
+    border:1.5px solid rgba(72,71,82,0.35); background:rgba(18,18,26,0.8);
+    display:flex; align-items:center; gap:16px; margin-bottom:10px;
+  }
+  .goal-card:active { transform:scale(.98); }
+  .goal-card.selected { border-color:rgba(255,197,108,0.5); background:rgba(255,197,108,0.07); box-shadow:0 0 30px rgba(255,197,108,0.08); }
+  .goal-icon { width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0; }
+
+  .act-btn {
+    padding:12px 8px; border-radius:14px; cursor:pointer; transition:all .15s;
+    border:1.5px solid rgba(72,71,82,0.35); background:rgba(18,18,26,0.8);
+    text-align:center; display:flex; flex-direction:column; align-items:center; gap:4px;
+  }
+  .act-btn:active { transform:scale(.96); }
+  .act-btn.selected { border-color:rgba(255,197,108,0.5); background:rgba(255,197,108,0.08); }
+
+  /* ── Inputs ── */
+  input[type="number"], input[type="text"] {
+    background:rgba(13,13,23,0.9); border:1.5px solid rgba(72,71,82,0.4); border-radius:14px;
+    color:#e4e1ef; font-family:'Space Grotesk',sans-serif; font-size:18px; font-weight:900;
+    font-style:italic; padding:13px 14px; width:100%; outline:none; transition:border-color .2s;
+    box-sizing:border-box;
+  }
+  input:focus { border-color:rgba(255,197,108,0.45); box-shadow:0 0 0 3px rgba(255,197,108,0.07); }
+  input::placeholder { color:#484752; font-style:normal; }
+
+  /* ── Macro Rings ── */
+  .ring-arc { transition:stroke-dashoffset 1s cubic-bezier(.4,0,.2,1); }
+
+  /* ── Meal Cards ── */
+  .meal-plan-card {
+    border-radius:24px; overflow:hidden; margin-bottom:12px;
+    position:relative; border:1px solid rgba(255,186,68,0.12);
+    box-shadow:0 20px 40px -10px rgba(0,0,0,0.8);
+  }
+  .meal-bg { position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:grayscale(1) brightness(0.35) contrast(1.2); }
+  .meal-overlay { position:absolute;inset:0;background:linear-gradient(to top,#03030A 0%,rgba(3,3,10,0.7) 60%,transparent 100%); }
+  .meal-content { position:relative;z-index:1; padding:18px; }
+  .meal-head { display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.08); }
+  .meal-title { font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:-0.02em; }
+  .meal-kcal { font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:900;font-style:italic; }
+
+  .food-item-row { display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05); }
+  .food-item-row:last-child { border-bottom:none; }
+
+  .plan-add-btn {
+    width:100%;margin-top:14px;padding:13px;border-radius:16px;border:1.5px dashed rgba(255,255,255,0.15);
+    background:rgba(255,255,255,0.03);color:rgba(255,255,255,0.4);
+    font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:900;font-style:italic;
+    text-transform:uppercase;letter-spacing:0.06em;cursor:pointer;transition:all .15s;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .plan-add-btn:active { transform:scale(.98);background:rgba(255,197,108,0.05);border-color:rgba(255,197,108,0.3); }
+
+  /* ── Search Sheet ── */
+  .search-overlay { position:fixed;inset:0;z-index:400;background:rgba(0,0,0,0.8);backdrop-filter:blur(16px);display:none;align-items:flex-end; }
+  .search-overlay.active { display:flex; }
+  .search-sheet { width:100%;max-height:90vh;display:flex;flex-direction:column;background:linear-gradient(180deg,#191825 0%,#0d0d17 100%);border:1.5px solid rgba(255,197,108,0.15);border-bottom:none;border-radius:28px 28px 0 0;animation:slideUp .25s ease; }
+  @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+  .sheet-handle-wrap { padding:14px;display:flex;justify-content:center; }
+  .sheet-handle { width:40px;height:4px;background:rgba(255,197,108,0.3);border-radius:2px; }
+
+  .s-result { display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer; }
+  .s-result:last-child { border-bottom:none; }
+  .s-result:active { opacity:.7; }
+
+  /* ── Menge Sheet ── */
+  .menge-overlay { position:fixed;inset:0;z-index:410;background:rgba(0,0,0,0.6);backdrop-filter:blur(10px);display:none;align-items:flex-end; }
+  .menge-overlay.active { display:flex; }
+  .menge-inner { width:100%;background:linear-gradient(180deg,#191825,#0d0d17);border:1.5px solid rgba(255,197,108,0.2);border-bottom:none;border-radius:28px 28px 0 0;padding:0 20px max(28px,env(safe-area-inset-bottom));animation:slideUp .2s ease; }
+
+  /* ── Buttons ── */
+  .btn-gold { width:100%;padding:18px;border-radius:18px;border:none;background:linear-gradient(135deg,#ffc56c,#cb9743);color:#321f00;font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:0.04em;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 8px 28px rgba(255,197,108,0.28);transition:transform .15s,opacity .15s; }
+  .btn-gold:active { transform:scale(.98); }
+  .btn-gold:disabled { opacity:.5;cursor:not-allowed; }
+
+  .menge-preset { padding:9px 15px;border-radius:50px;border:1.5px solid rgba(72,71,82,0.4);background:rgba(18,18,26,0.8);color:rgba(255,255,255,.55);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit; }
+  .menge-preset:active { background:rgba(255,197,108,.12);border-color:#ffc56c;color:#ffc56c; }
+
+  /* ── Gender toggle ── */
+  .gender-btn { flex:1;padding:14px;border-radius:16px;cursor:pointer;transition:all .15s;border:1.5px solid rgba(72,71,82,0.35);background:rgba(18,18,26,0.8);color:#aca9b7;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:900;font-style:italic;text-transform:uppercase;text-align:center; }
+  .gender-btn.selected { border-color:rgba(255,197,108,0.5);background:rgba(255,197,108,0.1);color:#ffc56c; }
+
+  .no-scrollbar::-webkit-scrollbar { display:none; }
+  .no-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
+  #toast { position:fixed;bottom:88px;left:50%;transform:translateX(-50%) translateY(12px);background:#12121a;color:#e4e1ef;border:1px solid rgba(255,255,255,.12);padding:10px 20px;border-radius:9999px;font-size:13px;font-weight:600;z-index:500;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;white-space:nowrap; }
+  #toast.show { opacity:1;transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body class="antialiased overflow-x-hidden">
+<div class="grainy-overlay"></div>
+<div id="splash"><div class="spinner"></div></div>
+
+<!-- Top Nav -->
+<header class="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 pb-4"
+        style="background:rgba(3,3,10,0.9);backdrop-filter:blur(24px);padding-top:max(16px,env(safe-area-inset-top));box-shadow:0 4px 16px rgba(0,0,0,0.8);">
+  <a href="essen.html" class="flex items-center justify-center w-10 h-10 rounded-full" style="background:rgba(255,197,108,0.08);border:1px solid rgba(255,197,108,0.18);text-decoration:none;">
+    <span class="material-symbols-outlined" style="font-size:20px;color:#ffc56c;">arrow_back</span>
+  </a>
+  <div class="text-center">
+    <p class="font-headline italic font-black uppercase" style="font-size:1.1rem;color:#ffc56c;letter-spacing:-0.02em;line-height:1;">ERNÄHRUNGSPLAN</p>
+    <p id="nav-sub" class="font-bold uppercase tracking-widest" style="font-size:9px;color:#aca9b7;margin-top:2px;">Dein Standardtag</p>
+  </div>
+  <button id="btn-reset" class="flex items-center justify-center w-10 h-10 rounded-full" style="background:rgba(255,255,255,0.04);border:1px solid rgba(72,71,82,0.35);" title="Plan zurücksetzen">
+    <span class="material-symbols-outlined" style="font-size:18px;color:#757481;">restart_alt</span>
+  </button>
+</header>
+
+<div id="app-wrap" style="display:none">
+
+<!-- ══════════════════════════════════════════
+     ONBOARDING
+══════════════════════════════════════════ -->
+<div id="onboarding" style="display:none">
+  <div class="px-4 max-w-lg mx-auto pb-12" style="padding-top:180px">
+
+    <!-- Step 1: Ziel -->
+    <div class="ob-step" id="ob-step-1">
+      <span class="font-label text-[9px] uppercase tracking-widest text-primary/60 block mb-2">SCHRITT 1 VON 2</span>
+      <h2 class="font-headline font-black italic uppercase text-on-surface mb-1" style="font-size:2rem;line-height:0.95;letter-spacing:-0.03em;">DEIN<br><span class="text-primary">ZIEL</span></h2>
+      <p class="text-on-surface-variant text-sm mb-6 mt-2">Was ist dein Hauptziel in den nächsten 90 Tagen?</p>
+
+      <div id="goal-cards">
+        <div class="goal-card" data-goal="cut" onclick="selectGoal(this)">
+          <div class="goal-icon" style="background:rgba(255,115,81,0.12);border:1px solid rgba(255,115,81,0.25);">🔥</div>
+          <div class="flex-1">
+            <div class="font-headline font-black italic uppercase text-base" style="letter-spacing:-0.01em;">Fett verbrennen</div>
+            <div class="text-on-surface-variant text-xs mt-0.5">Kaloriendefizit · −400 kcal unter TDEE</div>
+          </div>
+          <span class="material-symbols-outlined text-on-surface-variant" style="font-size:20px;">chevron_right</span>
+        </div>
+        <div class="goal-card" data-goal="maintain" onclick="selectGoal(this)">
+          <div class="goal-icon" style="background:rgba(255,197,108,0.12);border:1px solid rgba(255,197,108,0.25);">⚖️</div>
+          <div class="flex-1">
+            <div class="font-headline font-black italic uppercase text-base" style="letter-spacing:-0.01em;">Recomposition</div>
+            <div class="text-on-surface-variant text-xs mt-0.5">Erhalt · TDEE ohne Anpassung</div>
+          </div>
+          <span class="material-symbols-outlined text-on-surface-variant" style="font-size:20px;">chevron_right</span>
+        </div>
+        <div class="goal-card" data-goal="bulk" onclick="selectGoal(this)">
+          <div class="goal-icon" style="background:rgba(0,237,125,0.1);border:1px solid rgba(0,237,125,0.2);">💪</div>
+          <div class="flex-1">
+            <div class="font-headline font-black italic uppercase text-base" style="letter-spacing:-0.01em;">Muskeln aufbauen</div>
+            <div class="text-on-surface-variant text-xs mt-0.5">Kalorienüberschuss · +300 kcal über TDEE</div>
+          </div>
+          <span class="material-symbols-outlined text-on-surface-variant" style="font-size:20px;">chevron_right</span>
+        </div>
+      </div>
+
+      <button class="btn-gold mt-4" id="btn-ob-next-1" onclick="goStep(2)" disabled style="opacity:.5;">
+        <span class="material-symbols-outlined" style="font-size:20px;font-variation-settings:'FILL' 1;">arrow_forward</span>
+        Weiter
+      </button>
+    </div>
+
+    <!-- Step 2: Körperdaten -->
+    <div class="ob-step" id="ob-step-2">
+      <span class="font-label text-[9px] uppercase tracking-widest text-primary/60 block mb-2">SCHRITT 2 VON 2</span>
+      <h2 class="font-headline font-black italic uppercase text-on-surface mb-1" style="font-size:2rem;line-height:0.95;letter-spacing:-0.03em;">DEIN<br><span class="text-primary">KÖRPER</span></h2>
+      <p class="text-on-surface-variant text-sm mb-6 mt-2">Für deine persönlichen Makro-Ziele nach der Sjard-Methode.</p>
+
+      <!-- Gender -->
+      <div class="flex gap-3 mb-4">
+        <button class="gender-btn" id="g-m" onclick="selectGender('m')">♂ Mann</button>
+        <button class="gender-btn" id="g-f" onclick="selectGender('w')">♀ Frau</button>
+      </div>
+
+      <!-- Inputs 2x2 -->
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <div>
+          <label class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant font-bold block mb-1.5">Gewicht</label>
+          <div class="relative"><input type="number" id="ob-weight" placeholder="80" min="40" max="250" oninput="calcPreview()"><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:11px;color:#757481;pointer-events:none">kg</span></div>
+        </div>
+        <div>
+          <label class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant font-bold block mb-1.5">Größe</label>
+          <div class="relative"><input type="number" id="ob-height" placeholder="180" min="140" max="220" oninput="calcPreview()"><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:11px;color:#757481;pointer-events:none">cm</span></div>
+        </div>
+        <div>
+          <label class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant font-bold block mb-1.5">Alter</label>
+          <div class="relative"><input type="number" id="ob-age" placeholder="30" min="15" max="80" oninput="calcPreview()"><span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:11px;color:#757481;pointer-events:none">J</span></div>
+        </div>
+        <div>
+          <label class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant font-bold block mb-1.5">Aktivität</label>
+          <select id="ob-activity" oninput="calcPreview()" style="background:rgba(13,13,23,0.9);border:1.5px solid rgba(72,71,82,0.4);border-radius:14px;color:#e4e1ef;font-family:'Inter',sans-serif;font-size:14px;padding:13px 14px;width:100%;outline:none;">
+            <option value="1.2">Kaum Sport</option>
+            <option value="1.375">1–3× / Woche</option>
+            <option value="1.55" selected>3–5× / Woche</option>
+            <option value="1.725">6–7× / Woche</option>
+            <option value="1.9">2× täglich</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Live Preview -->
+      <div id="calc-preview" style="display:none" class="rounded-[20px] p-5 mb-5" style="background:rgba(18,18,26,0.9);">
+        <div style="background:rgba(18,18,26,0.9);border:1.5px solid rgba(255,197,108,0.2);border-radius:20px;padding:20px;">
+          <p class="font-label text-[9px] uppercase tracking-widest text-primary/60 mb-3">DEINE MAKROS · SJARD-METHODE</p>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="text-center p-3 rounded-[14px]" style="background:rgba(255,197,108,0.08);border:1px solid rgba(255,197,108,0.15);">
+              <div class="font-headline font-black italic text-primary" id="prev-kcal" style="font-size:1.8rem;line-height:1;">—</div>
+              <div class="text-[9px] font-bold uppercase tracking-widest text-on-surface-variant mt-1">KCAL</div>
+            </div>
+            <div class="text-center p-3 rounded-[14px]" style="background:rgba(137,206,255,0.08);border:1px solid rgba(137,206,255,0.15);">
+              <div class="font-headline font-black italic text-secondary" id="prev-prot" style="font-size:1.8rem;line-height:1;">—</div>
+              <div class="text-[9px] font-bold uppercase tracking-widest text-on-surface-variant mt-1">PROTEIN g</div>
+            </div>
+            <div class="text-center p-3 rounded-[14px]" style="background:rgba(0,237,125,0.06);border:1px solid rgba(0,237,125,0.15);">
+              <div class="font-headline font-black italic text-tertiary" id="prev-fett" style="font-size:1.8rem;line-height:1;">—</div>
+              <div class="text-[9px] font-bold uppercase tracking-widest text-on-surface-variant mt-1">FETT g</div>
+            </div>
+            <div class="text-center p-3 rounded-[14px]" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
+              <div class="font-headline font-black italic text-on-surface" id="prev-carbs" style="font-size:1.8rem;line-height:1;">—</div>
+              <div class="text-[9px] font-bold uppercase tracking-widest text-on-surface-variant mt-1">CARBS g</div>
+            </div>
+          </div>
+          <p class="text-[10px] text-on-surface-variant mt-3 text-center">P: 2,2g × KG · F: 1,0g × KG · Carbs: Rest</p>
+        </div>
+      </div>
+
+      <div class="flex gap-3">
+        <button onclick="goStep(1)" class="flex items-center justify-center gap-2 rounded-[18px] font-headline font-black italic uppercase active:scale-[.98] transition-all" style="padding:16px 20px;background:rgba(255,255,255,0.05);border:1.5px solid rgba(72,71,82,0.35);color:#aca9b7;font-size:14px;">
+          <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span>
+        </button>
+        <button class="btn-gold flex-1" id="btn-ob-save" onclick="saveTargets()" disabled style="opacity:.5;">
+          <span class="material-symbols-outlined" style="font-size:20px;font-variation-settings:'FILL' 1;">rocket_launch</span>
+          Plan erstellen
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PLAN BUILDER
+══════════════════════════════════════════ -->
+<div id="plan-builder" style="display:none">
+  <div class="px-4 max-w-lg mx-auto pb-12" style="padding-top:180px">
+
+    <!-- Plan Tabs -->
+    <div class="mb-5">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="font-label text-[9px] uppercase tracking-widest text-on-surface-variant font-bold">Meine Pläne</span>
+      </div>
+      <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar" id="plan-tabs" style="-webkit-overflow-scrolling:touch;"></div>
+    </div>
+
+    <!-- Macro HUD -->
+    <section class="mb-6 rounded-[22px] overflow-hidden border" style="background:rgba(10,10,18,0.9);border-color:rgba(255,197,108,0.1);box-shadow:0 0 40px rgba(255,197,108,0.04);">
+      <!-- Kcal row -->
+      <div style="padding:16px 18px 12px;border-bottom:1px solid rgba(255,255,255,0.05);">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px;">
+          <div style="display:flex;align-items:baseline;gap:6px;">
+            <span id="ring-kcal-val" class="font-headline font-black italic text-primary" style="font-size:2.4rem;line-height:1;">0</span>
+            <span style="font-size:10px;font-weight:700;color:#757481;text-transform:uppercase;letter-spacing:0.08em;">kcal</span>
+          </div>
+          <div style="text-align:right;">
+            <span style="font-size:11px;color:#757481;">Ziel: </span><span id="ring-kcal-target" style="font-size:11px;font-weight:700;color:#ffc56c;">—</span>
+            <div id="ring-score-badge" style="display:none;margin-top:2px;">
+              <span id="ring-score-text" class="font-headline font-black italic text-primary" style="font-size:11px;"></span>
+            </div>
+          </div>
+        </div>
+        <!-- Kcal bar -->
+        <div style="height:6px;background:rgba(255,197,108,0.08);border-radius:3px;overflow:hidden;">
+          <div id="bar-kcal" style="height:100%;width:0%;background:linear-gradient(90deg,#f0a500,#ffc56c);border-radius:3px;box-shadow:0 0 10px rgba(255,197,108,0.5);transition:width 0.9s cubic-bezier(.4,0,.2,1);"></div>
+        </div>
+      </div>
+      <!-- P / F / C rows -->
+      <div style="padding:12px 18px 14px;display:flex;flex-direction:column;gap:10px;">
+        <!-- Protein -->
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#89ceff;width:14px;flex-shrink:0;">P</span>
+          <div style="flex:1;height:4px;background:rgba(137,206,255,0.1);border-radius:2px;overflow:hidden;">
+            <div id="bar-prot" style="height:100%;width:0%;background:#89ceff;border-radius:2px;box-shadow:0 0 8px rgba(137,206,255,0.4);transition:width 0.9s cubic-bezier(.4,0,.2,1);"></div>
+          </div>
+          <span style="font-size:11px;font-weight:700;color:#89ceff;width:28px;text-align:right;flex-shrink:0;" id="stat-prot">0</span>
+          <span style="font-size:10px;color:#757481;flex-shrink:0;">/ <span id="stat-prot-t">—</span>g</span>
+        </div>
+        <!-- Fett -->
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#00ed7d;width:14px;flex-shrink:0;">F</span>
+          <div style="flex:1;height:4px;background:rgba(0,237,125,0.1);border-radius:2px;overflow:hidden;">
+            <div id="bar-fett" style="height:100%;width:0%;background:#00ed7d;border-radius:2px;box-shadow:0 0 8px rgba(0,237,125,0.3);transition:width 0.9s cubic-bezier(.4,0,.2,1);"></div>
+          </div>
+          <span style="font-size:11px;font-weight:700;color:#00ed7d;width:28px;text-align:right;flex-shrink:0;" id="stat-fett">0</span>
+          <span style="font-size:10px;color:#757481;flex-shrink:0;">/ <span id="stat-fett-t">—</span>g</span>
+        </div>
+        <!-- Carbs -->
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#c0b8d4;width:14px;flex-shrink:0;">C</span>
+          <div style="flex:1;height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;">
+            <div id="bar-carbs" style="height:100%;width:0%;background:#c0b8d4;border-radius:2px;transition:width 0.9s cubic-bezier(.4,0,.2,1);"></div>
+          </div>
+          <span style="font-size:11px;font-weight:700;color:#c0b8d4;width:28px;text-align:right;flex-shrink:0;" id="stat-carbs">0</span>
+          <span style="font-size:10px;color:#757481;flex-shrink:0;">/ <span id="stat-carbs-t">—</span>g</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Meal Cards -->
+    <div id="meal-cards-wrap"></div>
+
+    <!-- Save section -->
+    <div class="mt-2 mb-6">
+      <button class="btn-gold" onclick="savePlan()">
+        <span class="material-symbols-outlined" style="font-size:20px;font-variation-settings:'FILL' 1;">save</span>
+        Standardtag speichern
+      </button>
+    </div>
+
+  </div>
+</div>
+
+</div><!-- #app-wrap -->
+
+<!-- ══ Search Sheet ══ -->
+<div class="search-overlay" id="search-overlay" onclick="if(event.target===this)closeSearch()">
+  <div class="search-sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle-wrap"><div class="sheet-handle"></div></div>
+    <!-- Header -->
+    <div style="padding:0 20px 14px;border-bottom:1px solid rgba(72,71,82,0.2);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div>
+          <p id="search-meal-label" class="font-headline font-black italic uppercase text-primary" style="font-size:1rem;letter-spacing:-0.01em;line-height:1.1;">Frühstück</p>
+          <p style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#484752;margin-top:2px;">Lebensmittel hinzufügen</p>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="openPlanScanner()" title="Barcode scannen" style="width:44px;height:44px;border-radius:14px;background:rgba(137,206,255,0.08);border:1.5px solid rgba(137,206,255,0.22);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0;">
+            <span class="material-symbols-outlined" style="font-size:22px;color:#89ceff;font-variation-settings:'FILL' 1;">barcode_scanner</span>
+          </button>
+          <button onclick="closeSearch()" style="width:44px;height:44px;border-radius:14px;background:rgba(255,255,255,0.04);border:1.5px solid rgba(72,71,82,0.3);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+            <span class="material-symbols-outlined" style="font-size:18px;color:#757481;">close</span>
+          </button>
+        </div>
+      </div>
+      <!-- Search bar -->
+      <div style="display:flex;align-items:center;border-radius:16px;border:1.5px solid rgba(72,71,82,0.4);background:rgba(8,8,16,0.95);height:52px;transition:border-color .2s;" id="plan-search-bar">
+        <span class="material-symbols-outlined" style="font-size:20px;color:#484752;padding:0 14px;flex-shrink:0;">search</span>
+        <input id="plan-search-input" type="text" placeholder="Lebensmittel suchen…"
+          style="background:transparent;border:none;padding:0;color:#e4e1ef;font-family:'Inter',sans-serif;font-size:16px;outline:none;flex:1;min-width:0;"
+          oninput="onPlanSearchInput(event)"
+          onkeydown="if(event.key==='Enter'){event.target.blur();doPlanSearch()}"
+          onfocus="document.getElementById('plan-search-bar').style.borderColor='rgba(255,197,108,0.4)'"
+          onblur="document.getElementById('plan-search-bar').style.borderColor='rgba(72,71,82,0.4)'"/>
+        <button id="plan-search-clear" onclick="clearPlanSearch()" style="display:none;width:44px;height:52px;background:none;border:none;cursor:pointer;flex-shrink:0;align-items:center;justify-content:center;">
+          <span class="material-symbols-outlined" style="font-size:18px;color:#757481;">close</span>
+        </button>
+        <button onclick="doPlanSearch()" style="width:52px;height:52px;background:linear-gradient(135deg,rgba(255,197,108,0.16),rgba(255,197,108,0.05));border:none;border-left:1px solid rgba(255,197,108,0.15);border-radius:0 14px 14px 0;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <span class="material-symbols-outlined" style="font-size:20px;color:#ffc56c;">arrow_forward</span>
+        </button>
+      </div>
+    </div>
+    <div id="plan-search-results" class="no-scrollbar" style="flex:1;overflow-y:auto;max-height:58vh;padding:12px 20px 8px;"></div>
+  </div>
+</div>
+
+<!-- ══ Menge Sheet ══ -->
+<div class="menge-overlay" id="menge-overlay" onclick="closeMenge()">
+  <div class="menge-inner" onclick="event.stopPropagation()">
+    <div class="sheet-handle-wrap"><div class="sheet-handle"></div></div>
+    <p class="font-headline font-black italic uppercase text-base text-on-surface mb-0.5" id="menge-product-name" style="letter-spacing:-0.01em;">—</p>
+    <p class="text-on-surface-variant text-xs mb-5" id="menge-product-brand"></p>
+    <label class="font-label text-[10px] uppercase tracking-widest text-on-surface-variant font-bold block mb-2">Menge</label>
+    <div class="relative mb-3">
+      <input type="number" id="menge-val" value="100" min="1" max="9999" oninput="updateMengePreview()" style="padding-right:36px;">
+      <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:11px;color:#757481;pointer-events:none">g</span>
+    </div>
+    <div class="flex gap-2 flex-wrap mb-2">
+      <button class="menge-preset" onclick="setM(30)">30g</button>
+      <button class="menge-preset" onclick="setM(50)">50g</button>
+      <button class="menge-preset" onclick="setM(100)">100g</button>
+      <button class="menge-preset" onclick="setM(150)">150g</button>
+      <button class="menge-preset" onclick="setM(200)">200g</button>
+      <button class="menge-preset" onclick="setM(300)">300g</button>
+    </div>
+    <div class="flex gap-2 flex-wrap mb-5">
+      <button class="menge-preset" onclick="setM(5)"   title="Teelöffel">1 TL</button>
+      <button class="menge-preset" onclick="setM(12)"  title="Esslöffel">1 EL</button>
+      <button class="menge-preset" onclick="setM(30)"  title="1 Scheibe">1 Scheibe</button>
+      <button class="menge-preset" onclick="setM(30)"  title="eine Handvoll">1 Handvoll</button>
+      <button class="menge-preset" onclick="setM(60)"  title="1 Ei">1 Ei</button>
+      <button class="menge-preset" onclick="setM(125)" title="1 Becher">1 Becher</button>
+      <button class="menge-preset" onclick="setM(200)" title="1 Glas">1 Glas</button>
+      <button class="menge-preset" onclick="setM(250)" title="1 Portion">1 Portion</button>
+    </div>
+    <!-- Calc preview -->
+    <div class="flex gap-3 mb-5">
+      <div class="flex-1 text-center p-3 rounded-[12px]" style="background:rgba(255,197,108,0.08);border:1px solid rgba(255,197,108,0.15);">
+        <div class="font-headline font-black italic text-primary text-xl" id="m-kcal">—</div>
+        <div class="text-[9px] text-on-surface-variant uppercase tracking-widest mt-0.5">kcal</div>
+      </div>
+      <div class="flex-1 text-center p-3 rounded-[12px]" style="background:rgba(137,206,255,0.07);border:1px solid rgba(137,206,255,0.12);">
+        <div class="font-headline font-black italic text-secondary text-xl" id="m-prot">—</div>
+        <div class="text-[9px] text-on-surface-variant uppercase tracking-widest mt-0.5">P g</div>
+      </div>
+      <div class="flex-1 text-center p-3 rounded-[12px]" style="background:rgba(0,237,125,0.06);border:1px solid rgba(0,237,125,0.12);">
+        <div class="font-headline font-black italic text-tertiary text-xl" id="m-fett">—</div>
+        <div class="text-[9px] text-on-surface-variant uppercase tracking-widest mt-0.5">F g</div>
+      </div>
+      <div class="flex-1 text-center p-3 rounded-[12px]" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
+        <div class="font-headline font-black italic text-on-surface text-xl" id="m-carbs">—</div>
+        <div class="text-[9px] text-on-surface-variant uppercase tracking-widest mt-0.5">C g</div>
+      </div>
+    </div>
+    <button class="btn-gold" onclick="confirmAdd()">
+      <span class="material-symbols-outlined" style="font-size:20px;font-variation-settings:'FILL' 1;">add_circle</span>
+      Zum Plan hinzufügen
+    </button>
+  </div>
+</div>
+
+<!-- ══ Plan Barcode Scanner ══ -->
+<div id="plan-scanner-overlay" style="display:none;position:fixed;inset:0;z-index:500;background:#000;flex-direction:column;">
+  <button onclick="closePlanScanner()" style="position:absolute;top:calc(16px + env(safe-area-inset-top));right:16px;z-index:10;width:46px;height:46px;border-radius:14px;background:rgba(0,0,0,0.65);border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;cursor:pointer;">
+    <span class="material-symbols-outlined" style="color:#fff;font-size:22px;">close</span>
+  </button>
+  <video id="plan-scanner-video" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;"></video>
+  <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;">
+    <div style="width:82%;max-width:300px;height:120px;position:relative;">
+      <div style="position:absolute;top:0;left:0;width:24px;height:24px;border-top:3px solid #89ceff;border-left:3px solid #89ceff;border-radius:4px 0 0 0;"></div>
+      <div style="position:absolute;top:0;right:0;width:24px;height:24px;border-top:3px solid #89ceff;border-right:3px solid #89ceff;border-radius:0 4px 0 0;"></div>
+      <div style="position:absolute;bottom:0;left:0;width:24px;height:24px;border-bottom:3px solid #89ceff;border-left:3px solid #89ceff;border-radius:0 0 0 4px;"></div>
+      <div style="position:absolute;bottom:0;right:0;width:24px;height:24px;border-bottom:3px solid #89ceff;border-right:3px solid #89ceff;border-radius:0 0 4px 0;"></div>
+      <div style="position:absolute;left:4px;right:4px;height:2px;background:linear-gradient(90deg,transparent,#89ceff,transparent);animation:scanline 2s ease-in-out infinite;top:50%;"></div>
+    </div>
+    <p style="margin-top:24px;color:rgba(255,255,255,0.55);font-size:13px;font-family:'Inter',sans-serif;">Barcode in den Rahmen halten</p>
+  </div>
+  <div id="plan-scanner-status" style="position:absolute;bottom:calc(44px + env(safe-area-inset-bottom));left:0;right:0;text-align:center;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:rgba(255,255,255,0.6);padding:0 20px;"></div>
+</div>
+<style>
+@keyframes scanline { 0%,100%{opacity:0.35;transform:translateY(-28px)} 50%{opacity:1;transform:translateY(28px)} }
+/* Strip html5-qrcode default UI so our overlay shows clean */
+#plan-qr-div section { padding:0!important; border:none!important; box-shadow:none!important; }
+#plan-qr-div #qr-shaded-region { border-color:rgba(137,206,255,0.6)!important; }
+</style>
+
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/gamification.js"></script>
+<script src="js/auth.js"></script>
+<script>
+// ── State ──────────────────────────────────────
+let profile = null
+let selectedGoal = null
+let selectedGender = 'm'
+let targets = { kcal:0, prot:0, fett:0, carbs:0 }
+let plans = []          // [{ id, name, meals:{frühstück:[],mittagessen:[],abendessen:[],snack:[]} }]
+let activePlanId = null
+let activeMeal = null
+let pendingProduct = null
+let _srPlan = []
+
+function emptyMeals() { return { frühstück:[], mittagessen:[], abendessen:[], snack:[] } }
+function getActivePlan() { return plans.find(p => p.id === activePlanId) || plans[0] }
+function cm() { return getActivePlan()?.meals || emptyMeals() } // current meals shorthand
+
+const MEAL_META = {
+  frühstück:  { label:'Frühstück',  icon:'free_breakfast', color:'#ffc56c', border:'rgba(255,197,108,0.28)', bg:'rgba(255,197,108,0.07)', photo:'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=600&q=70',
+    emoji:'🌅', hint:'Starte deinen Tag mit Proteinen & komplexen Carbs', suggest:['Haferflocken','Ei (Hühnerei)','Magerquark','Skyr','Vollkornbrot','Banane','Joghurt (3,5 %)'] },
+  mittagessen:{ label:'Mittagessen',icon:'restaurant',     color:'#f0a500', border:'rgba(240,165,0,0.25)',   bg:'rgba(240,165,0,0.06)',   photo:'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&q=70',
+    emoji:'☀️', hint:'Deine größte Mahlzeit — Protein + Carbs + Gemüse', suggest:['Hähnchenbrust','Weißer Reis (gekocht)','Brokkoli','Pasta (gekocht)','Lachs','Kartoffel','Süßkartoffel'] },
+  abendessen: { label:'Abendessen', icon:'nights_stay',    color:'#89ceff', border:'rgba(137,206,255,0.25)', bg:'rgba(137,206,255,0.06)', photo:'https://images.unsplash.com/photo-1559847844-5315695dadae?w=600&q=70',
+    emoji:'🌙', hint:'Leicht, proteinreich, wenig Carbs', suggest:['Hähnchenbrust','Magerquark','Lachs','Hüttenkäse','Spinat','Brokkoli','Thunfisch (Wasser)'] },
+  snack:      { label:'Snack',      icon:'nutrition',      color:'#00ed7d', border:'rgba(0,237,125,0.22)',   bg:'rgba(0,237,125,0.05)',   photo:'https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?w=600&q=70',
+    emoji:'⚡', hint:'Protein-Snack zwischen den Mahlzeiten', suggest:['Magerquark','Skyr','Eiweißpulver (Whey)','Banane','Apfel','Mandeln','Erdnussbutter'] },
+}
+
+// ── Toast ──────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast')
+  t.textContent = msg; t.className = 'show'
+  clearTimeout(t._t); t._t = setTimeout(() => t.className = '', 3000)
+}
+
+// ── Onboarding ─────────────────────────────────
+function selectGoal(el) {
+  document.querySelectorAll('.goal-card').forEach(c => c.classList.remove('selected'))
+  el.classList.add('selected')
+  selectedGoal = el.dataset.goal
+  document.getElementById('btn-ob-next-1').disabled = false
+  document.getElementById('btn-ob-next-1').style.opacity = '1'
+}
+
+function selectGender(g) {
+  selectedGender = g
+  document.getElementById('g-m').classList.toggle('selected', g === 'm')
+  document.getElementById('g-f').classList.toggle('selected', g === 'w')
+  calcPreview()
+}
+
+function goStep(n) {
+  document.querySelectorAll('.ob-step').forEach(s => s.classList.remove('active'))
+  document.getElementById('ob-step-' + n).classList.add('active')
+  window.scrollTo({ top:0, behavior:'smooth' })
+}
+
+function calcPreview() {
+  const w = parseFloat(document.getElementById('ob-weight').value)
+  const h = parseFloat(document.getElementById('ob-height').value)
+  const a = parseFloat(document.getElementById('ob-age').value)
+  const act = parseFloat(document.getElementById('ob-activity').value)
+  if (!w || !h || !a) { document.getElementById('calc-preview').style.display = 'none'; return }
+
+  const bmr = selectedGender === 'm'
+    ? 10*w + 6.25*h - 5*a + 5
+    : 10*w + 6.25*h - 5*a - 161
+  const tdee = bmr * act
+  const goalDelta = selectedGoal === 'cut' ? -400 : selectedGoal === 'bulk' ? 300 : 0
+  const kcal = Math.round(tdee + goalDelta)
+  const prot = Math.round(w * 2.2)
+  const fett = Math.round(w * 1.0)
+  const carbs = Math.round((kcal - prot*4 - fett*9) / 4)
+
+  document.getElementById('calc-preview').style.display = 'block'
+  document.getElementById('prev-kcal').textContent = kcal
+  document.getElementById('prev-prot').textContent = prot
+  document.getElementById('prev-fett').textContent = fett
+  document.getElementById('prev-carbs').textContent = Math.max(0, carbs)
+
+  document.getElementById('btn-ob-save').disabled = false
+  document.getElementById('btn-ob-save').style.opacity = '1'
+
+  // Store for save
+  window._calcTargets = { kcal, prot, fett, carbs: Math.max(0, carbs) }
+}
+
+async function saveTargets() {
+  const t = window._calcTargets
+  if (!t) return
+  const btn = document.getElementById('btn-ob-save')
+  btn.disabled = true; btn.querySelector('span:last-child').textContent = 'Wird gespeichert…'
+
+  await sb.from('profiles').update({
+    kalorien_ziel: t.kcal,
+    protein_ziel_g: t.prot,
+    fett_ziel_g: t.fett,
+    carbs_ziel_g: t.carbs,
+  }).eq('id', profile.id)
+
+  targets = t
+  document.getElementById('onboarding').style.display = 'none'
+  document.getElementById('plan-builder').style.display = 'block'
+  setupBuilder()
+  showToast('Ziele gespeichert ✓')
+}
+
+// ── Plan Builder ───────────────────────────────
+function setupBuilder() {
+  document.getElementById('ring-kcal-target').textContent = targets.kcal
+  document.getElementById('stat-prot-t').textContent = targets.prot
+  document.getElementById('stat-fett-t').textContent = targets.fett
+  document.getElementById('stat-carbs-t').textContent = targets.carbs
+  renderPlanTabs()
+  renderMealCards()
+  updateRings()
+}
+
+function renderPlanTabs() {
+  const wrap = document.getElementById('plan-tabs')
+  wrap.innerHTML = plans.map(p => {
+    const active = p.id === activePlanId
+    const total = Object.values(p.meals).flat().reduce((s,f)=>s+(f.kcal||0),0)
+    return `<button onclick="switchPlan('${p.id}')" oncontextmenu="renamePlan('${p.id}');return false"
+      style="flex-shrink:0;padding:10px 16px;border-radius:50px;border:1.5px solid ${active?'rgba(255,197,108,0.5)':'rgba(72,71,82,0.35)'};background:${active?'rgba(255,197,108,0.1)':'rgba(18,18,26,0.8)'};color:${active?'#ffc56c':'#aca9b7'};font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:900;font-style:italic;text-transform:uppercase;cursor:pointer;white-space:nowrap;transition:all .15s;">
+      ${p.name}${total?`<span style="font-size:10px;opacity:0.7;margin-left:6px;">${total} kcal</span>`:''}
+    </button>`
+  }).join('') + `
+  <button onclick="addNewPlan()" style="flex-shrink:0;padding:10px 14px;border-radius:50px;border:1.5px dashed rgba(72,71,82,0.4);background:rgba(18,18,26,0.5);color:#757481;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:900;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px;">
+    <span class="material-symbols-outlined" style="font-size:16px;">add</span> Neuer Plan
+  </button>`
+}
+
+function switchPlan(id) {
+  activePlanId = id
+  localStorage.setItem('90tc_active_plan_id', id)
+  renderPlanTabs()
+  renderMealCards()
+  updateRings()
+}
+
+function addNewPlan() {
+  const name = prompt('Name für den neuen Plan:', 'Plan ' + (plans.length + 1))
+  if (!name) return
+  const id = Date.now().toString(36)
+  plans.push({ id, name: name.trim(), meals: emptyMeals() })
+  activePlanId = id
+  savePlans()
+  renderPlanTabs()
+  renderMealCards()
+  updateRings()
+  showToast(`"${name}" erstellt ✓`)
+}
+
+function renamePlan(id) {
+  const p = plans.find(x => x.id === id)
+  if (!p) return
+  const newName = prompt('Plan umbenennen:', p.name)
+  if (!newName || newName === p.name) return
+  p.name = newName.trim()
+  savePlans()
+  renderPlanTabs()
+  showToast('Umbenannt ✓')
+}
+
+function planTotals() {
+  return Object.values(cm()).flat().reduce((a, f) => ({
+    kcal: a.kcal + (f.kcal||0),
+    prot: a.prot + (f.prot||0),
+    fett: a.fett + (f.fett||0),
+    carbs: a.carbs + (f.carbs||0),
+  }), { kcal:0, prot:0, fett:0, carbs:0 })
+}
+
+function updateRings() {
+  const t = planTotals()
+  const pct = (val, target) => target ? Math.min(100, (val / target) * 100) + '%' : '0%'
+
+  document.getElementById('ring-kcal-val').textContent = Math.round(t.kcal)
+  document.getElementById('bar-kcal').style.width = pct(t.kcal, targets.kcal)
+  document.getElementById('bar-prot').style.width = pct(t.prot, targets.prot)
+  document.getElementById('bar-fett').style.width = pct(t.fett, targets.fett)
+  document.getElementById('bar-carbs').style.width = pct(t.carbs, targets.carbs)
+
+  document.getElementById('stat-prot').textContent = Math.round(t.prot)
+  document.getElementById('stat-fett').textContent = Math.round(t.fett)
+  document.getElementById('stat-carbs').textContent = Math.round(t.carbs)
+
+  if (targets.kcal) {
+    const score = Math.round(Math.min(100, (t.kcal / targets.kcal) * 100))
+    const badge = document.getElementById('ring-score-badge')
+    badge.style.display = 'block'
+    document.getElementById('ring-score-text').textContent = score + '% des Ziels'
+    document.getElementById('ring-score-text').style.color = score >= 90 ? '#00ed7d' : '#ffc56c'
+  }
+}
+
+function renderMealCards() {
+  const wrap = document.getElementById('meal-cards-wrap')
+  const meals = cm()
+  wrap.innerHTML = Object.entries(MEAL_META).map(([key, m]) => {
+    const items = meals[key] || []
+    const mealKcal = items.reduce((s,f) => s+(f.kcal||0), 0)
+    const mealProt = items.reduce((s,f) => s+(f.prot||0), 0)
+    const mealFett = items.reduce((s,f) => s+(f.fett||0), 0)
+    const mealCarbs = items.reduce((s,f) => s+(f.carbs||0), 0)
+
+    const isEmpty = items.length === 0
+    const foodRows = !isEmpty ? items.map((f,i) => `
+      <div class="food-item-row">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:700;color:#e4e1ef;">${f.name}</div>
+          <div style="font-size:10px;color:#757481;margin-top:1px;">${f.amount}g &nbsp;·&nbsp; P:${f.prot}g &nbsp;F:${f.fett}g &nbsp;C:${f.carbs}g</div>
+        </div>
+        <span style="font-size:13px;font-weight:700;color:${m.color};flex-shrink:0;margin-right:4px;">${f.kcal} kcal</span>
+        <button onclick="removeFood('${key}',${i})" style="background:none;border:none;cursor:pointer;padding:4px;color:rgba(255,255,255,0.3);">
+          <span class="material-symbols-outlined" style="font-size:16px;">close</span>
+        </button>
+      </div>`).join('')
+    : `<button onclick="openSearch('${key}')" style="width:100%;padding:18px 16px;border-radius:18px;background:rgba(255,255,255,0.03);border:1.5px dashed rgba(72,71,82,0.3);cursor:pointer;text-align:left;transition:all .15s;" class="active:scale-[.98]">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="font-size:28px;">${m.emoji}</span>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:${m.color};margin-bottom:3px;">+ ${m.label} planen</div>
+            <div style="font-size:11px;color:#484752;line-height:1.4;">${m.hint}</div>
+          </div>
+        </div>
+      </button>`
+
+    const macroBar = !isEmpty ? `
+      <div style="display:flex;gap:8px;margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);flex-wrap:wrap;">
+        <span style="font-size:10px;font-weight:700;color:#89ceff;">P ${Math.round(mealProt)}g</span>
+        <span style="font-size:10px;color:rgba(255,255,255,0.15);">·</span>
+        <span style="font-size:10px;font-weight:700;color:#00ed7d;">F ${Math.round(mealFett)}g</span>
+        <span style="font-size:10px;color:rgba(255,255,255,0.15);">·</span>
+        <span style="font-size:10px;font-weight:700;color:#aca9b7;">C ${Math.round(mealCarbs)}g</span>
+      </div>` : ''
+
+    const addMoreBtn = !isEmpty ? `
+      <button class="plan-add-btn" onclick="openSearch('${key}')" style="border-color:${m.border};color:${m.color}80;margin-top:12px;">
+        <span class="material-symbols-outlined" style="font-size:18px;color:${m.color};">add</span>
+        Weiteres Produkt
+      </button>` : ''
+
+    const itemCountBadge = !isEmpty
+      ? `<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:rgba(255,255,255,0.35);">${items.length} Produkt${items.length !== 1 ? 'e' : ''}</div>`
+      : `<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#2e2e3a;">Leer</div>`
+
+    return `
+    <div class="meal-plan-card" style="border-color:${isEmpty ? 'rgba(72,71,82,0.2)' : m.border};">
+      <img class="meal-bg" src="${m.photo}" alt="" style="${isEmpty ? 'opacity:0.4;' : ''}">
+      <div class="meal-overlay"></div>
+      <div class="meal-content">
+        <div class="meal-head">
+          <div class="flex items-center gap-3">
+            <div style="width:40px;height:40px;border-radius:14px;background:${m.bg};border:1px solid ${m.border};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <span class="material-symbols-outlined" style="font-size:20px;color:${m.color};font-variation-settings:'FILL' 1">${m.icon}</span>
+            </div>
+            <div>
+              <div class="meal-title" style="color:${m.color}">${m.label}</div>
+              ${itemCountBadge}
+            </div>
+          </div>
+          <div class="meal-kcal" style="color:${m.color}">${mealKcal ? mealKcal+' kcal' : '—'}</div>
+        </div>
+        <div>${foodRows}</div>
+        ${macroBar}
+        ${addMoreBtn}
+      </div>
+    </div>`
+  }).join('')
+}
+
+function removeFood(meal, idx) {
+  cm()[meal].splice(idx, 1)
+  renderMealCards()
+  updateRings()
+  savePlans()
+}
+
+function savePlan() {
+  savePlans()
+  showToast(`"${getActivePlan()?.name || 'Plan'}" gespeichert ✓`)
+}
+
+function savePlans() {
+  localStorage.setItem('90tc_plans_v2', JSON.stringify(plans))
+  localStorage.setItem('90tc_active_plan_id', activePlanId || '')
+}
+
+// ── Search ─────────────────────────────────────
+function openSearch(meal) {
+  activeMeal = meal
+  const m = MEAL_META[meal]
+  document.getElementById('search-meal-label').textContent = m.label
+  document.getElementById('search-meal-label').style.color = m.color
+  document.getElementById('plan-search-input').value = ''
+  document.getElementById('plan-search-clear').style.display = 'none'
+  document.getElementById('search-overlay').classList.add('active')
+  showRecentFoods()
+  setTimeout(() => document.getElementById('plan-search-input').focus(), 150)
+}
+
+function closeSearch() {
+  document.getElementById('search-overlay').classList.remove('active')
+  activeMeal = null
+}
+
+let _searchDebounce = null
+
+function onPlanSearchInput(e) {
+  const val = e.target.value.trim()
+  document.getElementById('plan-search-clear').style.display = val ? 'flex' : 'none'
+
+  clearTimeout(_searchDebounce)
+
+  if (!val) { showRecentFoods(); return }
+
+  // Instant: show local results immediately
+  const localHits = searchLocal(val)
+  if (localHits.length) {
+    _srPlan = localHits
+    const el = document.getElementById('plan-search-results')
+    el.innerHTML = `<p style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;color:#484752;margin-bottom:8px;">SOFORT-ERGEBNISSE</p>` +
+      localHits.map((p,i) => renderPlanResultRow(p, i, 'search')).join('') +
+      `<div style="display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(72,71,82,0.15);">
+        <div style="width:14px;height:14px;border:2px solid #2e2e3a;border-top-color:#ffc56c;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;"></div>
+        <span style="font-size:11px;color:#484752;">Weitere Ergebnisse werden geladen…</span>
+      </div>`
+  }
+
+  // Debounced: fire full API search after pause in typing
+  _searchDebounce = setTimeout(() => doPlanSearch(), val.length >= 3 ? 350 : 600)
+}
+
+function clearPlanSearch() {
+  document.getElementById('plan-search-input').value = ''
+  document.getElementById('plan-search-clear').style.display = 'none'
+  document.getElementById('plan-search-input').focus()
+  showRecentFoods()
+}
+
+async function doPlanSearch() {
+  const q = document.getElementById('plan-search-input').value.trim()
+  if (!q) return
+  const el = document.getElementById('plan-search-results')
+  el.innerHTML = `<div style="display:flex;align-items:center;gap:10px;padding:20px 0;color:#484752;font-size:13px;">
+    <div style="width:20px;height:20px;border:2px solid #2e2e3a;border-top-color:#ffc56c;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;"></div>
+    Durchsuche Lebensmitteldatenbanken…
+  </div>`
+  const results = await searchProducts(q)
+  _srPlan = results
+  if (!results.length) {
+    el.innerHTML = `<div style="text-align:center;padding:32px 0;">
+      <span class="material-symbols-outlined" style="font-size:40px;color:#1e1e28;display:block;margin-bottom:10px;">search_off</span>
+      <p style="color:#484752;font-size:13px;">Keine Produkte gefunden</p>
+      <p style="color:#2e2e3a;font-size:11px;margin-top:4px;">Versuche einen anderen Suchbegriff</p>
+    </div>`
+    return
+  }
+  el.innerHTML = `<p style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;color:#484752;margin-bottom:8px;">${results.length} ERGEBNISSE</p>` +
+    results.map((p,i) => renderPlanResultRow(p, i, 'search')).join('')
+}
+
+function pickPlanResult(i) {
+  openPlanMenge(_srPlan[i])
+}
+
+function closeMenge() {
+  document.getElementById('menge-overlay').classList.remove('active')
+  pendingProduct = null
+}
+
+function setM(g) { document.getElementById('menge-val').value = g; updateMengePreview() }
+
+function updateMengePreview() {
+  if (!pendingProduct) return
+  const g = parseFloat(document.getElementById('menge-val').value) || 0
+  const f = g / 100, p = pendingProduct
+  document.getElementById('m-kcal').textContent = p.kcal100!=null ? Math.round(p.kcal100*f) : '—'
+  document.getElementById('m-prot').textContent = p.protein100!=null ? Math.round(p.protein100*f*10)/10 : '—'
+  document.getElementById('m-fett').textContent = p.fett100!=null ? Math.round(p.fett100*f*10)/10 : '—'
+  document.getElementById('m-carbs').textContent = p.carbs100!=null ? Math.round(p.carbs100*f*10)/10 : '—'
+}
+
+function confirmAdd() {
+  if (!pendingProduct || !activeMeal) return
+  const g = parseFloat(document.getElementById('menge-val').value) || 100
+  const f = g/100, p = pendingProduct
+  const meal = activeMeal // capture before closeMenge clears it
+  cm()[meal].push({
+    name: p.name,
+    amount: g,
+    kcal: p.kcal100!=null ? Math.round(p.kcal100*f) : 0,
+    prot: p.protein100!=null ? Math.round(p.protein100*f*10)/10 : 0,
+    fett: p.fett100!=null ? Math.round(p.fett100*f*10)/10 : 0,
+    carbs: p.carbs100!=null ? Math.round(p.carbs100*f*10)/10 : 0,
+  })
+  document.getElementById('menge-overlay').classList.remove('active')
+  savePlanRecentFood(p)
+  pendingProduct = null
+  renderMealCards()
+  updateRings()
+  savePlans()
+
+  // Reset search sheet — keep open, show confirmation + recent foods
+  const inp = document.getElementById('plan-search-input')
+  inp.value = ''
+  document.getElementById('plan-search-clear').style.display = 'none'
+  // Show confirmation banner + recent foods below
+  try {
+    const recents = JSON.parse(localStorage.getItem('90tc_recent_plan_foods')||'[]')
+    _recentFoods = recents
+    const recentRows = recents.length
+      ? `<p style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;color:#484752;margin:14px 0 8px;">ZULETZT HINZUGEFÜGT</p>` + recents.map((r,i) => renderPlanResultRow(r,i,'recent')).join('')
+      : ''
+    document.getElementById('plan-search-results').innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;background:rgba(0,237,125,0.07);border:1px solid rgba(0,237,125,0.18);margin-bottom:4px;">
+        <span class="material-symbols-outlined" style="font-size:22px;color:#00ed7d;font-variation-settings:'FILL' 1;flex-shrink:0;">check_circle</span>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#00ed7d;">${p.name} hinzugefügt</div>
+          <div style="font-size:11px;color:#757481;margin-top:1px;">${g}g · ${p.kcal100!=null?Math.round(p.kcal100*(g/100))+' kcal':'—'}</div>
+        </div>
+      </div>${recentRows}`
+  } catch(e) { showRecentFoods() }
+  setTimeout(() => inp.focus(), 50)
+}
+
+// Search input Enter key
+// Enter fires search immediately, bypassing debounce
+document.getElementById('plan-search-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { clearTimeout(_searchDebounce); e.target.blur(); doPlanSearch() }
+})
+
+// ── Lokale Lebensmitteldatenbank ────────────────
+const LOCAL_FOODS = [
+  { name:'Magerquark',           brand:'Generisch', kcal100:67,  protein100:12.0, fett100:0.3,  carbs100:4.1,  image:null, aliases:['quark','mager quark'] },
+  { name:'Skyr',                 brand:'Generisch', kcal100:63,  protein100:11.0, fett100:0.2,  carbs100:4.0,  image:null, aliases:[] },
+  { name:'Hüttenkäse',           brand:'Generisch', kcal100:98,  protein100:11.0, fett100:5.0,  carbs100:3.0,  image:null, aliases:['cottage cheese'] },
+  { name:'Joghurt (3,5 %)',      brand:'Generisch', kcal100:63,  protein100:3.5,  fett100:3.5,  carbs100:5.0,  image:null, aliases:['joghurt','yogurt','naturjoghurt'] },
+  { name:'Vollmilch',            brand:'Generisch', kcal100:61,  protein100:3.3,  fett100:3.5,  carbs100:4.7,  image:null, aliases:['milch','milk'] },
+  { name:'Mozzarella',           brand:'Generisch', kcal100:280, protein100:17.0, fett100:22.0, carbs100:2.0,  image:null, aliases:[] },
+  { name:'Gouda',                brand:'Generisch', kcal100:356, protein100:25.0, fett100:28.0, carbs100:1.0,  image:null, aliases:[] },
+  { name:'Hähnchenbrust',        brand:'Generisch', kcal100:110, protein100:23.0, fett100:1.3,  carbs100:0.0,  image:null, aliases:['hühnchenbrust','chicken','huhn','hähnchenfilet'] },
+  { name:'Rinderhack (mager)',   brand:'Generisch', kcal100:144, protein100:20.0, fett100:7.0,  carbs100:0.0,  image:null, aliases:['hackfleisch','hack'] },
+  { name:'Lachs',                brand:'Generisch', kcal100:208, protein100:20.0, fett100:13.0, carbs100:0.0,  image:null, aliases:['lachsfilet','salmon'] },
+  { name:'Thunfisch (Wasser)',   brand:'Generisch', kcal100:86,  protein100:20.0, fett100:1.0,  carbs100:0.0,  image:null, aliases:['thunfisch','tuna'] },
+  { name:'Ei (Hühnerei)',        brand:'Generisch', kcal100:155, protein100:13.0, fett100:11.0, carbs100:1.0,  image:null, aliases:['ei','eier','egg'] },
+  { name:'Eiweißpulver (Whey)',  brand:'Generisch', kcal100:370, protein100:75.0, fett100:5.0,  carbs100:10.0, image:null, aliases:['whey','proteinpulver','whey protein'] },
+  { name:'Haferflocken',         brand:'Generisch', kcal100:366, protein100:13.0, fett100:7.0,  carbs100:58.0, image:null, aliases:['oats','oatmeal','hafer'] },
+  { name:'Weißer Reis (gekocht)',brand:'Generisch', kcal100:130, protein100:2.7,  fett100:0.3,  carbs100:28.0, image:null, aliases:['reis','rice','basmati'] },
+  { name:'Vollkornbrot',         brand:'Generisch', kcal100:240, protein100:9.0,  fett100:3.0,  carbs100:42.0, image:null, aliases:['brot','vollkorn'] },
+  { name:'Kartoffel',            brand:'Generisch', kcal100:77,  protein100:2.0,  fett100:0.1,  carbs100:17.0, image:null, aliases:['kartoffeln','potato'] },
+  { name:'Süßkartoffel',         brand:'Generisch', kcal100:86,  protein100:1.6,  fett100:0.1,  carbs100:20.0, image:null, aliases:['sweet potato','yam'] },
+  { name:'Pasta (gekocht)',      brand:'Generisch', kcal100:131, protein100:5.0,  fett100:1.1,  carbs100:26.0, image:null, aliases:['nudeln','spaghetti','pasta'] },
+  { name:'Linsen (gekocht)',     brand:'Generisch', kcal100:116, protein100:9.0,  fett100:0.4,  carbs100:20.0, image:null, aliases:['linsen','lentils'] },
+  { name:'Brokkoli',             brand:'Generisch', kcal100:34,  protein100:2.8,  fett100:0.4,  carbs100:7.0,  image:null, aliases:['broccoli'] },
+  { name:'Spinat',               brand:'Generisch', kcal100:23,  protein100:2.9,  fett100:0.4,  carbs100:3.6,  image:null, aliases:['blattspinat'] },
+  { name:'Banane',               brand:'Generisch', kcal100:89,  protein100:1.1,  fett100:0.3,  carbs100:23.0, image:null, aliases:['banana'] },
+  { name:'Apfel',                brand:'Generisch', kcal100:52,  protein100:0.3,  fett100:0.2,  carbs100:14.0, image:null, aliases:['apple'] },
+  { name:'Erdbeeren',            brand:'Generisch', kcal100:32,  protein100:0.7,  fett100:0.4,  carbs100:7.7,  image:null, aliases:['erdbeere','strawberry'] },
+  { name:'Blaubeeren',           brand:'Generisch', kcal100:57,  protein100:0.7,  fett100:0.3,  carbs100:14.0, image:null, aliases:['heidelbeeren','blueberry','beeren'] },
+  { name:'Mandeln',              brand:'Generisch', kcal100:579, protein100:21.0, fett100:50.0, carbs100:22.0, image:null, aliases:['almonds'] },
+  { name:'Erdnussbutter',        brand:'Generisch', kcal100:588, protein100:25.0, fett100:50.0, carbs100:20.0, image:null, aliases:['peanut butter','erdnussmus'] },
+  { name:'Avocado',              brand:'Generisch', kcal100:160, protein100:2.0,  fett100:15.0, carbs100:9.0,  image:null, aliases:[] },
+  { name:'Olivenöl',             brand:'Generisch', kcal100:884, protein100:0.0,  fett100:100.0,carbs100:0.0,  image:null, aliases:['öl','olive oil'] },
+  { name:'Rapsöl',               brand:'Generisch', kcal100:884, protein100:0.0,  fett100:100.0,carbs100:0.0,  image:null, aliases:['canola','rapso'] },
+  { name:'Butter',               brand:'Generisch', kcal100:741, protein100:0.7,  fett100:81.0, carbs100:0.6,  image:null, aliases:[] },
+  { name:'Frischkäse',           brand:'Generisch', kcal100:143, protein100:6.0,  fett100:12.0, carbs100:3.0,  image:null, aliases:['cream cheese','frischkaese'] },
+  { name:'Zitronensaft',         brand:'Generisch', kcal100:22,  protein100:0.4,  fett100:0.2,  carbs100:6.5,  image:null, aliases:['lemon juice','zitrone','lemon'] },
+  { name:'Wasser',               brand:'Generisch', kcal100:0,   protein100:0.0,  fett100:0.0,  carbs100:0.0,  image:null, aliases:['mineralwasser','wasser still','wasser sprudel'] },
+  { name:'Kaffee (schwarz)',      brand:'Generisch', kcal100:2,   protein100:0.3,  fett100:0.0,  carbs100:0.3,  image:null, aliases:['kaffee','coffee'] },
+  { name:'Honig',                brand:'Generisch', kcal100:304, protein100:0.3,  fett100:0.0,  carbs100:82.0, image:null, aliases:['honey'] },
+  { name:'Hafermilch',           brand:'Generisch', kcal100:45,  protein100:1.0,  fett100:1.5,  carbs100:6.5,  image:null, aliases:['oat milk','oatmilk'] },
+  { name:'Mandelmilch',          brand:'Generisch', kcal100:24,  protein100:0.8,  fett100:1.4,  carbs100:2.5,  image:null, aliases:['almond milk'] },
+  { name:'Kichererbsen (Dose)',   brand:'Generisch', kcal100:139, protein100:7.2,  fett100:2.3,  carbs100:22.0, image:null, aliases:['chickpeas'] },
+  { name:'Rote Beete',           brand:'Generisch', kcal100:43,  protein100:1.6,  fett100:0.1,  carbs100:9.6,  image:null, aliases:['rote bete','beetroot','beet'] },
+  { name:'Tomaten',              brand:'Generisch', kcal100:18,  protein100:0.9,  fett100:0.2,  carbs100:3.9,  image:null, aliases:['tomate','tomato'] },
+  { name:'Zwiebel',              brand:'Generisch', kcal100:40,  protein100:1.1,  fett100:0.1,  carbs100:9.3,  image:null, aliases:['onion','zwiebeln'] },
+  { name:'Knoblauch',            brand:'Generisch', kcal100:149, protein100:6.4,  fett100:0.5,  carbs100:33.0, image:null, aliases:['garlic'] },
+]
+
+function searchLocal(query) {
+  const q = query.trim().toLowerCase()
+  return LOCAL_FOODS.filter(f =>
+    f.name.toLowerCase().includes(q) || (f.aliases||[]).some(a => a.includes(q))
+  ).map(f => ({ ...f, _local: true }))
+}
+
+// ── Edamam ──────────────────────────────────────
+const EDAMAM_APP_ID  = '76b14197'
+const EDAMAM_APP_KEY = '665adfdf09e2e03e0e653799976b01b8'
+
+async function searchEdamam(query) {
+  try {
+    const ctrl = new AbortController()
+    const t = setTimeout(() => ctrl.abort(), 7000)
+    const r = await fetch('https://api.edamam.com/api/food-database/v2/parser?' + new URLSearchParams({
+      ingr: query, app_id: EDAMAM_APP_ID, app_key: EDAMAM_APP_KEY,
+    }), { signal: ctrl.signal })
+    clearTimeout(t)
+    if (!r.ok) return []
+    const d = await r.json()
+    const q = query.trim().toLowerCase()
+    return (d.hints||[])
+      .map(h => parseEdamamFood(h.food))
+      .filter(f => f && f.name && f.name !== '—' && f.kcal100 != null)
+      .sort((a,b) => {
+        const na=a.name.toLowerCase(), nb=b.name.toLowerCase()
+        if (na.startsWith(q) !== nb.startsWith(q)) return na.startsWith(q) ? -1 : 1
+        return 0
+      })
+  } catch(e) { return [] }
+}
+
+function parseEdamamFood(food) {
+  if (!food) return null
+  const n = food.nutrients || {}
+  return {
+    name: food.label || '—',
+    brand: food.brand || '',
+    image: food.image || null,
+    kcal100:    n.ENERC_KCAL != null ? Math.round(n.ENERC_KCAL)       : null,
+    protein100: n.PROCNT     != null ? Math.round(n.PROCNT*10)/10      : null,
+    fett100:    n.FAT        != null ? Math.round(n.FAT*10)/10         : null,
+    carbs100:   n.CHOCDF     != null ? Math.round(n.CHOCDF*10)/10      : null,
+  }
+}
+
+// ── FatSecret ───────────────────────────────────
+let _fsToken = null, _fsTokenExp = 0
+
+async function getFSToken() {
+  if (_fsToken && Date.now() < _fsTokenExp) return _fsToken
+  try {
+    const r = await fetch('https://oauth.fatsecret.com/connect/token', {
+      method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body: new URLSearchParams({ grant_type:'client_credentials', client_id:FATSECRET_CLIENT_ID, client_secret:FATSECRET_CLIENT_SECRET, scope:'basic' }),
+    })
+    const d = await r.json()
+    _fsToken = d.access_token
+    _fsTokenExp = Date.now() + (d.expires_in-60)*1000
+    return _fsToken
+  } catch(e) { return null }
+}
+
+async function fsGet(params) {
+  const token = await getFSToken()
+  if (!token) return null
+  try {
+    const url = 'https://platform.fatsecret.com/rest/server.api?' + new URLSearchParams({...params, format:'json'})
+    const ctrl = new AbortController()
+    const t = setTimeout(() => ctrl.abort(), 4000)
+    const r = await fetch(url, { headers:{ Authorization:'Bearer '+token }, signal: ctrl.signal })
+    clearTimeout(t)
+    return await r.json()
+  } catch(e) { return null }
+}
+
+function parseFSSearchItem(food) {
+  const desc = food.food_description||''
+  const get = k => { const m = desc.match(new RegExp(k+'[:\\s]+([0-9.]+)','i')); return m ? parseFloat(m[1]) : null }
+  return { name:food.food_name||'—', brand:food.brand_name||'', image:null,
+    kcal100:get('Calories'), protein100:get('Protein'), fett100:get('Fat'), carbs100:get('Carbs'), _fsId:food.food_id }
+}
+
+function parseFSProduct(food) {
+  const servings = food.servings?.serving; if (!servings) return null
+  const list = Array.isArray(servings) ? servings : [servings]
+  const s100 = list.find(s => parseFloat(s.metric_serving_amount)===100 && s.metric_serving_unit==='g')
+    || list.find(s => s.metric_serving_unit==='g') || list[0]
+  if (!s100) return null
+  const factor = s100.metric_serving_unit==='g' ? 100/parseFloat(s100.metric_serving_amount||100) : 1
+  const img = food.food_images?.food_image?.[0]?.image_url || food.food_images?.food_image?.image_url || null
+  return { name:food.food_name||'—', brand:food.brand_name||'', image:img,
+    kcal100: s100.calories!=null ? Math.round(s100.calories*factor) : null,
+    protein100: s100.protein!=null ? Math.round(s100.protein*factor*10)/10 : null,
+    fett100: s100.fat!=null ? Math.round(s100.fat*factor*10)/10 : null,
+    carbs100: s100.carbohydrate!=null ? Math.round(s100.carbohydrate*factor*10)/10 : null }
+}
+
+function parseOFFProduct(p) {
+  const n = p.nutriments||{}
+  const raw = n['energy-kcal_100g']??n['energy-kcal_value']??n['energy-kcal']??n['energy-kcal_serving']??null
+  const kcal = raw != null ? raw : (n['energy_100g'] ? Math.round(n['energy_100g']/4.184) : null)
+  const name = p.product_name_de||p.product_name||p.generic_name_de||p.generic_name||'—'
+  return { name:name.charAt(0).toUpperCase()+name.slice(1), brand:(p.brands||'').split(',')[0].trim(), image:p.image_small_url||null,
+    kcal100:kcal!=null?Math.round(kcal):null, protein100:n.proteins_100g!=null?Math.round(n.proteins_100g*10)/10:null,
+    fett100:n.fat_100g!=null?Math.round(n.fat_100g*10)/10:null, carbs100:n.carbohydrates_100g!=null?Math.round(n.carbohydrates_100g*10)/10:null }
+}
+
+// Relevance score: how well does this result match the query?
+function matchScore(name, q) {
+  const n = (name||'').toLowerCase()
+  if (n === q) return 100
+  if (n.startsWith(q)) return 80
+  if (n.includes(q)) return 60
+  // Partial word match
+  if (q.split(' ').every(w => n.includes(w))) return 40
+  return 10
+}
+
+async function searchProducts(query) {
+  const q = query.trim().toLowerCase()
+  const fields = 'product_name,product_name_de,generic_name,generic_name_de,brands,nutriments,image_small_url,code'
+
+  function parseOFFs(prods) {
+    if (!Array.isArray(prods)) return []
+    return prods
+      .filter(p => p && (p.product_name||p.product_name_de||p.generic_name_de||p.generic_name))
+      .map(parseOFFProduct)
+      .filter(p => p && p.name && p.name !== '—')  // don't require kcal — many German products lack it
+  }
+
+  // Start ALL sources in parallel immediately
+  const edamamPromise = searchEdamam(query)
+
+  const fsPromise = (async () => {
+    try {
+      const d = await fsGet({ method:'foods.search', search_expression:query, max_results:20, page_number:0 })
+      const raw = d?.foods?.food
+      if (!raw) return []
+      return (Array.isArray(raw)?raw:[raw]).map(parseFSSearchItem).filter(p => p && p.name && p.name !== '—')
+    } catch(e) { return [] }
+  })()
+
+  const offPromise = (async () => {
+    for (const base of ['https://de.openfoodfacts.org','https://world.openfoodfacts.org']) {
+      try {
+        const ctrl = new AbortController()
+        const t = setTimeout(() => ctrl.abort(), 7000)
+        const r = await fetch(`${base}/cgi/search.pl?` + new URLSearchParams({
+          search_terms:query, action:'process', json:'1', page_size:'50', fields
+        }), { signal:ctrl.signal })
+        clearTimeout(t)
+        if (r.ok) { const d = await r.json(); const res = parseOFFs(d.products||[]); if (res.length) return res }
+      } catch(e) {}
+    }
+    return []
+  })()
+
+  // Wait for Edamam first (usually fast)
+  const edamamResults = await edamamPromise
+
+  // Early return only if Edamam has RELEVANT results (name actually matches the query)
+  // This prevents English-only Edamam results blocking German OFF results
+  const relevantEdamam = edamamResults.filter(r => matchScore(r.name, q) >= 40)
+  if (relevantEdamam.length >= 3) {
+    const localMatches = searchLocal(query)
+    const edSeen = new Set(edamamResults.map(r => r.name.toLowerCase()))
+    const combined = [
+      ...localMatches.filter(f => !edSeen.has(f.name.toLowerCase())),
+      ...edamamResults,
+    ]
+    combined.sort((a,b) => {
+      const sa = a._local ? matchScore(a.name,q)+50 : matchScore(a.name,q)
+      const sb = b._local ? matchScore(b.name,q)+50 : matchScore(b.name,q)
+      return sb - sa
+    })
+    return combined
+  }
+
+  // Edamam had no/few relevant results → wait for OFF+FS (best German database)
+  const [offResults, fsResults] = await Promise.all([
+    offPromise,
+    Promise.race([fsPromise, new Promise(r => setTimeout(() => r([]), 3000))]),
+  ])
+
+  const seen = new Set()
+  const merged = []
+  for (const item of [...offResults, ...edamamResults, ...fsResults]) {
+    const key = item.name.toLowerCase()
+    if (!seen.has(key)) { seen.add(key); merged.push(item) }
+  }
+
+  const localMatches = searchLocal(query)
+  const localSeen = new Set(merged.map(r => r.name.toLowerCase()))
+  const combined = [
+    ...localMatches.filter(f => !localSeen.has(f.name.toLowerCase())),
+    ...merged,
+  ]
+  combined.sort((a,b) => {
+    const sa = a._local ? matchScore(a.name,q)+50 : matchScore(a.name,q)
+    const sb = b._local ? matchScore(b.name,q)+50 : matchScore(b.name,q)
+    return sb - sa
+  })
+  return combined
+}
+
+// ── Barcode Scanner ────────────────────────────
+let _pScanStream = null, _pScanDetector = null, _pScanRAF = null, _pScanActive = false
+
+function openBarcodeManualEntry() {
+  // Fallback for iOS / browsers without BarcodeDetector
+  const el = document.getElementById('plan-search-results')
+  el.innerHTML = `
+    <div style="padding:4px 0 20px;">
+      <p style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;color:#484752;margin-bottom:10px;">BARCODE EINGEBEN</p>
+      <p style="font-size:12px;color:#757481;margin-bottom:14px;line-height:1.5;">Barcode-Nummer vom Produkt abtippen (EAN-13, z.B. 4001686307854)</p>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <input type="text" inputmode="numeric" id="manual-barcode-input"
+          placeholder="4 001686 307854"
+          style="flex:1;background:rgba(13,13,23,0.9);border:1.5px solid rgba(72,71,82,0.4);border-radius:14px;color:#e4e1ef;font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;padding:13px 14px;outline:none;min-width:0;"
+          onkeydown="if(event.key==='Enter'){event.target.blur();lookupManualBarcode()}">
+        <button onclick="lookupManualBarcode()" id="manual-barcode-btn"
+          style="width:50px;height:50px;border-radius:14px;background:linear-gradient(135deg,#ffc56c,#cb9743);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+          <span class="material-symbols-outlined" style="font-size:22px;color:#321f00;">search</span>
+        </button>
+      </div>
+      <p style="font-size:10px;color:#2e2e3a;margin-top:10px;">Oder such einfach nach dem Produktnamen oben ↑</p>
+    </div>`
+  document.getElementById('plan-search-input').value = ''
+  setTimeout(() => document.getElementById('manual-barcode-input')?.focus(), 100)
+}
+
+async function lookupManualBarcode() {
+  const inp = document.getElementById('manual-barcode-input')
+  const btn = document.getElementById('manual-barcode-btn')
+  if (!inp) return
+  const code = inp.value.replace(/\s/g,'').trim()
+  if (!code) return
+  inp.disabled = true
+  if (btn) btn.innerHTML = '<div style="width:20px;height:20px;border:2px solid rgba(50,31,0,0.3);border-top-color:#321f00;border-radius:50%;animation:spin .7s linear infinite;"></div>'
+  await handlePlanBarcode(code)
+  if (inp) inp.disabled = false
+  if (btn) btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:22px;color:#321f00;">search</span>'
+}
+
+async function openPlanScanner() {
+  if ('BarcodeDetector' in window) {
+    // Native path — Android Chrome
+    try {
+      _pScanDetector = new BarcodeDetector({ formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39'] })
+    } catch(e) { await _startFallbackScanner(); return }
+    try {
+      _pScanStream = await navigator.mediaDevices.getUserMedia({
+        video:{ facingMode:'environment', width:{ideal:1280}, height:{ideal:720} }
+      })
+    } catch(e) { showToast('Kamerazugriff verweigert'); return }
+    const video = document.getElementById('plan-scanner-video')
+    video.srcObject = _pScanStream
+    document.getElementById('plan-scanner-overlay').style.display = 'flex'
+    document.getElementById('plan-scanner-status').textContent = ''
+    _pScanActive = true
+    scanPlanFrame(video)
+  } else {
+    // iOS / Firefox / other — load html5-qrcode as universal fallback
+    await _startFallbackScanner()
+  }
+}
+
+async function _startFallbackScanner() {
+  const overlay = document.getElementById('plan-scanner-overlay')
+  const statusEl = document.getElementById('plan-scanner-status')
+  overlay.style.display = 'flex'
+  statusEl.textContent = '⏳ Scanner wird geladen…'
+
+  // Lazy-load html5-qrcode (works on iOS Safari + Android + desktop)
+  if (!window.Html5Qrcode) {
+    try {
+      await new Promise((res, rej) => {
+        const s = document.createElement('script')
+        s.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js'
+        s.onload = res; s.onerror = rej
+        document.head.appendChild(s)
+      })
+    } catch(e) {
+      closePlanScanner()
+      openBarcodeManualEntry()
+      return
+    }
+  }
+
+  statusEl.textContent = ''
+
+  // Create/reuse container inside overlay
+  let qrDiv = document.getElementById('plan-qr-div')
+  if (!qrDiv) {
+    qrDiv = document.createElement('div')
+    qrDiv.id = 'plan-qr-div'
+    qrDiv.style.cssText = 'position:absolute;inset:0;z-index:1;overflow:hidden;'
+    overlay.insertBefore(qrDiv, overlay.firstChild)
+  }
+  qrDiv.innerHTML = ''
+  qrDiv.style.display = 'block'
+
+  try {
+    const scanner = new window.Html5Qrcode('plan-qr-div', { verbose: false })
+    window._pHtml5Scanner = scanner
+
+    await scanner.start(
+      { facingMode: 'environment' },
+      { fps: 10, qrbox: { width: 260, height: 100 }, aspectRatio: window.innerHeight / window.innerWidth },
+      (code) => {
+        scanner.stop().catch(() => {})
+        window._pHtml5Scanner = null
+        closePlanScanner()
+        handlePlanBarcode(code)
+      },
+      () => {} // per-frame errors — ignored
+    )
+
+    // Make video fill the overlay (html5-qrcode adds its own video element)
+    setTimeout(() => {
+      const v = qrDiv.querySelector('video')
+      if (v) v.style.cssText = 'width:100%!important;height:100%!important;object-fit:cover!important;position:absolute!important;inset:0!important;'
+    }, 500)
+
+  } catch(e) {
+    closePlanScanner()
+    openBarcodeManualEntry()
+  }
+}
+
+async function scanPlanFrame(video) {
+  if (!_pScanActive) return
+  try {
+    const barcodes = await _pScanDetector.detect(video)
+    if (barcodes.length > 0) {
+      const code = barcodes[0].rawValue
+      _pScanActive = false
+      document.getElementById('plan-scanner-status').textContent = '🔍 Produkt wird gesucht…'
+      await handlePlanBarcode(code)
+      return
+    }
+  } catch(e) {}
+  _pScanRAF = requestAnimationFrame(() => scanPlanFrame(video))
+}
+
+function closePlanScanner() {
+  _pScanActive = false
+  if (_pScanRAF) cancelAnimationFrame(_pScanRAF)
+  if (_pScanStream) { _pScanStream.getTracks().forEach(t => t.stop()); _pScanStream = null }
+  if (window._pHtml5Scanner) { window._pHtml5Scanner.stop().catch(() => {}); window._pHtml5Scanner = null }
+  const video = document.getElementById('plan-scanner-video')
+  if (video?.srcObject) { try { video.srcObject.getTracks().forEach(t => t.stop()) } catch(e) {} video.srcObject = null }
+  const qrDiv = document.getElementById('plan-qr-div')
+  if (qrDiv) { qrDiv.style.display = 'none'; qrDiv.innerHTML = '' }
+  document.getElementById('plan-scanner-overlay').style.display = 'none'
+}
+
+async function handlePlanBarcode(code) {
+  // Edamam UPC lookup (primär)
+  try {
+    const ctrl = new AbortController()
+    const t = setTimeout(() => ctrl.abort(), 7000)
+    const r = await fetch('https://api.edamam.com/api/food-database/v2/parser?' + new URLSearchParams({
+      upc: code, app_id: EDAMAM_APP_ID, app_key: EDAMAM_APP_KEY,
+    }), { signal: ctrl.signal })
+    clearTimeout(t)
+    if (r.ok) {
+      const d = await r.json()
+      const hints = d.hints || []
+      if (hints.length > 0) {
+        const food = parseEdamamFood(hints[0].food)
+        if (food?.kcal100 != null) { closePlanScanner(); openPlanMenge(food); return }
+      }
+    }
+  } catch(e) {}
+
+  // FatSecret barcode fallback
+  const fsData = await fsGet({ method:'food.find_id_for_barcode', barcode:code })
+  if (fsData?.food_id?.value) {
+    const detail = await fsGet({ method:'food.get.v4', food_id:fsData.food_id.value, include_food_images:true })
+    if (detail?.food) {
+      const food = parseFSProduct(detail.food)
+      if (food?.kcal100 != null) { closePlanScanner(); openPlanMenge(food); return }
+    }
+  }
+
+  // OpenFoodFacts fallback
+  try {
+    const ctrl = new AbortController()
+    const t = setTimeout(() => ctrl.abort(), 5000)
+    const r = await fetch(`https://world.openfoodfacts.org/api/v2/product/${code}?fields=product_name,product_name_de,brands,nutriments,image_small_url`, { signal: ctrl.signal })
+    clearTimeout(t)
+    const d = await r.json()
+    if (d.status === 1 && d.product) {
+      const food = parseOFFProduct(d.product)
+      if (food?.kcal100 != null) { closePlanScanner(); openPlanMenge(food); return }
+    }
+  } catch(e) {}
+
+  // Scanner overlay still open → show status and retry
+  const statusEl = document.getElementById('plan-scanner-status')
+  if (statusEl && document.getElementById('plan-scanner-overlay').style.display !== 'none') {
+    statusEl.textContent = '❌ Produkt nicht gefunden'
+    setTimeout(() => {
+      _pScanActive = true
+      scanPlanFrame(document.getElementById('plan-scanner-video'))
+    }, 2000)
+  } else {
+    // Manual entry path
+    showToast('Barcode nicht gefunden — bitte Produktnamen suchen')
+    showRecentFoods()
+  }
+}
+
+function openPlanMenge(food) {
+  pendingProduct = food
+  document.getElementById('menge-product-name').textContent = food.name
+  document.getElementById('menge-product-brand').textContent = food.brand || ''
+  document.getElementById('menge-val').value = 100
+  updateMengePreview()
+  document.getElementById('menge-overlay').classList.add('active')
+}
+
+// ── Zuletzt verwendet ──────────────────────────
+let _recentFoods = []
+
+function savePlanRecentFood(p) {
+  try {
+    let r = JSON.parse(localStorage.getItem('90tc_recent_plan_foods')||'[]')
+    r = r.filter(x => x.name !== p.name)
+    r.unshift({ name:p.name, brand:p.brand||'', image:p.image||null, kcal100:p.kcal100, protein100:p.protein100, fett100:p.fett100, carbs100:p.carbs100 })
+    localStorage.setItem('90tc_recent_plan_foods', JSON.stringify(r.slice(0,12)))
+  } catch(e) {}
+}
+
+function showRecentFoods() {
+  const el = document.getElementById('plan-search-results')
+  try {
+    _recentFoods = JSON.parse(localStorage.getItem('90tc_recent_plan_foods')||'[]')
+  } catch(e) { _recentFoods = [] }
+
+  const m = activeMeal ? MEAL_META[activeMeal] : null
+  const hint = m ? `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px 10px;border-radius:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(72,71,82,0.2);margin-bottom:14px;">
+    <span style="font-size:22px;">${m.emoji}</span>
+    <div>
+      <div style="font-size:12px;font-weight:700;color:#aca9b7;">${m.hint}</div>
+    </div>
+  </div>` : ''
+
+  // Meal-specific suggestions as tap chips
+  const suggestions = m?.suggest || []
+  const suggestHtml = suggestions.length ? (() => {
+    const chips = suggestions.map(name => {
+      const food = LOCAL_FOODS.find(f => f.name === name)
+      if (!food) return ''
+      return `<button onclick="openPlanMenge(LOCAL_FOODS.find(f=>f.name==='${name.replace(/'/g,"\\'")}'))"
+        style="padding:8px 14px;border-radius:50px;border:1.5px solid rgba(72,71,82,0.3);background:rgba(18,18,26,0.8);color:#aca9b7;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s;display:flex;align-items:center;gap:6px;flex-shrink:0;">
+        <span style="font-size:11px;font-weight:700;color:#ffc56c;">${food.kcal100} kcal</span>
+        ${food.name}
+      </button>`
+    }).filter(Boolean).join('')
+    return `<p style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;color:#484752;margin-bottom:8px;">VORSCHLÄGE FÜR ${(m?.label||'').toUpperCase()}</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">${chips}</div>`
+  })() : ''
+
+  if (!_recentFoods.length) {
+    el.innerHTML = hint + suggestHtml +
+      `<p style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;color:#484752;margin:4px 0 8px;">ODER SUCHEN</p>
+       <div style="text-align:center;padding:16px 0 4px;color:#2e2e3a;font-size:12px;">Tippe oben oder scanne einen Barcode</div>`
+    return
+  }
+
+  el.innerHTML = hint + suggestHtml +
+    `<p style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;color:#484752;margin-bottom:10px;">ZULETZT VERWENDET</p>` +
+    _recentFoods.map((p,i) => renderPlanResultRow(p, i, 'recent')).join('')
+}
+
+function renderPlanResultRow(p, i, mode) {
+  const isRecent = mode === 'recent'
+  const fn = isRecent ? `pickRecentFood(${i})` : `pickPlanResult(${i})`
+  const thumb = p.image
+    ? `<img src="${p.image}" style="width:50px;height:50px;border-radius:13px;object-fit:cover;flex-shrink:0;" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+    : ''
+  const fallback = `<div style="width:50px;height:50px;border-radius:13px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);flex-shrink:0;${p.image ? 'display:none;' : ''}align-items:center;justify-content:center;font-size:22px;">🍽️</div>`
+  const qBtn = isRecent ? `<span class="material-symbols-outlined" style="font-size:18px;color:#2e2e3a;flex-shrink:0;">chevron_right</span>` :
+    `<button data-qi="${i}" onclick="event.stopPropagation();quickAdd(${i})" title="100g hinzufügen"
+      style="width:38px;height:38px;border-radius:12px;background:rgba(255,197,108,0.08);border:1.5px solid rgba(255,197,108,0.18);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:all .15s;">
+      <span class="material-symbols-outlined" style="font-size:20px;color:#ffc56c;">add</span>
+    </button>`
+  return `<div onclick="${fn}" style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04);cursor:pointer;" class="active:opacity-70">
+    ${thumb}${fallback}
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:14px;font-weight:700;color:#e4e1ef;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.name}</div>
+      ${p.brand ? `<div style="font-size:11px;color:#757481;margin-top:1px;">${p.brand}</div>` : ''}
+      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:5px;">
+        ${p.kcal100!=null?`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(255,197,108,0.12);color:#ffc56c;">${p.kcal100} kcal</span>`:''}
+        ${p.protein100!=null?`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(137,206,255,0.1);color:#89ceff;">P ${p.protein100}g</span>`:''}
+        ${p.fett100!=null?`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(0,237,125,0.08);color:#00ed7d;">F ${p.fett100}g</span>`:''}
+        ${p.carbs100!=null?`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(255,255,255,0.06);color:#aca9b7;">C ${p.carbs100}g</span>`:''}
+      </div>
+    </div>
+    ${qBtn}
+  </div>`
+}
+
+function pickRecentFood(i) {
+  openPlanMenge(_recentFoods[i])
+}
+
+function quickAdd(i) {
+  const p = _srPlan[i]
+  if (!p || !activeMeal) return
+  const g = 100, f = g/100
+  cm()[activeMeal].push({
+    name:p.name, amount:g,
+    kcal:   p.kcal100!=null    ? Math.round(p.kcal100*f)        : 0,
+    prot:   p.protein100!=null ? Math.round(p.protein100*f*10)/10 : 0,
+    fett:   p.fett100!=null    ? Math.round(p.fett100*f*10)/10   : 0,
+    carbs:  p.carbs100!=null   ? Math.round(p.carbs100*f*10)/10  : 0,
+  })
+  savePlanRecentFood(p)
+  renderMealCards(); updateRings(); savePlans()
+  const btn = document.querySelector(`[data-qi="${i}"]`)
+  if (btn) {
+    btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;color:#00ed7d;font-variation-settings:\'FILL\' 1">check_circle</span>'
+    btn.style.background = 'rgba(0,237,125,0.1)'
+    btn.style.borderColor = 'rgba(0,237,125,0.3)'
+    setTimeout(() => {
+      btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:20px;color:#ffc56c;">add</span>'
+      btn.style.background = 'rgba(255,197,108,0.08)'
+      btn.style.borderColor = 'rgba(255,197,108,0.18)'
+    }, 1400)
+  }
+  showToast(`${MEAL_META[activeMeal].label}: ${p.name} hinzugefügt`)
+}
+
+// ── Reset ──────────────────────────────────────
+document.getElementById('btn-reset').addEventListener('click', () => {
+  const p = getActivePlan()
+  if (!p) return
+  if (!confirm(`"${p.name}" leeren? Alle Mahlzeiten werden gelöscht.`)) return
+  p.meals = emptyMeals()
+  savePlans()
+  renderPlanTabs()
+  renderMealCards()
+  updateRings()
+  showToast(`"${p.name}" geleert`)
+})
+
+// ── Init ───────────────────────────────────────
+async function init() {
+  const ctx = await requireProfile()
+  if (!ctx) return
+  profile = ctx.profile
+  targets = {
+    kcal:  profile.kalorien_ziel  || 0,
+    prot:  profile.protein_ziel_g || 0,
+    fett:  profile.fett_ziel_g    || 0,
+    carbs: profile.carbs_ziel_g   || 0,
+  }
+
+  // Load saved plans (v2 multi-plan format)
+  try {
+    const saved = localStorage.getItem('90tc_plans_v2')
+    if (saved) {
+      plans = JSON.parse(saved)
+    } else {
+      // Migrate from old single-plan format
+      const oldPlan = localStorage.getItem('90tc_plan_v1')
+      const meals = oldPlan ? JSON.parse(oldPlan) : emptyMeals()
+      plans = [{ id: 'default', name: 'Standardtag', meals }]
+    }
+    // Restore active plan
+    const savedId = localStorage.getItem('90tc_active_plan_id')
+    activePlanId = (savedId && plans.find(p => p.id === savedId)) ? savedId : plans[0]?.id
+  } catch(e) {
+    plans = [{ id: 'default', name: 'Standardtag', meals: emptyMeals() }]
+    activePlanId = 'default'
+  }
+
+  document.getElementById('splash').style.display = 'none'
+  document.getElementById('app-wrap').style.display = 'block'
+
+  // Measure actual header height and apply to content containers
+  requestAnimationFrame(() => {
+    const hdr = document.querySelector('header')
+    const h = hdr ? hdr.getBoundingClientRect().bottom + 8 : 120
+    document.querySelectorAll('#onboarding > div, #plan-builder > div').forEach(el => {
+      el.style.paddingTop = h + 'px'
+    })
+  })
+
+  if (!targets.kcal) {
+    // No targets set → onboarding
+    document.getElementById('onboarding').style.display = 'block'
+    document.getElementById('ob-step-1').classList.add('active')
+    // Pre-select gender from profile if available
+    if (profile.geschlecht === 'w') selectGender('w')
+    else { selectGender('m'); }
+  } else {
+    document.getElementById('plan-builder').style.display = 'block'
+    setupBuilder()
+  }
+}
+init()
+</script>
+</body>
+</html>

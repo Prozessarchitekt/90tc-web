@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#07070e"/>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#1a0f08"/>
+      <stop offset="100%" stop-color="#07070e"/>
+    </radialGradient>
+    <linearGradient id="flame" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="50%" stop-color="#ff6b35"/>
+      <stop offset="100%" stop-color="#dc2626"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- Flame shape -->
+  <path d="M256 80
+    C256 80 310 140 330 200
+    C350 260 320 290 310 310
+    C340 280 345 250 330 220
+    C360 270 360 340 310 380
+    C340 350 350 310 330 280
+    C340 320 330 370 280 410
+    C310 370 320 330 290 300
+    C300 340 270 380 256 432
+    C242 380 212 340 222 300
+    C192 330 202 370 232 410
+    C182 370 172 320 182 280
+    C162 310 172 350 202 380
+    C152 340 152 270 182 220
+    C167 250 172 280 202 310
+    C192 290 162 260 182 200
+    C202 140 256 80 256 80Z"
+    fill="url(#flame)"
+    opacity="0.95"/>
+  <!-- Text "90" -->
+  <text x="256" y="310" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, sans-serif"
+    font-size="110" font-weight="900" fill="white" opacity="0.0">90</text>
+</svg>

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html class="dark" lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>90TC — Kalender</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#ffc56c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+tailwind.config = {
+  darkMode:"class",
+  theme: {
+    extend: {
+      colors: {
+        "surface-container-lowest":"#03030A","surface-container-high":"#12121A",
+        "surface":"#03030A","surface-container-low":"#0D0D14","surface-variant":"#1A1A24",
+        "on-surface-variant":"#d6c4ac","tertiary":"#00ed7d","error":"#ffb4ab",
+        "surface-bright":"#1C1C26","surface-container":"#0D0D14","secondary":"#89ceff",
+        "on-surface":"#e4e1ef","primary":"#ffc56c","outline-variant":"#34343f",
+        "primary-container":"#f0a500","on-primary":"#442c00","background":"#03030A","on-background":"#e4e1ef",
+      },
+      fontFamily:{"headline":["Space Grotesk"],"body":["Inter"],"label":["Inter"]}
+    }
+  }
+}
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; }
+  body { background:#03030A; min-height:100vh; }
+  .grainy-overlay {
+    position:fixed; inset:0;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity:0.04; pointer-events:none; z-index:100;
+  }
+  #splash { position:fixed;inset:0;z-index:9999;background:#03030A;display:flex;align-items:center;justify-content:center; }
+  .spinner { width:40px;height:40px;border:3px solid #1a1a24;border-top-color:#ffc56c;border-radius:50%;animation:spin .8s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  /* Calendar grid */
+  .cal-grid {
+    display:grid;
+    grid-template-columns:repeat(9, 1fr);
+    gap:5px;
+  }
+  .cal-cell {
+    aspect-ratio:1;
+    border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Grotesk',sans-serif;
+    font-size:10px; font-weight:700;
+    cursor:pointer; transition:transform .12s;
+    position:relative;
+    border:1.5px solid transparent;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .cal-cell:active { transform:scale(0.9); }
+  /* States */
+  .cal-cell.future   { background:rgba(255,255,255,0.03); color:#34343f; border-color:rgba(255,255,255,0.04); cursor:default; }
+  .cal-cell.missed   { background:rgba(255,115,81,0.07);  color:#ff7351; border-color:rgba(255,115,81,0.15); }
+  .cal-cell.partial  { background:rgba(255,197,108,0.1);  color:#ffc56c; border-color:rgba(255,197,108,0.25); }
+  .cal-cell.full     { background:rgba(0,237,125,0.1);    color:#00ed7d; border-color:rgba(0,237,125,0.28); }
+  .cal-cell.today    { box-shadow:0 0 0 2px #ffc56c; }
+  /* Dot indicator */
+  .cal-dot {
+    position:absolute; bottom:3px; left:50%; transform:translateX(-50%);
+    width:4px; height:4px; border-radius:50%;
+  }
+  .full .cal-dot   { background:#00ed7d; }
+  .partial .cal-dot{ background:#ffc56c; }
+  .missed .cal-dot { background:#ff7351; }
+
+  /* Legend */
+  .leg-item { display:flex; align-items:center; gap:6px; font-size:11px; color:#757481; }
+  .leg-dot  { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
+
+  /* Detail popup */
+  #day-popup {
+    position:fixed; inset:0; z-index:500;
+    background:rgba(0,0,0,0.8); backdrop-filter:blur(20px);
+    display:none; align-items:flex-end; justify-content:center;
+  }
+  #day-popup.show { display:flex; }
+  .popup-sheet {
+    width:100%; max-width:480px;
+    background:linear-gradient(180deg,#191825,#0d0d17);
+    border:1.5px solid rgba(255,197,108,0.2); border-bottom:none;
+    border-radius:28px 28px 0 0;
+    padding:0 24px max(28px,env(safe-area-inset-bottom));
+  }
+  .popup-handle-wrap { padding:14px; display:flex; justify-content:center; }
+  .popup-handle { width:40px; height:4px; background:rgba(255,197,108,0.3); border-radius:2px; }
+</style>
+</head>
+<body class="bg-background font-body text-on-surface antialiased overflow-x-hidden">
+<div class="grainy-overlay"></div>
+<div id="splash"><div class="spinner"></div></div>
+
+<div id="main" style="display:none">
+
+<!-- Top Nav -->
+<nav class="fixed top-0 w-full z-50 bg-neutral-950/80 backdrop-blur-xl flex justify-between items-center px-5 pb-4 shadow-[0_8px_32px_rgba(0,0,0,0.8)]"
+     style="padding-top:max(16px,env(safe-area-inset-top))">
+  <a href="dashboard.html" class="w-10 h-10 rounded-full flex items-center justify-center"
+     style="background:rgba(255,197,108,0.08);border:1px solid rgba(255,197,108,0.18);">
+    <span class="material-symbols-outlined" style="font-size:20px;color:#ffc56c;">arrow_back</span>
+  </a>
+  <span class="font-headline font-black italic tracking-tighter uppercase text-primary" style="font-size:1.15rem;">Kalender</span>
+  <div class="w-10 h-10 flex items-center justify-center">
+    <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1;font-size:20px;">calendar_month</span>
+  </div>
+  <div class="absolute bottom-0 left-0 bg-gradient-to-r from-transparent via-amber-500/20 to-transparent h-[1px] w-full"></div>
+</nav>
+
+<main class="flex flex-col w-full relative max-w-lg mx-auto"
+      style="padding-top:calc(env(safe-area-inset-top) + 88px);padding-bottom:max(100px,calc(env(safe-area-inset-bottom)+84px));padding-left:16px;padding-right:16px;">
+
+  <!-- Hero stats bar -->
+  <div style="background:rgba(18,18,26,0.8);border:1px solid rgba(255,197,108,0.15);border-radius:22px;padding:18px 20px;margin-bottom:24px;display:flex;gap:0;">
+    <div style="flex:1;text-align:center;border-right:1px solid rgba(255,255,255,0.06);padding-right:12px;">
+      <div class="font-headline" id="stat-done" style="font-size:1.8rem;font-weight:900;font-style:italic;color:#00ed7d;line-height:1;">0</div>
+      <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#757481;margin-top:2px;">Erledigt</div>
+    </div>
+    <div style="flex:1;text-align:center;border-right:1px solid rgba(255,255,255,0.06);padding:0 12px;">
+      <div class="font-headline" id="stat-partial" style="font-size:1.8rem;font-weight:900;font-style:italic;color:#ffc56c;line-height:1;">0</div>
+      <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#757481;margin-top:2px;">Teilweise</div>
+    </div>
+    <div style="flex:1;text-align:center;padding-left:12px;">
+      <div class="font-headline" id="stat-streak" style="font-size:1.8rem;font-weight:900;font-style:italic;color:#ffc56c;line-height:1;">0</div>
+      <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#757481;margin-top:2px;">Streak</div>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:18px;padding-left:2px;">
+    <div class="leg-item"><div class="leg-dot" style="background:rgba(0,237,125,0.5);"></div>Komplett</div>
+    <div class="leg-item"><div class="leg-dot" style="background:rgba(255,197,108,0.5);"></div>Teilweise</div>
+    <div class="leg-item"><div class="leg-dot" style="background:rgba(255,115,81,0.4);"></div>Verpasst</div>
+    <div class="leg-item"><div class="leg-dot" style="background:rgba(255,255,255,0.08);"></div>Ausstehend</div>
+  </div>
+
+  <!-- Calendar grid label -->
+  <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.18em;color:rgba(255,197,108,.4);margin-bottom:10px;">90 TAGE ÜBERSICHT</div>
+
+  <!-- Grid -->
+  <div id="cal-grid" class="cal-grid"></div>
+
+  <!-- Progress bar -->
+  <div style="margin-top:20px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <span style="font-size:10px;font-weight:700;color:#757481;text-transform:uppercase;letter-spacing:.1em;">Fortschritt</span>
+      <span id="cal-pct" style="font-size:11px;font-weight:700;color:#ffc56c;">0%</span>
+    </div>
+    <div style="height:6px;background:rgba(255,255,255,0.05);border-radius:99px;overflow:hidden;">
+      <div id="cal-pct-bar" style="height:100%;border-radius:99px;background:linear-gradient(90deg,#cb9743,#ffc56c);width:0%;transition:width 1s cubic-bezier(.4,0,.2,1);"></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Bottom Nav -->
+<div style="position:fixed;bottom:calc(16px + env(safe-area-inset-bottom));left:12px;right:12px;z-index:50;display:flex;align-items:flex-end;justify-content:space-between;gap:10px;pointer-events:none;">
+  <div style="flex:1;display:flex;align-items:center;justify-content:space-around;height:60px;background:rgba(18,17,26,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.07);border-radius:22px;overflow:hidden;pointer-events:auto;">
+    <a href="dashboard.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;padding:8px 4px;color:#757481;">
+      <span class="material-symbols-outlined" style="font-size:22px;">home</span>
+      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Start</span>
+    </a>
+    <div style="width:1px;height:28px;background:rgba(255,255,255,0.07);flex-shrink:0;"></div>
+    <a href="training.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;padding:8px 4px;color:#757481;">
+      <span class="material-symbols-outlined" style="font-size:22px;">fitness_center</span>
+      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Training</span>
+    </a>
+  </div>
+  <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:4px;margin-bottom:6px;pointer-events:auto;">
+    <a href="essen.html" style="text-decoration:none;display:block;">
+      <div style="width:60px;height:60px;border-radius:20px;background:linear-gradient(135deg,#ffc56c,#cb9743);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(255,197,108,0.55);">
+        <span class="material-symbols-outlined" style="font-size:26px;color:#321f00;">restaurant</span>
+      </div>
+    </a>
+    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#ffc56c;">Essen</span>
+  </div>
+  <div style="flex:1;display:flex;align-items:center;justify-content:space-around;height:60px;background:rgba(18,17,26,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.07);border-radius:22px;overflow:hidden;pointer-events:auto;">
+    <a href="fortschritt.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;padding:8px 4px;color:#ffc56c;">
+      <span class="material-symbols-outlined" style="font-size:22px;">query_stats</span>
+      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Stats</span>
+    </a>
+    <div style="width:1px;height:28px;background:rgba(255,255,255,0.07);flex-shrink:0;"></div>
+    <a href="profil.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;padding:8px 4px;color:#757481;">
+      <span class="material-symbols-outlined" style="font-size:22px;">person</span>
+      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Profil</span>
+    </a>
+  </div>
+</div>
+
+</div><!-- #main -->
+
+<!-- Day detail popup -->
+<div id="day-popup" onclick="closePopup()">
+  <div class="popup-sheet" onclick="event.stopPropagation()">
+    <div class="popup-handle-wrap"><div class="popup-handle"></div></div>
+    <div id="popup-day-label" class="font-headline" style="font-size:1.1rem;font-weight:900;font-style:italic;text-transform:uppercase;color:#ffc56c;margin-bottom:16px;"></div>
+    <div id="popup-content" style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px;"></div>
+    <button onclick="closePopup()" style="width:100%;padding:14px;border-radius:16px;background:rgba(255,197,108,0.08);border:1px solid rgba(255,197,108,0.2);color:#ffc56c;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.05em;">Schließen</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/gamification.js"></script>
+<script src="js/auth.js"></script>
+<script>
+let _entries = {}   // date → entry row
+let _trainDays = {} // date → true
+let _startDate = null
+let _todayStr = null
+let _dayNr = 0
+
+function dateAdd(base, days) {
+  const d = new Date(base)
+  d.setDate(d.getDate() + days)
+  return d.toISOString().split('T')[0]
+}
+
+function formatDate(dateStr) {
+  return new Date(dateStr + 'T12:00:00').toLocaleDateString('de-DE', { weekday:'short', day:'2-digit', month:'2-digit' })
+}
+
+function closePopup() {
+  document.getElementById('day-popup').classList.remove('show')
+}
+
+function openDayDetail(tagNr, dateStr) {
+  const entry = _entries[dateStr]
+  const trained = _trainDays[dateStr]
+  const label = `Tag ${tagNr} · ${formatDate(dateStr)}`
+  document.getElementById('popup-day-label').textContent = label
+
+  const rows = []
+  if (entry?.checkin_morgen) rows.push(['☀️', 'Morgen-Check-in', 'erledigt', '#ffc56c'])
+  else if (dateStr <= _todayStr) rows.push(['☀️', 'Morgen-Check-in', 'nicht eingetragen', '#484752'])
+  if (entry?.checkin_abend) rows.push(['🌙', 'Abend-Check-in', 'erledigt', '#89ceff'])
+  else if (dateStr <= _todayStr) rows.push(['🌙', 'Abend-Check-in', 'nicht eingetragen', '#484752'])
+  if (trained) rows.push(['🏋️', 'Training', 'absolviert', '#00ed7d'])
+  if (entry?.kalorien_ist) rows.push(['🍽️', 'Kalorien', entry.kalorien_ist.toLocaleString('de-DE') + ' kcal', '#ffc56c'])
+  if (entry?.score_von_7 != null) rows.push(['⭐', 'Score', entry.score_von_7 + ' / 7', '#ffc56c'])
+  if (entry?.gewicht_kg) rows.push(['⚖️', 'Gewicht', entry.gewicht_kg + ' kg', '#e4e1ef'])
+
+  document.getElementById('popup-content').innerHTML = rows.map(([icon, label, val, color]) =>
+    `<div style="display:flex;align-items:center;gap:12px;padding:11px 14px;background:#0D0D14;border-radius:13px;">
+      <span style="font-size:18px;">${icon}</span>
+      <span style="flex:1;font-size:13px;color:#aca9b7;font-weight:600;">${label}</span>
+      <span style="font-size:13px;font-weight:700;color:${color};">${val}</span>
+    </div>`
+  ).join('')
+
+  document.getElementById('day-popup').classList.add('show')
+}
+
+async function init() {
+  const ctx = await requireProfile()
+  if (!ctx) { document.getElementById('splash').style.display = 'none'; return }
+  const { user, profile } = ctx
+
+  if (!profile.startdatum) {
+    document.getElementById('splash').style.display = 'none'
+    document.getElementById('main').style.display = 'block'
+    document.getElementById('cal-grid').innerHTML = '<p style="color:#757481;font-size:13px;grid-column:1/-1;padding:20px 0;">Starte erst die Challenge um den Kalender zu nutzen.</p>'
+    return
+  }
+
+  _startDate = profile.startdatum
+  _todayStr = new Date().toISOString().split('T')[0]
+  _dayNr = Math.max(1, calcDayNr(_startDate))
+
+  // Load all entries + training sessions
+  const startD = _startDate
+  const endD = dateAdd(_startDate, 89)
+
+  const [{ data: entries }, { data: sessions }] = await Promise.all([
+    sb.from('daily_entries')
+      .select('datum,checkin_morgen,checkin_abend,kalorien_ist,score_von_7,gewicht_kg')
+      .eq('user_id', user.id).gte('datum', startD).lte('datum', endD),
+    sb.from('training_sessions')
+      .select('datum').eq('user_id', user.id).gte('datum', startD).lte('datum', endD)
+  ])
+
+  ;(entries || []).forEach(e => { _entries[e.datum] = e })
+  ;(sessions || []).forEach(s => { _trainDays[s.datum] = true })
+
+  // Build grid
+  const grid = document.getElementById('cal-grid')
+  let doneCnt = 0, partialCnt = 0, streak = 0, curStreak = 0
+
+  for (let i = 0; i < 90; i++) {
+    const dateStr = dateAdd(_startDate, i)
+    const tagNr = i + 1
+    const entry = _entries[dateStr]
+    const isFuture = dateStr > _todayStr
+    const isToday = dateStr === _todayStr
+
+    let state = 'future'
+    if (!isFuture) {
+      const m = entry?.checkin_morgen, a = entry?.checkin_abend
+      if (m && a) { state = 'full'; doneCnt++; curStreak++ }
+      else if (m || a) { state = 'partial'; partialCnt++; curStreak = 0 }
+      else { state = 'missed'; curStreak = 0 }
+      streak = Math.max(streak, curStreak)
+    }
+
+    const cell = document.createElement('div')
+    cell.className = 'cal-cell ' + state + (isToday ? ' today' : '')
+    cell.title = `Tag ${tagNr}`
+    if (!isFuture) {
+      cell.innerHTML = `<span>${tagNr}</span><div class="cal-dot"></div>`
+      cell.onclick = () => openDayDetail(tagNr, dateStr)
+    } else {
+      cell.innerHTML = `<span style="opacity:.3">${tagNr}</span>`
+    }
+    grid.appendChild(cell)
+  }
+
+  // Stats
+  document.getElementById('stat-done').textContent = doneCnt
+  document.getElementById('stat-partial').textContent = partialCnt
+  document.getElementById('stat-streak').textContent = streak
+
+  // Progress bar
+  const pct = Math.round((doneCnt / 90) * 100)
+  document.getElementById('cal-pct').textContent = pct + '%'
+  setTimeout(() => { document.getElementById('cal-pct-bar').style.width = pct + '%' }, 150)
+
+  document.getElementById('splash').style.display = 'none'
+  document.getElementById('main').style.display = 'block'
+}
+
+init()
+</script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{
+  "name": "90 Tage Challenge",
+  "short_name": "90TC",
+  "description": "Dein persönliches Fitness-Tagebuch für die 90-Tage-Challenge",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#07070e",
+  "theme_color": "#ff6b35",
+  "lang": "de",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [],
+  "categories": ["health", "fitness"]
+}

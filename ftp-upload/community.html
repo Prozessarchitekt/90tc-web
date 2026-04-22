@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>90TC — Community</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#E8A317">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="90TC">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <meta name="theme-color" content="#03030A">
+</head>
+<body>
+<div id="app">
+  <div class="splash" id="loading"><div class="spinner"></div></div>
+  <div id="main" style="display:none">
+    <div class="page">
+      <div class="page-header">
+        <div style="width:40px"></div>
+        <div><div class="page-title">🏆 Community</div></div>
+        <div style="width:40px"></div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tab-bar mb-12">
+        <button class="tab-btn active" id="tab-board" onclick="switchTab('board')">🏆 Ranking</button>
+        <button class="tab-btn" id="tab-feed" onclick="switchTab('feed')">💬 Motivation</button>
+      </div>
+
+      <!-- LEADERBOARD -->
+      <div id="section-board">
+        <div id="leaderboard-list"></div>
+      </div>
+
+      <!-- FEED -->
+      <div id="section-feed" style="display:none">
+        <!-- Post Box -->
+        <div class="card mb-12">
+          <textarea id="post-input" placeholder="Schreib etwas Motivierendes... 💪" rows="3"
+            style="width:100%;background:transparent;border:none;border-bottom:1.5px solid var(--border2);
+            color:var(--text);font-size:15px;resize:none;padding:4px 0;outline:none;font-family:inherit"
+            maxlength="280" oninput="updateCounter(this)"></textarea>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+            <span id="post-counter" style="font-size:12px;color:var(--muted)">0/280</span>
+            <button class="btn btn-primary" style="padding:10px 20px" onclick="submitPost()">Posten 🚀</button>
+          </div>
+        </div>
+        <div id="feed-list"></div>
+      </div>
+
+      <div style="height:88px"></div>
+    </div>
+  </div>
+</div>
+
+<footer style="position:fixed;bottom:0;left:0;right:0;z-index:50;background:rgba(3,3,10,0.9);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(255,197,108,0.1);display:flex;align-items:flex-end;justify-content:space-around;padding-top:10px;height:auto;min-height:64px;padding-bottom:max(12px,env(safe-area-inset-bottom))">
+  <a href="dashboard.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:rgba(255,255,255,0.4);font-size:10px;font-weight:600;letter-spacing:.05em;min-width:48px">
+    <span class="material-symbols-outlined" style="font-size:22px;font-variation-settings:'FILL' 0">home</span>
+    <span>HOME</span>
+  </a>
+  <a href="essen.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:rgba(255,255,255,0.4);font-size:10px;font-weight:600;letter-spacing:.05em;min-width:48px">
+    <span class="material-symbols-outlined" style="font-size:22px;font-variation-settings:'FILL' 0">restaurant</span>
+    <span>ESSEN</span>
+  </a>
+  <a href="training.html" style="display:flex;flex-direction:column;align-items:center;text-decoration:none;min-width:56px;margin-top:-4px">
+    <div style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#ffc56c,#f0a030);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(255,197,108,0.4)">
+      <span class="material-symbols-outlined" style="font-size:26px;color:#000;font-variation-settings:'FILL' 1">fitness_center</span>
+    </div>
+  </a>
+  <a href="fortschritt.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:rgba(255,255,255,0.4);font-size:10px;font-weight:600;letter-spacing:.05em;min-width:48px">
+    <span class="material-symbols-outlined" style="font-size:22px;font-variation-settings:'FILL' 0">query_stats</span>
+    <span>STATS</span>
+  </a>
+  <a href="profil.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:rgba(255,255,255,0.4);font-size:10px;font-weight:600;letter-spacing:.05em;min-width:48px">
+    <span class="material-symbols-outlined" style="font-size:22px;font-variation-settings:'FILL' 0">person</span>
+    <span>PROFIL</span>
+  </a>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/gamification.js"></script>
+<script src="js/auth.js"></script>
+<script>
+let currentProfile = null
+let currentTab = 'board'
+
+const MEDALS = ['🥇','🥈','🥉']
+
+function switchTab(tab) {
+  currentTab = tab
+  document.getElementById('section-board').style.display = tab === 'board' ? 'block' : 'none'
+  document.getElementById('section-feed').style.display  = tab === 'feed'  ? 'block' : 'none'
+  document.getElementById('tab-board').classList.toggle('active', tab === 'board')
+  document.getElementById('tab-feed').classList.toggle('active',  tab === 'feed')
+}
+
+function updateCounter(el) {
+  document.getElementById('post-counter').textContent = el.value.length + '/280'
+}
+
+async function loadLeaderboard() {
+  const { data } = await sb.from('profiles')
+    .select('id, name, xp_gesamt, streak_aktuell, startdatum, ziel, avatar_url')
+    .order('xp_gesamt', { ascending: false })
+    .limit(50)
+
+  const el = document.getElementById('leaderboard-list')
+  if (!data?.length) { el.innerHTML = '<div class="empty-state"><span class="empty-emoji">🏜️</span><div class="empty-title">Noch niemand da</div><div class="empty-text">Du bist der Erste!</div></div>'; return }
+
+  el.innerHTML = data.map((p, i) => {
+    const li = getLevelInfo(p.xp_gesamt || 0)
+    const dayNr = calcDayNr(p.startdatum)
+    const isMe = p.id === currentProfile.id
+    const medal = i < 3 ? MEDALS[i] : `<span style="font-weight:900;color:var(--muted)">${i+1}</span>`
+    const avatarHtml = p.avatar_url
+      ? `<img src="${p.avatar_url}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid ${isMe?'var(--accent)':'var(--border2)'}">`
+      : `<div style="width:44px;height:44px;border-radius:50%;background:var(--accent-dim);border:2px solid ${isMe?'var(--accent)':'var(--border2)'};display:flex;align-items:center;justify-content:center;font-size:20px">🏋️</div>`
+    return `
+      <div class="lb-row ${isMe ? 'lb-row-me' : ''}">
+        <div class="lb-rank">${medal}</div>
+        <div class="lb-avatar">${avatarHtml}</div>
+        <div class="lb-info">
+          <div class="lb-name">${p.name}${isMe ? ' <span style="font-size:11px;color:var(--accent)">(Du)</span>' : ''}</div>
+          <div class="lb-meta">🏅 ${li.name} · Lv.${li.level} · Tag ${dayNr}</div>
+        </div>
+        <div class="lb-stats">
+          <div class="lb-xp">${(p.xp_gesamt||0).toLocaleString('de-DE')} XP</div>
+          <div class="lb-streak">${p.streak_aktuell||0} 🔥</div>
+        </div>
+      </div>`
+  }).join('')
+}
+
+async function loadFeed() {
+  const { data } = await sb.from('community_posts')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(50)
+
+  const el = document.getElementById('feed-list')
+  if (!data?.length) {
+    el.innerHTML = '<div class="empty-state"><span class="empty-emoji">💬</span><div class="empty-title">Noch keine Posts</div><div class="empty-text">Sei der Erste und motiviere die Community!</div></div>'
+    return
+  }
+
+  el.innerHTML = data.map(post => {
+    const isMe = post.user_id === currentProfile.id
+    const d = new Date(post.created_at)
+    const dateStr = d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}) + ' ' + d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})
+    const likedPosts = JSON.parse(localStorage.getItem('liked_posts') || '[]')
+    const isLiked = likedPosts.includes(post.id)
+    return `
+      <div class="post-card card mb-12">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+          <div>
+            <span style="font-weight:800;font-size:15px">${post.user_name}</span>
+            <span style="font-size:11px;color:var(--muted);margin-left:8px">${dateStr}</span>
+          </div>
+          ${isMe ? `<button onclick="deletePost('${post.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:0">🗑</button>` : ''}
+        </div>
+        <div style="font-size:15px;line-height:1.6;color:var(--text)">${escapeHtml(post.message)}</div>
+        <div style="margin-top:12px;display:flex;align-items:center;gap:10px">
+          <button class="like-btn ${isLiked?'liked':''}" onclick="likePost('${post.id}',this)" data-likes="${post.likes||0}">
+            ❤️ ${post.likes || 0}
+          </button>
+        </div>
+      </div>`
+  }).join('')
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+}
+
+async function submitPost() {
+  const input = document.getElementById('post-input')
+  const msg = input.value.trim()
+  if (!msg) return
+  if (msg.length > 280) { showToast('Max. 280 Zeichen', 'error'); return }
+
+  const { error } = await sb.from('community_posts').insert({
+    user_id: currentProfile.id,
+    user_name: currentProfile.name,
+    message: msg
+  })
+  if (error) { showToast(error.message, 'error'); return }
+
+  input.value = ''
+  document.getElementById('post-counter').textContent = '0/280'
+  showToast('Gepostet! 🚀')
+  loadFeed()
+}
+
+async function deletePost(id) {
+  if (!confirm('Post löschen?')) return
+  await sb.from('community_posts').delete().eq('id', id)
+  loadFeed()
+}
+
+async function likePost(id, btn) {
+  const liked = JSON.parse(localStorage.getItem('liked_posts') || '[]')
+  if (liked.includes(id)) return // already liked
+  liked.push(id)
+  localStorage.setItem('liked_posts', JSON.stringify(liked))
+  const current = parseInt(btn.dataset.likes) || 0
+  await sb.from('community_posts').update({ likes: current + 1 }).eq('id', id)
+  btn.dataset.likes = current + 1
+  btn.textContent = `❤️ ${current + 1}`
+  btn.classList.add('liked')
+}
+
+async function init() {
+  const ctx = await requireProfile()
+  if (!ctx) return
+  currentProfile = ctx.profile
+
+  loadLeaderboard()
+  loadFeed()
+
+  document.getElementById('loading').style.display = 'none'
+  document.getElementById('main').style.display = 'block'
+}
+
+init()
+</script>
+</body>
+</html>

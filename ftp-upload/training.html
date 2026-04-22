@@ -1,0 +1,1900 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>90TC — Training</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#E8A317">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="90TC">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+  tailwind.config = {
+    darkMode:"class",
+    theme:{extend:{colors:{"surface-container":"#191825","surface-container-low":"#0D0D14","surface-container-highest":"#34343f","outline-variant":"#484752","primary":"#ffc56c","primary-container":"#cb9743","on-primary":"#442c00","secondary":"#89ceff","tertiary":"#00ed7d","on-surface":"#e4e1ef","on-surface-variant":"#aca9b7","background":"#03030A","error":"#ff7351"},fontFamily:{"headline":["Space Grotesk"],"body":["Inter"]}}}
+  }
+  </script>
+  <style>
+    :root {
+      --bg:#03030A; --card:#0D0D14; --card2:#12121A; --card-alt:#191825;
+      --text:#e4e1ef; --text2:#aca9b7;
+      --accent:#ffc56c; --accent2:#f0a500; --gold:#ffc56c; --gold2:#f0a500;
+      --accent-dim:rgba(255,197,108,0.08); --accent-glow:rgba(255,197,108,0.25);
+      --accent-border:rgba(255,197,108,0.3);
+      --border:rgba(255,255,255,0.08); --border2:rgba(255,255,255,0.15);
+      --green:#22c55e; --green2:#00ed7d; --green-dim:rgba(34,197,94,0.08);
+      --gold-dim:rgba(255,197,108,0.08); --purple:#a855f7; --danger:#ef4444;
+    }
+    .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; }
+    .grainy-overlay { position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:0.04;pointer-events:none;z-index:100; }
+    .no-scrollbar::-webkit-scrollbar { display:none; }
+    .no-scrollbar { -ms-overflow-style:none;scrollbar-width:none; }
+    .active-day-glow { box-shadow:0 0 20px rgba(255,197,108,0.15); }
+    .day-card-stitch { position:relative;flex-shrink:0;width:120px;aspect-ratio:3/4;background:#191825;border-radius:16px;padding:14px;display:flex;flex-direction:column;justify-content:space-between;border:1px solid rgba(255,255,255,0.08);opacity:0.65;transition:opacity 0.2s;overflow:hidden;cursor:pointer; }
+    .day-card-stitch.active { border:2px solid #ffc56c;opacity:1;box-shadow:0 0 20px rgba(255,197,108,0.15); }
+    .day-card-stitch.rest-day { background:#0D0D14;opacity:0.35;border:1px solid rgba(255,255,255,0.04); }
+    .page { padding:max(84px,calc(env(safe-area-inset-top) + 76px)) 16px 120px;min-height:100vh; }
+    .week-dots { display:flex; gap:5px; flex-wrap:wrap; margin-top:10px; }
+    .week-dot {
+      width:20px; height:20px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:9px; font-weight:700; cursor:default;
+      border: 1.5px solid var(--border2);
+      color: var(--text2);
+      background: var(--card);
+    }
+    .week-dot.done { background: var(--accent); border-color: var(--accent); color:#fff; }
+    .week-dot.current { background: var(--accent-dim); border-color: var(--accent); color:var(--accent); }
+    .week-dot.deload { background: rgba(139,92,246,0.15); border-color: var(--purple); color:var(--purple); }
+    .week-dot.deload.current { background: rgba(139,92,246,0.3); }
+
+    .day-scroll { display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none; }
+    .day-scroll::-webkit-scrollbar { display:none; }
+    .day-card {
+      flex: 0 0 auto; min-width:88px; padding:12px 10px; border-radius:14px;
+      border: 1.5px solid var(--border); background:var(--card); cursor:pointer;
+      text-align:center; transition: all 0.2s;
+    }
+    .day-card.active { border-color:var(--accent); background:var(--accent-dim); }
+    .day-card.active .day-card-nr { color:var(--accent); }
+    .day-card-nr { font-size:11px; font-weight:700; color:var(--text2); margin-bottom:4px; text-transform:uppercase; }
+    .day-card-icon { font-size:24px; margin-bottom:4px; }
+    .day-card-type { font-size:11px; font-weight:600; color:var(--text); }
+    .day-card-sub { font-size:10px; color:var(--text2); margin-top:2px; }
+
+    .movement-card {
+      border-radius:14px; border:1.5px solid var(--border);
+      background:var(--card); margin-bottom:10px; overflow:hidden;
+    }
+    .movement-header {
+      display:flex; align-items:center; gap:10px; padding:14px 16px;
+      cursor:pointer; user-select:none;
+    }
+    .movement-icon { font-size:20px; flex-shrink:0; }
+    .movement-name { font-size:14px; font-weight:700; flex:1; }
+    .movement-prescription {
+      font-size:11px; color:var(--text2);
+      background:var(--card2); padding:3px 8px; border-radius:20px;
+    }
+    .movement-chevron { color:var(--text2); font-size:14px; transition:transform 0.2s; }
+    .movement-chevron.open { transform:rotate(180deg); }
+    .movement-body { padding:0 16px 16px; border-top:1px solid var(--border); }
+
+    .exercise-select-label { font-size:12px; color:var(--text2); margin-top:12px; margin-bottom:6px; font-weight:600; }
+    .exercise-btn {
+      display:flex; align-items:center; gap:8px; padding:10px 12px;
+      border-radius:10px; border:1.5px solid var(--border);
+      background:var(--card2); cursor:pointer; margin-bottom:6px;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .exercise-btn.selected { border-color:var(--accent); background:var(--accent-dim); }
+    .exercise-btn-name { font-size:13px; font-weight:600; flex:1; }
+    .exercise-btn-info { font-size:11px; color:var(--text2); }
+    .exercise-equip { font-size:14px; }
+
+    .set-table { margin-top:12px; }
+    .set-row {
+      display:grid; grid-template-columns:32px 1fr 1fr 44px; gap:6px;
+      align-items:center; margin-bottom:8px;
+    }
+    .set-nr { font-size:12px; font-weight:700; color:var(--text2); text-align:center; }
+    .set-input {
+      background:var(--card2); border:1.5px solid var(--border);
+      border-radius:8px; padding:8px 10px; color:var(--text); font-size:14px;
+      text-align:center; width:100%; font-weight:600;
+    }
+    .set-input:focus { outline:none; border-color:var(--accent); }
+    .set-done-btn {
+      width:38px; height:38px; border-radius:50%; border:none; cursor:pointer;
+      background:var(--card2); border:1.5px solid var(--border);
+      font-size:16px; display:flex; align-items:center; justify-content:center;
+      transition:all 0.15s;
+    }
+    .set-done-btn.done { background:var(--green); border-color:var(--green); }
+    .set-col-header { font-size:11px; color:var(--text2); font-weight:600; text-align:center; }
+
+    .pr-badge {
+      display:inline-flex; align-items:center; gap:4px;
+      background: rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.4);
+      color:var(--gold2); border-radius:20px; padding:2px 8px;
+      font-size:11px; font-weight:700; margin-top:4px;
+    }
+
+    .start-workout-btn {
+      width:100%; padding:16px; border-radius:14px; border:none;
+      background: linear-gradient(135deg, var(--accent), var(--gold2));
+      color:#fff; font-size:16px; font-weight:800; cursor:pointer;
+      margin-top:8px; letter-spacing:0.5px;
+    }
+    .end-workout-btn {
+      width:100%; padding:16px; border-radius:14px; border:none;
+      background: var(--green); color:#fff; font-size:16px; font-weight:800;
+      cursor:pointer; margin-top:16px; margin-bottom:8px;
+    }
+
+    .session-done-card {
+      background:var(--green-dim); border:1.5px solid rgba(34,197,94,0.3);
+      border-radius:14px; padding:20px; text-align:center; margin-bottom:16px;
+    }
+    .session-done-icon { font-size:48px; margin-bottom:8px; }
+    .session-done-title { font-size:18px; font-weight:800; color:var(--green2); }
+    .muscle-badge {
+      display:inline-flex; align-items:center;
+      background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);
+      border-radius:20px; padding:2px 7px;
+      font-size:9px; font-weight:700; color:var(--text2); letter-spacing:0.04em; text-transform:uppercase;
+    }
+    .duration-live {
+      display:inline-flex; align-items:center; gap:5px;
+      background:rgba(255,197,108,0.1); border:1px solid rgba(255,197,108,0.2);
+      border-radius:20px; padding:5px 12px;
+      font-size:12px; font-weight:700; color:var(--accent);
+    }
+    .ex-img-banner {
+      width:100%; height:96px; object-fit:cover; border-radius:12px;
+      display:block; margin-bottom:10px;
+    }
+    .overload-arrow {
+      display:inline-flex; align-items:center; justify-content:center;
+      width:22px; height:22px; border-radius:50%; flex-shrink:0;
+      background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.3);
+      color:var(--green2); font-size:12px; font-weight:900;
+    }
+    .volume-stat { text-align:center; padding:0 16px; }
+    .volume-stat-num { font-family:'Space Grotesk',sans-serif; font-size:1.6rem; font-weight:900; font-style:italic; }
+    .volume-stat-lbl { font-size:11px; color:var(--text2); margin-top:2px; }
+
+    .deload-banner {
+      background:rgba(139,92,246,0.08); border:1.5px solid rgba(139,92,246,0.3);
+      border-radius:12px; padding:12px 16px; margin-bottom:12px;
+      display:flex; align-items:center; gap:10px;
+    }
+
+    .info-hint { font-size:12px; color:var(--text2); margin-top:8px; line-height:1.5; }
+    .rest-hint { font-size:11px; color:var(--text2); margin-top:6px; font-style:italic; }
+
+    /* ── Onboarding Overlay ── */
+    .ob-overlay {
+      position:fixed; inset:0; z-index:500;
+      background:var(--bg);
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:flex-start;
+      overflow-y:auto;
+      padding: max(24px,env(safe-area-inset-top)) 20px calc(40px + env(safe-area-inset-bottom));
+    }
+    .ob-overlay.hidden { display:none; }
+    .ob-progress { display:flex; gap:6px; width:100%; max-width:400px; margin-bottom:32px; }
+    .ob-step-dot { flex:1; height:3px; border-radius:2px; background:var(--border2); transition:background .3s; }
+    .ob-step-dot.done { background:var(--accent); }
+    .ob-step { display:none; width:100%; max-width:400px; }
+    .ob-step.active { display:block; }
+    .ob-icon { font-size:52px; text-align:center; display:block; margin-bottom:16px; }
+    .ob-h { font-size:24px; font-weight:900; margin-bottom:8px; line-height:1.2; }
+    .ob-sub { font-size:15px; color:var(--text2); margin-bottom:28px; line-height:1.6; }
+    .ob-options { display:flex; flex-direction:column; gap:12px; }
+    .ob-option {
+      background:rgba(255,255,255,.04); border:1.5px solid rgba(255,255,255,.09);
+      border-radius:16px; padding:18px 20px;
+      cursor:pointer; transition:all .2s; display:flex; align-items:center; gap:14px;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .ob-option:active { transform:scale(.98); }
+    .ob-option.selected { border-color:var(--accent); background:var(--accent-dim); }
+    .ob-option-icon { font-size:28px; flex-shrink:0; }
+    .ob-option-text { flex:1; }
+    .ob-option-title { font-size:16px; font-weight:800; }
+    .ob-option-sub { font-size:13px; color:var(--text2); margin-top:2px; }
+    .ob-check-grid { display:flex; flex-direction:column; gap:10px; }
+    .ob-check-item {
+      background:rgba(255,255,255,.04); border:1.5px solid rgba(255,255,255,.09);
+      border-radius:14px; padding:14px 18px;
+      cursor:pointer; display:flex; align-items:center; gap:14px;
+      transition:all .2s; -webkit-tap-highlight-color:transparent;
+    }
+    .ob-check-item.checked { border-color:var(--accent); background:var(--accent-dim); }
+    .ob-check-box {
+      width:22px; height:22px; border-radius:6px; border:2px solid rgba(255,255,255,.25);
+      display:flex; align-items:center; justify-content:center; flex-shrink:0;
+      transition:all .2s; font-size:13px; font-weight:900;
+    }
+    .ob-check-item.checked .ob-check-box { background:var(--accent); border-color:var(--accent); color:#000; }
+    .ob-nav { display:flex; gap:12px; margin-top:28px; }
+    .ob-btn-back { flex:1; background:rgba(255,255,255,.07); border:none; border-radius:50px; padding:16px; color:var(--text2); font-size:16px; font-weight:700; cursor:pointer; font-family:inherit; }
+    .ob-btn-next { flex:2; background:linear-gradient(135deg,var(--accent),#c8880f); border:none; border-radius:50px; padding:16px; color:#000; font-size:16px; font-weight:800; cursor:pointer; font-family:inherit; }
+    .ob-btn-next:disabled { opacity:.4; cursor:not-allowed; }
+
+    /* Plan Result Card */
+    .plan-result {
+      background:rgba(232,163,23,.06); border:1.5px solid rgba(232,163,23,.25);
+      border-radius:20px; padding:20px; margin-bottom:20px;
+    }
+    .plan-result-name { font-size:20px; font-weight:900; margin-bottom:4px; }
+    .plan-result-sub { font-size:14px; color:var(--text2); margin-bottom:16px; }
+
+    /* Plan Banner (in main view) */
+    .plan-banner {
+      background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
+      border-radius:14px; padding:12px 16px; margin-bottom:12px;
+      display:flex; align-items:center; gap:12px;
+    }
+    .plan-banner-info { flex:1; min-width:0; }
+    .plan-banner-name { font-size:13px; font-weight:800; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .plan-banner-sub { font-size:11px; color:var(--text2); margin-top:1px; }
+    .plan-banner-btns { display:flex; gap:6px; flex-shrink:0; }
+    .plan-banner-change { background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.1); color:var(--text2); border-radius:10px; padding:6px 10px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; font-family:inherit; border:none; }
+
+    /* ── Pause Timer ── */
+    .pause-timer {
+      position:fixed;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 92px);
+      left:16px; right:16px;
+      background:var(--card); border:1.5px solid var(--border2);
+      border-radius:20px; padding:14px 18px;
+      display:flex; align-items:center; gap:14px;
+      z-index:200;
+      transform:translateY(220px);
+      transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+      box-shadow:0 8px 32px rgba(0,0,0,0.5);
+    }
+    .pause-timer.visible { transform:translateY(0); }
+    .timer-countdown {
+      font-size:30px; font-weight:900; color:var(--accent);
+      min-width:58px; font-variant-numeric:tabular-nums; letter-spacing:-1px;
+    }
+    .timer-countdown.urgent { color:#ef4444; }
+    .timer-info { flex:1; }
+    .timer-label { font-size:13px; font-weight:700; color:var(--text); margin-bottom:2px; }
+    .timer-hint { font-size:11px; color:var(--text2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .timer-btns { display:flex; gap:6px; flex-shrink:0; }
+    .timer-btn {
+      background:var(--card2); border:1px solid var(--border);
+      border-radius:10px; padding:7px 10px; color:var(--text2);
+      font-size:12px; font-weight:700; cursor:pointer; font-family:inherit;
+    }
+    .timer-skip {
+      background:var(--accent-dim); border-color:var(--accent-border);
+      color:var(--accent);
+    }
+
+    /* ── Training Hero ── */
+    /* Override .page top padding for hero pages */
+    .page { padding-top: 0 !important; }
+    .train-hero {
+      position:relative; overflow:hidden;
+      display:flex; flex-direction:column;
+      margin:0 -16px; width:calc(100% + 32px);
+    }
+    .train-hero-bg {
+      position:absolute; inset:0; z-index:0;
+      background:
+        radial-gradient(ellipse at 75% 10%, rgba(255,197,108,0.28) 0%, transparent 55%),
+        radial-gradient(ellipse at 10% 90%, rgba(0,237,125,0.09) 0%, transparent 50%),
+        linear-gradient(180deg, #080a12 0%, #0d0d17 100%);
+    }
+    .train-hero-overlay {
+      position:absolute; inset:0; z-index:1;
+      background:linear-gradient(180deg, transparent 20%, #03030A 100%);
+    }
+    .train-hero-content { position:relative; z-index:2; padding:0 16px 24px; }
+    .train-week-prog {
+      height:4px; width:100%; border-radius:99px; overflow:hidden;
+      background:rgba(255,255,255,0.07); margin-top:12px;
+    }
+    .train-week-prog-fill {
+      height:100%; border-radius:99px;
+      background:linear-gradient(90deg,#cb9743,#ffc56c,rgba(255,255,255,0.7));
+      transition:width .7s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* Multiple options */
+    .plan-options-grid { display:flex; flex-direction:column; gap:10px; margin-bottom:20px; }
+    .plan-opt {
+      background:rgba(255,255,255,.04); border:1.5px solid rgba(255,255,255,.09);
+      border-radius:14px; padding:16px 18px; cursor:pointer; transition:all .2s;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .plan-opt.selected { border-color:var(--accent); background:var(--accent-dim); }
+    .plan-opt-title { font-size:15px; font-weight:800; }
+    .plan-opt-sub { font-size:12px; color:var(--text2); margin-top:3px; }
+  </style>
+</head>
+<body class="font-body antialiased">
+<div class="grainy-overlay"></div>
+
+<!-- Top Nav -->
+<nav class="fixed top-0 w-full z-50 bg-neutral-950/80 backdrop-blur-xl flex justify-between items-center px-6 pb-4 shadow-[0_8px_32px_rgba(0,0,0,0.8)]" style="padding-top:max(16px,env(safe-area-inset-top))">
+  <div class="flex items-center gap-2">
+    <span class="material-symbols-outlined text-amber-500" style="font-variation-settings:'FILL' 1">workspace_premium</span>
+    <span class="text-xl font-black tracking-tighter text-amber-500 italic font-headline uppercase">90TC</span>
+  </div>
+  <span id="topbar-day-train" class="font-headline tracking-tighter uppercase font-bold text-amber-500 text-sm"></span>
+  <div class="absolute bottom-0 left-0 bg-gradient-to-r from-transparent via-amber-500/20 to-transparent h-[1px] w-full"></div>
+</nav>
+
+<!-- Training Onboarding Overlay -->
+<div class="ob-overlay hidden" id="ob-overlay">
+  <div class="ob-progress" id="ob-progress"></div>
+
+  <!-- Step 1: Trainingsort -->
+  <div class="ob-step active" id="ob-step-1">
+    <span class="ob-icon">🏟️</span>
+    <h2 class="ob-h">Wo trainierst du?</h2>
+    <p class="ob-sub">Damit finden wir den passenden Plan für dich.</p>
+    <div class="ob-options">
+      <div class="ob-option" data-val="gym" onclick="obSelect(1,'ort',this)">
+        <span class="ob-option-icon">🏋️</span>
+        <div class="ob-option-text">
+          <div class="ob-option-title">Fitnessstudio</div>
+          <div class="ob-option-sub">Maschinen, Langhanteln, freie Gewichte</div>
+        </div>
+      </div>
+      <div class="ob-option" data-val="homefit" onclick="obSelect(1,'ort',this)">
+        <span class="ob-option-icon">🏠</span>
+        <div class="ob-option-text">
+          <div class="ob-option-title">Zuhause / Homefit</div>
+          <div class="ob-option-sub">Kurzhanteln, Bänder, Körpergewicht</div>
+        </div>
+      </div>
+    </div>
+    <div class="ob-nav">
+      <button class="ob-btn-next" id="ob-next-1" onclick="obNext(1)" disabled>Weiter →</button>
+    </div>
+  </div>
+
+  <!-- Step 2a: Erfahrung (Gym) -->
+  <div class="ob-step" id="ob-step-2a">
+    <span class="ob-icon">💪</span>
+    <h2 class="ob-h">Deine Erfahrung</h2>
+    <p class="ob-sub">Wie lange trainierst du schon mit Gewichten?</p>
+    <div class="ob-options">
+      <div class="ob-option" data-val="einsteiger" onclick="obSelect(2,'level',this)">
+        <span class="ob-option-icon">🌱</span>
+        <div class="ob-option-text">
+          <div class="ob-option-title">Einsteiger</div>
+          <div class="ob-option-sub">0–1 Jahr Trainingserfahrung</div>
+        </div>
+      </div>
+      <div class="ob-option" data-val="fortgeschritten" onclick="obSelect(2,'level',this)">
+        <span class="ob-option-icon">🔥</span>
+        <div class="ob-option-text">
+          <div class="ob-option-title">Fortgeschritten</div>
+          <div class="ob-option-sub">1–3 Jahre, solide Technik</div>
+        </div>
+      </div>
+      <div class="ob-option" data-val="profi" onclick="obSelect(2,'level',this)">
+        <span class="ob-option-icon">🏆</span>
+        <div class="ob-option-text">
+          <div class="ob-option-title">Profi</div>
+          <div class="ob-option-sub">3+ Jahre, fortgeschrittene Techniken</div>
+        </div>
+      </div>
+    </div>
+    <div class="ob-nav">
+      <button class="ob-btn-back" onclick="obBack(2)">←</button>
+      <button class="ob-btn-next" id="ob-next-2a" onclick="obNext(2)" disabled>Weiter →</button>
+    </div>
+  </div>
+
+  <!-- Step 2b: Equipment (Homefit) -->
+  <div class="ob-step" id="ob-step-2b">
+    <span class="ob-icon">🛠️</span>
+    <h2 class="ob-h">Dein Equipment</h2>
+    <p class="ob-sub">Was hast du zuhause? Mehrfachauswahl möglich.</p>
+    <div class="ob-check-grid" id="equip-checks">
+      <div class="ob-check-item checked" data-val="kw" onclick="obToggleCheck(this)">
+        <div class="ob-check-box">✓</div>
+        <div class="ob-option-text">
+          <div class="ob-option-title">🤸 Körpergewicht</div>
+          <div class="ob-option-sub">Liegestütze, Kniebeugen, etc.</div>
+        </div>
+      </div>
+      <div class="ob-check-item" data-val="kh" onclick="obToggleCheck(this)">
+        <div class="ob-check-box"></div>
+        <div class="ob-option-text">
+          <div class="ob-option-title">🏋️ Kurzhanteln</div>
+          <div class="ob-option-sub">Verstellbar oder feste Sets</div>
+        </div>
+      </div>
+      <div class="ob-check-item" data-val="band" onclick="obToggleCheck(this)">
+        <div class="ob-check-box"></div>
+        <div class="ob-option-text">
+          <div class="ob-option-title">🔗 Widerstandsbänder</div>
+          <div class="ob-option-sub">Loop- oder Langhantelbänder</div>
+        </div>
+      </div>
+      <div class="ob-check-item" data-val="bank" onclick="obToggleCheck(this)">
+        <div class="ob-check-box"></div>
+        <div class="ob-option-text">
+          <div class="ob-option-title">🪑 Verstellbare Bank</div>
+          <div class="ob-option-sub">Für Bankdrücken, Bulgarian Squats, etc.</div>
+        </div>
+      </div>
+      <div class="ob-check-item" data-val="stange" onclick="obToggleCheck(this)">
+        <div class="ob-check-box"></div>
+        <div class="ob-option-text">
+          <div class="ob-option-title">🏗️ Klimmzugstange</div>
+          <div class="ob-option-sub">Türrahmen- oder Wandmontage</div>
+        </div>
+      </div>
+    </div>
+    <div class="ob-nav">
+      <button class="ob-btn-back" onclick="obBack(2)">←</button>
+      <button class="ob-btn-next" onclick="obNext(2)">Weiter →</button>
+    </div>
+  </div>
+
+  <!-- Step 3: Trainingstage -->
+  <div class="ob-step" id="ob-step-3">
+    <span class="ob-icon">📅</span>
+    <h2 class="ob-h">Trainingstage</h2>
+    <p class="ob-sub">Wie viele Tage pro Woche kannst du realistisch trainieren?</p>
+    <div class="ob-options" id="tage-options">
+      <div class="ob-option" data-val="2" onclick="obSelect(3,'tage',this)">
+        <span class="ob-option-icon">2️⃣</span>
+        <div class="ob-option-text">
+          <div class="ob-option-title">2 Tage / Woche</div>
+          <div class="ob-option-sub">Optimal für Einsteiger oder bei wenig Zeit</div>
+        </div>
+      </div>
+      <div class="ob-option" data-val="3" onclick="obSelect(3,'tage',this)">
+        <span class="ob-option-icon">3️⃣</span>
+        <div class="ob-option-text">
+          <div class="ob-option-title">3 Tage / Woche</div>
+          <div class="ob-option-sub">Solide Basis, gut für Anfang</div>
+        </div>
+      </div>
+      <div class="ob-option" data-val="4" onclick="obSelect(3,'tage',this)">
+        <span class="ob-option-icon">4️⃣</span>
+        <div class="ob-option-text">
+          <div class="ob-option-title">4 Tage / Woche</div>
+          <div class="ob-option-sub">Empfohlen — gutes Volumen + Erholung</div>
+        </div>
+      </div>
+      <div class="ob-option" data-val="5" onclick="obSelect(3,'tage',this)">
+        <span class="ob-option-icon">5️⃣</span>
+        <div class="ob-option-text">
+          <div class="ob-option-title">5 Tage / Woche</div>
+          <div class="ob-option-sub">Für Fortgeschrittene mit hoher Regeneration</div>
+        </div>
+      </div>
+    </div>
+    <div class="ob-nav">
+      <button class="ob-btn-back" onclick="obBack(3)">←</button>
+      <button class="ob-btn-next" id="ob-next-3" onclick="obNext(3)" disabled>Weiter →</button>
+    </div>
+  </div>
+
+  <!-- Step 4: Split-Auswahl (falls mehrere Optionen) -->
+  <div class="ob-step" id="ob-step-4">
+    <span class="ob-icon">⚡</span>
+    <h2 class="ob-h">Split-Variante</h2>
+    <p class="ob-sub">Für deine Kombination gibt es mehrere Optionen. Was passt besser zu dir?</p>
+    <div class="plan-options-grid" id="plan-options"></div>
+    <div class="ob-nav">
+      <button class="ob-btn-back" onclick="obBack(4)">←</button>
+      <button class="ob-btn-next" id="ob-next-4" onclick="obNext(4)" disabled>Weiter →</button>
+    </div>
+  </div>
+
+  <!-- Step 5: Plan Ergebnis -->
+  <div class="ob-step" id="ob-step-5">
+    <span class="ob-icon">🎯</span>
+    <h2 class="ob-h">Dein Plan ist bereit!</h2>
+    <p class="ob-sub">Basierend auf deinen Angaben empfehlen wir:</p>
+    <div class="plan-result" id="plan-result">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(232,163,23,.7);margin-bottom:8px">Empfohlener Plan</div>
+      <div class="plan-result-name" id="plan-result-name">—</div>
+      <div class="plan-result-sub" id="plan-result-sub">—</div>
+      <div id="plan-result-days" style="display:flex;gap:6px;margin-top:12px"></div>
+    </div>
+    <button class="ob-btn-next" style="width:100%" onclick="confirmPlan()">Plan starten 🚀</button>
+    <div class="ob-nav" style="margin-top:12px">
+      <button class="ob-btn-back" style="flex:1" onclick="obBack(5)">← Zurück</button>
+    </div>
+  </div>
+</div>
+
+<div id="app">
+  <div class="splash" id="loading"><div class="spinner"></div></div>
+
+  <div id="main" style="display:none">
+    <div class="page">
+
+      <!-- ── Cinematic Hero ── -->
+      <div class="train-hero">
+        <div class="train-hero-bg"></div>
+        <div class="train-hero-overlay"></div>
+        <div style="height:calc(max(16px,env(safe-area-inset-top)) + 56px);flex-shrink:0;"></div>
+        <div class="train-hero-content">
+          <span style="font-family:'Space Grotesk',sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.28em;color:rgba(255,197,108,0.7);display:block;margin-bottom:6px;" id="week-badge">WOCHE — VON 12</span>
+          <h1 style="font-family:'Space Grotesk',sans-serif;font-size:clamp(2.8rem,12vw,4.2rem);font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:-0.04em;line-height:0.88;color:#e4e1ef;text-shadow:0 0 40px rgba(255,197,108,0.2);">
+            TRAI<span style="color:#ffc56c;">NING</span>
+          </h1>
+          <p id="header-plan-label" style="font-size:12px;color:rgba(172,169,183,0.7);font-weight:500;margin-top:8px;"></p>
+          <div class="train-week-prog" style="max-width:200px;">
+            <div class="train-week-prog-fill" id="week-prog-fill" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Plan Banner -->
+      <div class="plan-banner" id="plan-banner" style="display:none">
+        <div class="plan-banner-info">
+          <div class="plan-banner-name" id="plan-banner-name">—</div>
+          <div class="plan-banner-sub" id="plan-banner-sub">—</div>
+        </div>
+        <div class="plan-banner-btns">
+          <button class="plan-banner-change" onclick="resetPlan()">Wechseln</button>
+        </div>
+      </div>
+
+      <!-- Wochenübersicht -->
+      <div style="margin-bottom:14px;background:#0D0D14;border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:16px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-size:10px;color:#aca9b7;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">AKTUELLE WOCHE</div>
+            <div id="week-title" style="font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:900;font-style:italic">—</div>
+            <div id="week-sub" style="font-size:12px;color:#aca9b7;margin-top:2px">—</div>
+          </div>
+          <div id="deload-pill" style="display:none;background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.4);color:#c084fc;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700">DELOAD</div>
+        </div>
+        <div class="week-dots" id="week-dots"></div>
+      </div>
+
+      <!-- Deload Banner -->
+      <div class="deload-banner" id="deload-banner" style="display:none">
+        <span style="font-size:24px">🧘</span>
+        <div>
+          <div style="font-weight:700;color:var(--purple)">Deload-Woche</div>
+          <div style="font-size:12px;color:var(--text2)">Weniger Volumen, gleiche Übungen. Erholung ist Training!</div>
+        </div>
+      </div>
+
+      <!-- Tag-Auswahl -->
+      <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#aca9b7;margin-bottom:12px">TRAININGSTAGE</div>
+      <div class="day-scroll no-scrollbar" style="margin-bottom:20px" id="day-tabs"></div>
+
+      <!-- Workout Content -->
+      <div id="workout-content"></div>
+
+      <div style="height:88px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Pause Timer -->
+<div class="pause-timer" id="pause-timer">
+  <div class="timer-info">
+    <div class="timer-label">⏱️ Pause</div>
+    <div class="timer-hint" id="timer-hint">Erhole dich</div>
+  </div>
+  <div class="timer-countdown" id="timer-display">2:00</div>
+  <div class="timer-btns">
+    <button class="timer-btn" onclick="adjustTimer(-15)">−15</button>
+    <button class="timer-btn" onclick="adjustTimer(30)">+30</button>
+    <button class="timer-btn timer-skip" onclick="skipTimer()">Weiter →</button>
+  </div>
+</div>
+
+<!-- Split-Island Bottom Nav (Training active) -->
+<div style="position:fixed;bottom:calc(16px + env(safe-area-inset-bottom));left:12px;right:12px;z-index:50;display:flex;align-items:flex-end;justify-content:space-between;gap:10px;pointer-events:none;">
+  <!-- Left island: Start | Training -->
+  <div style="flex:1;display:flex;align-items:center;justify-content:space-around;height:60px;background:rgba(18,17,26,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.07);border-radius:22px;overflow:hidden;pointer-events:auto;">
+    <a href="dashboard.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;padding:8px 4px;color:#757481;">
+      <span class="material-symbols-outlined" style="font-size:22px;">home</span>
+      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Start</span>
+    </a>
+    <div style="width:1px;height:28px;background:rgba(255,255,255,0.07);flex-shrink:0;"></div>
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:8px 4px;color:#ffc56c;">
+      <span class="material-symbols-outlined" style="font-size:22px;filter:drop-shadow(0 0 6px rgba(255,197,108,0.5));">fitness_center</span>
+      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Training</span>
+    </div>
+  </div>
+  <!-- Center: Tagebuch FAB -->
+  <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:4px;margin-bottom:6px;pointer-events:auto;">
+    <a href="tagebuch.html" style="text-decoration:none;display:block;">
+      <div style="width:60px;height:60px;border-radius:20px;background:linear-gradient(135deg,#ffc56c,#cb9743);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(255,197,108,0.55);">
+        <span class="material-symbols-outlined" style="font-size:26px;color:#321f00;">menu_book</span>
+      </div>
+    </a>
+    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#ffc56c;">Tagebuch</span>
+  </div>
+  <!-- Right island: Stats | Profil -->
+  <div style="flex:1;display:flex;align-items:center;justify-content:space-around;height:60px;background:rgba(18,17,26,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.07);border-radius:22px;overflow:hidden;pointer-events:auto;">
+    <a href="fortschritt.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;padding:8px 4px;color:#757481;">
+      <span class="material-symbols-outlined" style="font-size:22px;">query_stats</span>
+      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Stats</span>
+    </a>
+    <div style="width:1px;height:28px;background:rgba(255,255,255,0.07);flex-shrink:0;"></div>
+    <a href="profil.html" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-decoration:none;padding:8px 4px;color:#757481;">
+      <span class="material-symbols-outlined" style="font-size:22px;">person</span>
+      <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Profil</span>
+    </a>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/gamification.js"></script>
+<script>
+
+// ── Plan Datenbank ───────────────────────────────────────────────
+const PLAN_DB = [
+  // MÄNNER HOMEFIT
+  { id:'mh2',   gender:'maenner', ort:'homefit', tage:2, split:'GK-A/B',          name:'Homefit 2×/Woche · Ganzkörper A/B',     pdf:'plans/maenner-homefit-2T.pdf',                  tagKonfig:['gk_a','gk_b'] },
+  { id:'mh3g',  gender:'maenner', ort:'homefit', tage:3, split:'GK-A/B/C',        name:'Homefit 3×/Woche · Ganzkörper A/B/C',   pdf:'plans/maenner-homefit-3T-gk.pdf',               tagKonfig:['gk_a','gk_b','gk_c'] },
+  { id:'mh3o',  gender:'maenner', ort:'homefit', tage:3, split:'GK/OK/UK',        name:'Homefit 3×/Woche · GK + OK/UK',         pdf:'plans/maenner-homefit-3T-okuk.pdf',             tagKonfig:['gk_leicht','ok','uk'] },
+  { id:'mh4',   gender:'maenner', ort:'homefit', tage:4, split:'GK/OK/UK/GK',    name:'Homefit 4×/Woche · GK/OK/UK/GK',        pdf:'plans/maenner-homefit-4T.pdf',                  tagKonfig:['gk_a','ok','uk','gk_b'] },
+  { id:'mh5o',  gender:'maenner', ort:'homefit', tage:5, split:'OK/UK/OK/UK/GK', name:'Homefit 5×/Woche · OK/UK alternierend', pdf:'plans/maenner-homefit-5T-okuk.pdf',             tagKonfig:['ok_a','uk_a','ok_b','uk_b','gk_leicht'] },
+  { id:'mh5p',  gender:'maenner', ort:'homefit', tage:5, split:'Push/Pull/Beine', name:'Homefit 5×/Woche · Push/Pull/Beine',   pdf:'plans/maenner-homefit-5T-ppb.pdf',              tagKonfig:['push','pull','beine','push','pull'] },
+  // FRAUEN HOMEFIT
+  { id:'fh2',   gender:'frauen',  ort:'homefit', tage:2, split:'GK-A/B',          name:'Homefit 2×/Woche · Ganzkörper A/B',     pdf:'plans/frauen-homefit-2T.pdf',                   tagKonfig:['gk_a','gk_b'] },
+  { id:'fh3g',  gender:'frauen',  ort:'homefit', tage:3, split:'GK-A/B/C',        name:'Homefit 3×/Woche · Ganzkörper A/B/C',   pdf:'plans/frauen-homefit-3T-gk.pdf',                tagKonfig:['gk_a','gk_b','gk_c'] },
+  { id:'fh3o',  gender:'frauen',  ort:'homefit', tage:3, split:'GK/OK/UK',        name:'Homefit 3×/Woche · GK + OK/UK',         pdf:'plans/frauen-homefit-3T-okuk.pdf',              tagKonfig:['gk_leicht','ok','uk'] },
+  { id:'fh4g',  gender:'frauen',  ort:'homefit', tage:4, split:'GK/OK/UK/GK',    name:'Homefit 4×/Woche · GK/OK/UK/GK',        pdf:'plans/frauen-homefit-4T-gk.pdf',                tagKonfig:['gk_a','ok','uk','gk_b'] },
+  { id:'fh4o',  gender:'frauen',  ort:'homefit', tage:4, split:'OK/UK alternierend', name:'Homefit 4×/Woche · OK/UK/OK/UK',     pdf:'plans/frauen-homefit-4T-okuk.pdf',              tagKonfig:['ok_a','uk_a','ok_b','uk_b'] },
+  { id:'fh5p',  gender:'frauen',  ort:'homefit', tage:5, split:'Push/Pull/Beine', name:'Homefit 5×/Woche · Push/Pull/Beine',   pdf:'plans/frauen-homefit-5T-ppb.pdf',               tagKonfig:['push','pull','beine','push','pull'] },
+  { id:'fh5o',  gender:'frauen',  ort:'homefit', tage:5, split:'OK/UK alternierend', name:'Homefit 5×/Woche · OK/UK/OK/UK/GK', pdf:'plans/frauen-homefit-5T-okuk.pdf',              tagKonfig:['ok_a','uk_a','ok_b','uk_b','gk_leicht'] },
+  // MÄNNER GYM - Einsteiger
+  { id:'mge2',  gender:'maenner', ort:'gym', level:'einsteiger',    tage:2, split:'GK-A/B',    name:'Gym Einsteiger 2×/Woche · Ganzkörper',   pdf:'plans/maenner-gym-einsteiger-2T.pdf',           tagKonfig:['gk_a_gym','gk_b_gym'] },
+  { id:'mge3g', gender:'maenner', ort:'gym', level:'einsteiger',    tage:3, split:'GK-A/B/C',  name:'Gym Einsteiger 3×/Woche · Ganzkörper',   pdf:'plans/maenner-gym-einsteiger-3T-gk.pdf',        tagKonfig:['gk_a_gym','gk_b_gym','gk_c_gym'] },
+  { id:'mge3o', gender:'maenner', ort:'gym', level:'einsteiger',    tage:3, split:'GK/OK/UK',  name:'Gym Einsteiger 3×/Woche · GK+OK/UK',     pdf:'plans/maenner-gym-einsteiger-3T-okuk.pdf',      tagKonfig:['gk_leicht_gym','ok_gym','uk_gym'] },
+  { id:'mge4g', gender:'maenner', ort:'gym', level:'einsteiger',    tage:4, split:'GK+OK/UK',  name:'Gym Einsteiger 4×/Woche · GK/OK/UK/GK',  pdf:'plans/maenner-gym-einsteiger-4T-gk.pdf',        tagKonfig:['gk_a_gym','ok_gym','uk_gym','gk_b_gym'] },
+  { id:'mge4o', gender:'maenner', ort:'gym', level:'einsteiger',    tage:4, split:'OK/UK',     name:'Gym Einsteiger 4×/Woche · OK/UK alternierend', pdf:'plans/maenner-gym-einsteiger-4T-okuk.pdf', tagKonfig:['ok_gym','uk_gym','ok_gym','uk_gym'] },
+  // MÄNNER GYM - Fortgeschritten
+  { id:'mgf3',  gender:'maenner', ort:'gym', level:'fortgeschritten', tage:3, split:'GK-A/B/C', name:'Gym Fortgeschritten 3×/Woche · Ganzkörper', pdf:'plans/maenner-gym-fortgeschritten-3T-gk.pdf', tagKonfig:['gk_a_gym','gk_b_gym','gk_c_gym'] },
+  { id:'mgf4g', gender:'maenner', ort:'gym', level:'fortgeschritten', tage:4, split:'GK+OK/UK', name:'Gym Fortgeschritten 4×/Woche · GK/OK/UK/GK', pdf:'plans/maenner-gym-fortgeschritten-4T-gk.pdf', tagKonfig:['gk_a_gym','ok_gym','uk_gym','gk_b_gym'] },
+  { id:'mgf4o', gender:'maenner', ort:'gym', level:'fortgeschritten', tage:4, split:'OK/UK',    name:'Gym Fortgeschritten 4×/Woche · OK/UK',     pdf:'plans/maenner-gym-fortgeschritten-4T-okuk.pdf', tagKonfig:['ok_gym','uk_gym','ok_gym','uk_gym'] },
+  { id:'mgf5o', gender:'maenner', ort:'gym', level:'fortgeschritten', tage:5, split:'OK/UK/GK', name:'Gym Fortgeschritten 5×/Woche · OK/UK/GK',  pdf:'plans/maenner-gym-fortgeschritten-5T-okuk.pdf', tagKonfig:['ok_a_gym','uk_gym','ok_b_gym','uk_gym','gk_leicht_gym'] },
+  { id:'mgf5p', gender:'maenner', ort:'gym', level:'fortgeschritten', tage:5, split:'Push/Pull/Beine', name:'Gym Fortgeschritten 5×/Woche · Push/Pull/Beine', pdf:'plans/maenner-gym-fortgeschritten-5T-ppb.pdf', tagKonfig:['push_gym','pull_gym','beine_gym','push_gym','pull_gym'] },
+  // MÄNNER GYM - Profi
+  { id:'mgp3',  gender:'maenner', ort:'gym', level:'profi', tage:3, split:'GK-A/B/C', name:'Gym Profi 3×/Woche · Ganzkörper',     pdf:'plans/maenner-gym-profi-3T.pdf',                tagKonfig:['gk_a_gym','gk_b_gym','gk_c_gym'] },
+  { id:'mgp4o', gender:'maenner', ort:'gym', level:'profi', tage:4, split:'OK/UK',    name:'Gym Profi 4×/Woche · OK/UK',          pdf:'plans/maenner-gym-profi-4T-okuk.pdf',           tagKonfig:['ok_gym','uk_gym','ok_gym','uk_gym'] },
+  { id:'mgp4g', gender:'maenner', ort:'gym', level:'profi', tage:4, split:'GK+OK/UK', name:'Gym Profi 4×/Woche · GK/OK/UK/GK',   pdf:'plans/maenner-gym-profi-4T-gk.pdf',             tagKonfig:['gk_a_gym','ok_gym','uk_gym','gk_b_gym'] },
+  { id:'mgp5o', gender:'maenner', ort:'gym', level:'profi', tage:5, split:'OK/UK/GK', name:'Gym Profi 5×/Woche · OK/UK/GK',      pdf:'plans/maenner-gym-profi-5T-okuk.pdf',           tagKonfig:['ok_a_gym','uk_gym','ok_b_gym','uk_gym','gk_leicht_gym'] },
+  { id:'mgp5p', gender:'maenner', ort:'gym', level:'profi', tage:5, split:'Push/Pull/Beine', name:'Gym Profi 5×/Woche · Push/Pull/Beine', pdf:'plans/maenner-gym-profi-5T-ppb.pdf', tagKonfig:['push_gym','pull_gym','beine_gym','push_gym','pull_gym'] },
+  // FRAUEN GYM - Einsteiger
+  { id:'fge2',  gender:'frauen',  ort:'gym', level:'einsteiger', tage:2, split:'GK-A/B',   name:'Gym Einsteiger 2×/Woche · Ganzkörper',    pdf:'plans/frauen-gym-einsteiger-2T.pdf',            tagKonfig:['gk_a_gym','gk_b_gym'] },
+  { id:'fge3g', gender:'frauen',  ort:'gym', level:'einsteiger', tage:3, split:'GK-A/B/C', name:'Gym Einsteiger 3×/Woche · Ganzkörper',    pdf:'plans/frauen-gym-einsteiger-3T-gk.pdf',         tagKonfig:['gk_a_gym','gk_b_gym','gk_c_gym'] },
+  { id:'fge3o', gender:'frauen',  ort:'gym', level:'einsteiger', tage:3, split:'GK/OK/UK', name:'Gym Einsteiger 3×/Woche · GK+OK/UK',      pdf:'plans/frauen-gym-einsteiger-3T-okuk.pdf',       tagKonfig:['gk_leicht_gym','ok_gym','uk_gym'] },
+  { id:'fge4g', gender:'frauen',  ort:'gym', level:'einsteiger', tage:4, split:'GK+OK/UK', name:'Gym Einsteiger 4×/Woche · GK/OK/UK/GK',  pdf:'plans/frauen-gym-einsteiger-4T-gk.pdf',         tagKonfig:['gk_a_gym','ok_gym','uk_gym','gk_b_gym'] },
+  { id:'fge4o', gender:'frauen',  ort:'gym', level:'einsteiger', tage:4, split:'OK/UK',    name:'Gym Einsteiger 4×/Woche · OK/UK',         pdf:'plans/frauen-gym-einsteiger-4T-okuk.pdf',       tagKonfig:['ok_gym','uk_gym','ok_gym','uk_gym'] },
+  // FRAUEN GYM - Fortgeschritten
+  { id:'fgf3',  gender:'frauen',  ort:'gym', level:'fortgeschritten', tage:3, split:'GK-A/B/C', name:'Gym Fortgeschritten 3×/Woche · Ganzkörper', pdf:'plans/frauen-gym-fortgeschritten-3T-gk.pdf', tagKonfig:['gk_a_gym','gk_b_gym','gk_c_gym'] },
+  { id:'fgf4g', gender:'frauen',  ort:'gym', level:'fortgeschritten', tage:4, split:'GK+OK/UK', name:'Gym Fortgeschritten 4×/Woche · GK/OK/UK/GK', pdf:'plans/frauen-gym-fortgeschritten-4T-gk.pdf', tagKonfig:['gk_a_gym','ok_gym','uk_gym','gk_b_gym'] },
+  { id:'fgf4o', gender:'frauen',  ort:'gym', level:'fortgeschritten', tage:4, split:'OK/UK',    name:'Gym Fortgeschritten 4×/Woche · OK/UK',    pdf:'plans/frauen-gym-fortgeschritten-4T-okuk.pdf', tagKonfig:['ok_gym','uk_gym','ok_gym','uk_gym'] },
+  { id:'fgf5',  gender:'frauen',  ort:'gym', level:'fortgeschritten', tage:5, split:'UK/OK/UK/OK/UK', name:'Gym Fortgeschritten 5×/Woche · UK/OK alternierend', pdf:'plans/frauen-gym-fortgeschritten-5T.pdf', tagKonfig:['uk_gym','ok_gym','uk_gym','ok_gym','uk_gym'] },
+  // FRAUEN GYM - Profi
+  { id:'fgp3',  gender:'frauen',  ort:'gym', level:'profi', tage:3, split:'GK-A/B/C', name:'Gym Profi 3×/Woche · Ganzkörper',     pdf:'plans/frauen-gym-profi-3T.pdf',                 tagKonfig:['gk_a_gym','gk_b_gym','gk_c_gym'] },
+  { id:'fgp4g', gender:'frauen',  ort:'gym', level:'profi', tage:4, split:'GK+OK/UK', name:'Gym Profi 4×/Woche · GK/OK/UK/GK',   pdf:'plans/frauen-gym-profi-4T-gk.pdf',              tagKonfig:['gk_a_gym','ok_gym','uk_gym','gk_b_gym'] },
+  { id:'fgp4o', gender:'frauen',  ort:'gym', level:'profi', tage:4, split:'OK/UK',    name:'Gym Profi 4×/Woche · OK/UK',          pdf:'plans/frauen-gym-profi-4T-okuk.pdf',            tagKonfig:['ok_gym','uk_gym','ok_gym','uk_gym'] },
+  { id:'fgp5',  gender:'frauen',  ort:'gym', level:'profi', tage:5, split:'UK/OK alternierend', name:'Gym Profi 5×/Woche · UK/OK/UK/OK/UK', pdf:'plans/frauen-gym-profi-5T.pdf',        tagKonfig:['uk_gym','ok_gym','uk_gym','ok_gym','uk_gym'] },
+]
+
+// ── Tag-Konfigurationen (alle Split-Varianten) ───────────────────
+const ALLE_TAGE_KONFIGS = {
+  // HOMEFIT
+  'gk_a':       { label:'Tag 1', typ:'Ganzkörper A', kurz:'GK-A', icon:'🏋️', muster:['beine_quad','beine_hintere_kette','push_horizontal','pull_vertikal','push_vertikal','pull_horizontal'] },
+  'gk_b':       { label:'Tag 4', typ:'Ganzkörper B', kurz:'GK-B', icon:'🔥', muster:['push_horizontal','pull_vertikal','beine_quad','beine_hintere_kette','push_vertikal','pull_horizontal'] },
+  'gk_c':       { label:'Tag 3', typ:'Ganzkörper C', kurz:'GK-C', icon:'⚡', muster:['beine_quad','beine_glute','push_horizontal','pull_horizontal','schulter_seite','beine_hintere_kette'] },
+  'gk_leicht':  { label:'GK', typ:'Ganzkörper', kurz:'GK', icon:'🏋️', muster:['beine_quad','beine_hintere_kette','push_horizontal','pull_horizontal'] },
+  'ok':         { label:'OK', typ:'Oberkörper', kurz:'OK', icon:'💪', muster:['push_horizontal','pull_horizontal','push_vertikal','pull_vertikal','schulter_seite','brust_isoliert'] },
+  'uk':         { label:'UK', typ:'Unterkörper', kurz:'UK', icon:'🦵', muster:['beine_quad','beine_hintere_kette','beine_glute','beinbeuger','beinstrecker','waden'] },
+  'ok_a':       { label:'OK-A', typ:'Oberkörper A', kurz:'OK-A', icon:'💪', muster:['push_horizontal','pull_horizontal','push_vertikal','pull_vertikal'] },
+  'ok_b':       { label:'OK-B', typ:'Oberkörper B', kurz:'OK-B', icon:'💪', muster:['push_horizontal','pull_horizontal','schulter_seite','brust_isoliert','pull_vertikal'] },
+  'uk_a':       { label:'UK-A', typ:'Unterkörper A', kurz:'UK-A', icon:'🦵', muster:['beine_quad','beine_hintere_kette','beine_glute','beinbeuger','waden'] },
+  'uk_b':       { label:'UK-B', typ:'Unterkörper B', kurz:'UK-B', icon:'🦵', muster:['beine_quad','beine_hintere_kette','beine_glute','beinstrecker','waden'] },
+  'push':       { label:'Push', typ:'Push', kurz:'Push', icon:'⬆️', muster:['push_horizontal','push_vertikal','schulter_seite','brust_isoliert'] },
+  'pull':       { label:'Pull', typ:'Pull', kurz:'Pull', icon:'⬇️', muster:['pull_vertikal','pull_horizontal','pull_vertikal'] },
+  'beine':      { label:'Beine', typ:'Beine', kurz:'Beine', icon:'🦵', muster:['beine_quad','beine_hintere_kette','beine_glute','beinbeuger','beinstrecker','waden'] },
+  // GYM (selbe Struktur, aber mit _gym suffix für ID-Trennung, gleiche Muster)
+  'gk_a_gym':      { label:'Tag 1', typ:'Ganzkörper A', kurz:'GK-A', icon:'🏋️', muster:['beine_quad','beine_hintere_kette','push_horizontal','pull_vertikal','push_vertikal','pull_horizontal'] },
+  'gk_b_gym':      { label:'Tag 4', typ:'Ganzkörper B', kurz:'GK-B', icon:'🔥', muster:['push_horizontal','pull_vertikal','beine_quad','beine_hintere_kette','push_vertikal','pull_horizontal'] },
+  'gk_c_gym':      { label:'Tag 3', typ:'Ganzkörper C', kurz:'GK-C', icon:'⚡', muster:['beine_quad','beine_glute','push_horizontal','pull_horizontal','schulter_seite','beine_hintere_kette'] },
+  'gk_leicht_gym': { label:'GK', typ:'Ganzkörper', kurz:'GK', icon:'🏋️', muster:['beine_quad','beine_hintere_kette','push_horizontal','pull_horizontal'] },
+  'ok_gym':        { label:'OK', typ:'Oberkörper', kurz:'OK', icon:'💪', muster:['push_horizontal','pull_horizontal','push_vertikal','pull_vertikal','schulter_seite','brust_isoliert'] },
+  'uk_gym':        { label:'UK', typ:'Unterkörper', kurz:'UK', icon:'🦵', muster:['beine_quad','beine_hintere_kette','beine_glute','beinbeuger','beinstrecker','waden'] },
+  'ok_a_gym':      { label:'OK-A', typ:'Oberkörper A', kurz:'OK-A', icon:'💪', muster:['push_horizontal','pull_horizontal','push_vertikal','pull_vertikal'] },
+  'ok_b_gym':      { label:'OK-B', typ:'Oberkörper B', kurz:'OK-B', icon:'💪', muster:['push_horizontal','pull_horizontal','schulter_seite','brust_isoliert','pull_vertikal'] },
+  'push_gym':      { label:'Push', typ:'Push', kurz:'Push', icon:'⬆️', muster:['push_horizontal','push_vertikal','schulter_seite','brust_isoliert'] },
+  'pull_gym':      { label:'Pull', typ:'Pull', kurz:'Pull', icon:'⬇️', muster:['pull_vertikal','pull_horizontal','pull_vertikal'] },
+  'beine_gym':     { label:'Beine', typ:'Beine', kurz:'Beine', icon:'🦵', muster:['beine_quad','beine_hintere_kette','beine_glute','beinbeuger','beinstrecker','waden'] },
+}
+
+const MUSTER_MUSKELN = {
+  'push_horizontal':     ['Brust','Trizeps'],
+  'pull_horizontal':     ['Rücken','Bizeps'],
+  'push_vertikal':       ['Schulter','Trizeps'],
+  'pull_vertikal':       ['Lat','Bizeps'],
+  'schulter_seite':      ['Schulter'],
+  'brust_isoliert':      ['Brust'],
+  'beine_quad':          ['Quads','Gesäß'],
+  'beine_hintere_kette': ['Hamstrings','Gesäß'],
+  'beine_glute':         ['Gesäß','Hamstrings'],
+  'beinbeuger':          ['Hamstrings'],
+  'beinstrecker':        ['Quads'],
+  'waden':               ['Waden'],
+};
+
+// ── Trainingsplan Daten (dynamisch befüllt) ──────────────────────
+let TAGE = [
+  {
+    id: 'gk_a', label: 'Tag 1', typ: 'Ganzkörper A', kurz: 'GK-A', icon: '🏋️',
+    muster: ['beine_quad','beine_hintere_kette','push_horizontal','pull_vertikal','push_vertikal','pull_horizontal']
+  },
+  {
+    id: 'ok', label: 'Tag 2', typ: 'Oberkörper', kurz: 'OK', icon: '💪',
+    muster: ['push_horizontal','pull_horizontal','push_vertikal','pull_vertikal','schulter_seite','brust_isoliert']
+  },
+  {
+    id: 'uk', label: 'Tag 3', typ: 'Unterkörper', kurz: 'UK', icon: '🦵',
+    muster: ['beine_quad','beine_hintere_kette','beine_glute','beinbeuger','beinstrecker','waden']
+  },
+  {
+    id: 'gk_b', label: 'Tag 4', typ: 'Ganzkörper B', kurz: 'GK-B', icon: '🔥',
+    muster: ['push_horizontal','pull_vertikal','beine_quad','beine_hintere_kette','push_vertikal','pull_horizontal']
+  }
+];
+
+const MUSTER_META = {
+  'beine_quad':          { name: 'Beine – Quaddominant',    icon: '🦵', pause: '2–3 Min. Pause (Verbundübung)' },
+  'beine_hintere_kette': { name: 'Beine – Hintere Kette',   icon: '🍑', pause: '2–3 Min. Pause (Verbundübung)' },
+  'beine_glute':         { name: 'Beine – Glutedominant',   icon: '🍑', pause: '2 Min. Pause' },
+  'beinbeuger':          { name: 'Beinbeuger',              icon: '🦵', pause: '1–2 Min. Pause (Isolation)' },
+  'beinstrecker':        { name: 'Beinstrecker',            icon: '🦵', pause: '1–2 Min. Pause (Isolation)' },
+  'waden':               { name: 'Waden',                   icon: '🦶', pause: '1–2 Min. Pause (Isolation)' },
+  'push_horizontal':     { name: 'Push Horizontal',         icon: '🏋️', pause: '2–3 Min. Pause (Verbundübung)' },
+  'push_vertikal':       { name: 'Push Vertikal',           icon: '🏋️', pause: '2–3 Min. Pause (Verbundübung)' },
+  'pull_horizontal':     { name: 'Pull Horizontal',         icon: '🏋️', pause: '2–3 Min. Pause (Verbundübung)' },
+  'pull_vertikal':       { name: 'Pull Vertikal',           icon: '🏋️', pause: '2–3 Min. Pause (Verbundübung)' },
+  'schulter_seite':      { name: 'Schulter – Seite',        icon: '💪', pause: '1–2 Min. Pause (Isolation)' },
+  'brust_isoliert':      { name: 'Brust – Isoliert',        icon: '💪', pause: '1–2 Min. Pause (Isolation)' },
+};
+
+// Exercise category images (Unsplash CDN)
+const EXERCISE_IMAGES = {
+  'push_horizontal':     'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=120&h=120&fit=crop&crop=center&q=70',
+  'pull_horizontal':     'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=120&h=120&fit=crop&crop=center&q=70',
+  'push_vertikal':       'https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=120&h=120&fit=crop&crop=center&q=70',
+  'pull_vertikal':       'https://images.unsplash.com/photo-1598971639058-fab3c3109a41?w=120&h=120&fit=crop&crop=center&q=70',
+  'schulter_seite':      'https://images.unsplash.com/photo-1581009137042-c552e485697a?w=120&h=120&fit=crop&crop=center&q=70',
+  'brust_isoliert':      'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=120&h=120&fit=crop&crop=center&q=70',
+  'beine_quad':          'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=120&h=120&fit=crop&crop=center&q=70',
+  'beine_hintere_kette': 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=120&h=120&fit=crop&crop=center&q=70',
+  'beine_glute':         'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=120&h=120&fit=crop&crop=center&q=70',
+  'beinbeuger':          'https://images.unsplash.com/photo-1550977616-efc580084ac5?w=120&h=120&fit=crop&crop=center&q=70',
+  'beinstrecker':        'https://images.unsplash.com/photo-1599058917212-d750089bc07e?w=120&h=120&fit=crop&crop=center&q=70',
+  'waden':               'https://images.unsplash.com/photo-1434682881908-b43d0467b798?w=120&h=120&fit=crop&crop=center&q=70',
+};
+
+// Equipment-Icons: kw=Körpergewicht, kh=Kurzhantel, bank=Bank, band=Widerstandsband, booty=Booty-Band, matte=Matte, mb=Medizinball, lh=Langhantel, maschine=Maschine, kabel=Kabelzug
+const UEBUNGEN = {
+  'push_horizontal': [
+    { name: 'KH-Bankdrücken flach',        equip: 'bank+kh',  eicon: '🪑🏋️', info: 'Flache Bank, KH 3–24 kg' },
+    { name: 'KH-Bankdrücken Schrägbank',   equip: 'bank+kh',  eicon: '🪑🏋️', info: 'Bank ~30°, toller Bruststretch' },
+    { name: 'Liegestütze im Defizit',      equip: 'kh',       eicon: '🏋️',   info: 'Hände auf KH, tiefer Stretch' },
+    { name: 'Liegestütze',                 equip: 'kw',       eicon: '🤸',    info: 'Körpergewicht, Standardvariante' },
+    { name: 'Liegestütze mit Band',        equip: 'band',     eicon: '🔗',    info: 'Band über den Rücken gespannt' },
+    { name: 'LH-Bankdrücken flach',        equip: 'lh',       eicon: '🏋️',   info: 'Schulterbreiter Griff, volle ROM' },
+    { name: 'LH-Bankdrücken Schrägbank',   equip: 'lh',       eicon: '🏋️',   info: 'Ca. 30°, obere Brust betonen' },
+    { name: 'Maschine Brustdrücken',       equip: 'maschine', eicon: '⚙️',    info: 'Gleichmäßige Spannung, gelenksschonend' },
+    { name: 'Kabelzug Fliegende',          equip: 'kabel',    eicon: '🔄',    info: 'Kabel auf mittlere Höhe, weiter Bogen' },
+  ],
+  'pull_horizontal': [
+    { name: 'KH-Rudern einarmig',          equip: 'bank+kh',  eicon: '🪑🏋️', info: 'Auf Bank abgestützt, volle ROM' },
+    { name: 'KH-Rudern vorgebeugt',        equip: 'kh',       eicon: '🏋️',   info: 'Oberkörper ~45°, beide Arme' },
+    { name: 'Rudern vorgebeugt mit Band',  equip: 'band',     eicon: '🔗',    info: 'Band unter Füßen fixieren' },
+    { name: 'LH-Rudern vorgebeugt',        equip: 'lh',       eicon: '🏋️',   info: 'Rücken gerade, Knie leicht gebeugt' },
+    { name: 'Kabelrudern sitzend',         equip: 'kabel',    eicon: '🔄',    info: 'Enger oder breiter Griff, Sitz aufrecht' },
+    { name: 'Maschine Rudern',             equip: 'maschine', eicon: '⚙️',    info: 'Brust anlehnen, volle ROM' },
+  ],
+  'push_vertikal': [
+    { name: 'KH-Schulterdrücken sitzend',  equip: 'bank+kh',  eicon: '🪑🏋️', info: 'Bank aufrecht, Ellbogen 90°' },
+    { name: 'KH-Schulterdrücken stehend',  equip: 'kh',       eicon: '🏋️',   info: 'Stehend, Core aktiv halten' },
+    { name: 'Schulterdrücken mit Band',    equip: 'band',     eicon: '🔗',    info: 'Band unter Füßen, sitzend' },
+    { name: 'LH-Schulterdrücken',          equip: 'lh',       eicon: '🏋️',   info: 'Stehend oder sitzend, Stange vor dem Kopf' },
+    { name: 'Maschine Schulterdrücken',    equip: 'maschine', eicon: '⚙️',    info: 'Geführte Bewegung, ideal für Einsteiger' },
+    { name: 'Kabelzug Schulterdrücken',    equip: 'kabel',    eicon: '🔄',    info: 'Kabel unten, einarmig für mehr Stabilität' },
+  ],
+  'pull_vertikal': [
+    { name: 'KH-Pullover auf Bank',        equip: 'bank+kh',  eicon: '🪑🏋️', info: 'Quer auf Bank, 1 KH beidarmig' },
+    { name: 'Latzug mit Band',             equip: 'band',     eicon: '🔗',    info: 'Band oben fixiert (Türrahmen)' },
+    { name: 'Latzug einarmig mit Band',    equip: 'band',     eicon: '🔗',    info: 'Abwechselnd, mehr Fokus' },
+    { name: 'Klimmzüge',                   equip: 'stange',   eicon: '🏗️',    info: 'Schulterbreiter Griff, Kinn über Stange' },
+    { name: 'Lat-Ziehen am Kabel',         equip: 'kabel',    eicon: '🔄',    info: 'Breiter oder enger Griff, Schulterblätter zusammen' },
+    { name: 'Maschine Lat-Ziehen',         equip: 'maschine', eicon: '⚙️',    info: 'Geführt, gute Muskelverbindung' },
+  ],
+  'schulter_seite': [
+    { name: 'KH-Seitheben',               equip: 'kh',       eicon: '🏋️',   info: 'Leichte KH, sauber ausführen' },
+    { name: 'Seitheben mit Band',          equip: 'band',     eicon: '🔗',    info: 'Band unter dem Fuß' },
+    { name: 'V-Raises mit Band',           equip: 'band',     eicon: '🔗',    info: 'Y-Form, nach vorne-oben heben' },
+    { name: 'KH-Seitheben sitzend',        equip: 'kh',       eicon: '🏋️',   info: 'Sitzend für mehr Isolation' },
+    { name: 'Kabelzug Seitheben',          equip: 'kabel',    eicon: '🔄',    info: 'Kabel auf Bodenhöhe, konstante Spannung' },
+  ],
+  'brust_isoliert': [
+    { name: 'KH-Fliegende flach',          equip: 'bank+kh',  eicon: '🪑🏋️', info: 'Flache Bank, weiter Bogen' },
+    { name: 'KH-Fliegende Schrägbank',     equip: 'bank+kh',  eicon: '🪑🏋️', info: 'Bank 30°, obere Brust' },
+    { name: 'Fliegende mit Band',          equip: 'band',     eicon: '🔗',    info: 'Band beidseitig fixiert (Türrahmen)' },
+    { name: 'Kabelzug Fliegende',          equip: 'kabel',    eicon: '🔄',    info: 'Kabel auf Brusthöhe, weiter Bogen' },
+    { name: 'Maschine Pec Deck',           equip: 'maschine', eicon: '⚙️',    info: 'Pec Deck, kontrolliert zusammenführen' },
+  ],
+  'beine_quad': [
+    { name: 'Goblet Squat mit KH',         equip: 'kh',       eicon: '🏋️',   info: 'KH vor der Brust, tief gehen' },
+    { name: 'Bulgarian Split Squat mit KH',equip: 'bank+kh',  eicon: '🪑🏋️', info: 'Hinterer Fuß auf Bank, KH halten' },
+    { name: 'Ausfallschritte mit KH',      equip: 'kh',       eicon: '🏋️',   info: 'KH in jeder Hand, alternierend' },
+    { name: 'Ausfallschritte mit Band',    equip: 'band',     eicon: '🔗',    info: 'Band über Schultern gespannt' },
+    { name: 'Kniebeugen (LH)',             equip: 'lh',       eicon: '🏋️',   info: 'Klassische Kniebeuge, Stange auf Schultern' },
+    { name: 'Beinpresse',                  equip: 'maschine', eicon: '⚙️',    info: 'Füße schulterbreit, tief in die Maschine' },
+    { name: 'Hack Squat / Hackenschmidt',  equip: 'maschine', eicon: '⚙️',    info: 'Kniebetont, hohe Quaddominanz' },
+    { name: 'Bulgarian Split Squat (LH)',  equip: 'lh',       eicon: '🏋️',   info: 'LH auf Schultern, hinten auf Bank' },
+  ],
+  'beine_hintere_kette': [
+    { name: 'Rumänisches KH-Kreuzheben',      equip: 'kh',       eicon: '🏋️',  info: 'Knie leicht gebeugt, KH nah am Körper' },
+    { name: 'Einbeiniges rum. KH-Kreuzheben', equip: 'kh',       eicon: '🏋️',  info: 'Balance + Kraft, 1 KH' },
+    { name: 'Rum. Kreuzheben mit Band',        equip: 'band',     eicon: '🔗',   info: 'Band unter Füßen, Spannung oben halten' },
+    { name: 'Good Mornings mit Band',          equip: 'band',     eicon: '🔗',   info: 'Band über Schultern, vorgebeugt' },
+    { name: 'Kreuzheben (LH)',                 equip: 'lh',       eicon: '🏋️',  info: 'Hip-Hinge, Rücken gerade, hüftbreit' },
+    { name: 'Rum. Kreuzheben (LH)',            equip: 'lh',       eicon: '🏋️',  info: 'Knie leicht gebeugt, Stange nah am Körper' },
+    { name: 'Maschine Beinbeuger liegend',     equip: 'maschine', eicon: '⚙️',   info: 'Liegend, kurze ROM oben am effektivsten' },
+  ],
+  'beine_glute': [
+    { name: 'Hip Thrust auf Bank mit KH',      equip: 'bank+kh',  eicon: '🪑🏋️', info: 'Schultern auf Bank, KH auf Hüfte' },
+    { name: 'Hip Thrust mit Booty-Band',        equip: 'booty',    eicon: '💜',   info: 'Band über Knie, höhere Reps' },
+    { name: 'Einbeinige Hip Thrust auf Bank',   equip: 'bank',     eicon: '🪑',   info: 'Intensiver, einbeinig' },
+    { name: 'Po Brücke mit Booty-Band',         equip: 'booty',    eicon: '💜',   info: 'Liegend auf Matte, Band über Knie' },
+    { name: 'Bulgarian Split Squat tief',       equip: 'bank+kh',  eicon: '🪑🏋️', info: 'Tiefer als normal, maximaler Stretch' },
+    { name: 'Hip Thrust (LH)',                  equip: 'lh',       eicon: '🏋️',  info: 'Stange auf Hüfte gepolstert, Bank' },
+    { name: 'Glute Kickback Maschine',          equip: 'maschine', eicon: '⚙️',   info: 'Kabelzug oder Maschine, kontrolliert' },
+  ],
+  'beinbeuger': [
+    { name: 'Nordic Curl',                 equip: 'matte',    eicon: '🧘',   info: 'Füße fixieren, langsam ablassen (negativ)' },
+    { name: 'Beinbeuger mit Band',         equip: 'band',     eicon: '🔗',   info: 'Liegend auf Matte, Band am Knöchel' },
+    { name: 'Medizinball Leg Curl',        equip: 'mb',       eicon: '⚽',   info: '6kg Ball zwischen Knöcheln klemmen, liegend' },
+    { name: 'Maschine Beinbeuger liegend', equip: 'maschine', eicon: '⚙️',   info: 'Liegend, langsam und kontrolliert' },
+    { name: 'Maschine Beinbeuger sitzend', equip: 'maschine', eicon: '⚙️',   info: 'Sitzend, gute Muskelverbindung' },
+  ],
+  'beinstrecker': [
+    { name: 'Beinstrecker mit Band',          equip: 'band',     eicon: '🔗',  info: 'Sitzend, Band am Knöchel fixiert' },
+    { name: 'Reverse Nordic Curl mit Band',   equip: 'band',     eicon: '🔗',  info: 'Knie auf Matte, Band als Hilfe zurücklehnen' },
+    { name: 'Einbeinige Kniebeuge (Negativ)', equip: 'kw',       eicon: '🤸',  info: 'Körpergewicht, langsam runter' },
+    { name: 'Maschine Beinstrecker',          equip: 'maschine', eicon: '⚙️',  info: 'Sitzend, oben kurz halten für bessere Kontraktion' },
+  ],
+  'waden': [
+    { name: 'KH-Wadenheben einbeinig',     equip: 'kh',       eicon: '🏋️',  info: 'KH in einer Hand, auf Zehenspitzen' },
+    { name: 'Wadenheben mit Band stehend', equip: 'band',     eicon: '🔗',   info: 'Band unter Füßen, Spannung konstant' },
+    { name: 'Wadenheben auf Stufe',        equip: 'kw',       eicon: '🤸',   info: 'Stufe für mehr ROM, langsam und kontrolliert' },
+    { name: 'Wadenpresse an Beinpresse',   equip: 'maschine', eicon: '⚙️',   info: 'Füße auf unterem Rand der Plattform' },
+    { name: 'Maschine Wadenheben',         equip: 'maschine', eicon: '⚙️',   info: 'Sitzend oder stehend, volle ROM' },
+  ],
+};
+
+// ── State ────────────────────────────────────────────────────────
+let currentWeek = 1;
+let selectedDay = 0;  // index 0-3
+let activeSession = null;  // { id, tag_id, datum }
+let sessionSets = {};  // { muster_id: { gewicht, wdh, done } }
+let prData = {};  // { uebung: gewicht_kg }
+let lastSessionData = {};  // { uebung: { gewicht_kg, wiederholungen } }
+let userId = null;
+let sessionStartTime = null;
+let durationInterval = null;
+let lastSessionVolume = 0;
+let lastSessionDuration = null;
+
+function formatDuration(ms) {
+  const s = Math.floor(ms / 1000);
+  const m = Math.floor(s / 60);
+  return `${m}:${(s % 60).toString().padStart(2, '0')}`;
+}
+
+function getExerciseInfo(musterId, uebungName) {
+  return (UEBUNGEN[musterId] || []).find(u => u.name === uebungName)?.info || null;
+}
+
+// LocalStorage keys
+const LS_SELECTIONS = 'tc_exercise_sel';  // { muster_id: uebungName }
+const LS_PLAN = 'tc_training_plan';
+let exerciseSelections = {};
+let currentPlanOrt = 'homefit';
+
+function getUebungenForPlan(musterId) {
+  const all = UEBUNGEN[musterId] || [];
+  if (currentPlanOrt === 'gym') return all;
+  const gymOnly = ['lh', 'maschine', 'kabel', 'smith'];
+  return all.filter(u => !gymOnly.some(g => u.equip.includes(g)));
+}
+
+function getDefaultExercise(musterId) {
+  const uebungen = getUebungenForPlan(musterId);
+  if (!uebungen.length) return null;
+  const equip = obState.equipment || ['kw'];
+
+  if (currentPlanOrt === 'gym') {
+    const isCompound = COMPOUND_MUSTER.includes(musterId) || MEDIUM_MUSTER.includes(musterId);
+    if (isCompound) {
+      return (uebungen.find(u => u.equip === 'lh')
+           || uebungen.find(u => u.equip === 'kabel')
+           || uebungen[0]).name;
+    }
+    return (uebungen.find(u => u.equip === 'kabel')
+         || uebungen.find(u => u.equip === 'maschine')
+         || uebungen[0]).name;
+  }
+
+  // Homefit: score by what equipment the user has
+  const hasKh    = equip.includes('kh');
+  const hasBank  = equip.includes('bank');
+  const hasBand  = equip.includes('band');
+  const hasStange= equip.includes('stange');
+  const hasMb    = equip.includes('mb');
+  const hasBooty = equip.includes('booty') || equip.includes('band');
+
+  function score(u) {
+    switch (u.equip) {
+      case 'bank+kh': return (hasKh && hasBank) ? 100 : -1;
+      case 'kh':      return hasKh  ? 90 : -1;
+      case 'bank':    return hasBank ? 80 : -1;
+      case 'stange':  return hasStange ? 75 : -1;
+      case 'mb':      return hasMb  ? 70 : -1;
+      case 'booty':   return hasBooty ? 65 : -1;
+      case 'band':    return hasBand ? 60 : -1;
+      case 'matte':   return 50;
+      case 'kw':      return 40;
+      default:        return -1;
+    }
+  }
+
+  const best = uebungen
+    .map(u => ({ u, s: score(u) }))
+    .filter(x => x.s >= 0)
+    .sort((a, b) => b.s - a.s)[0];
+  return best?.u.name || uebungen[0]?.name || null;
+}
+
+function autoAssignDefaults() {
+  let changed = false;
+  TAGE.forEach(tag => {
+    tag.muster.forEach(musterId => {
+      if (!exerciseSelections[musterId]) {
+        const def = getDefaultExercise(musterId);
+        if (def) { exerciseSelections[musterId] = def; changed = true; }
+      }
+    });
+  });
+  if (changed) localStorage.setItem(LS_SELECTIONS, JSON.stringify(exerciseSelections));
+}
+
+// ── Onboarding ───────────────────────────────────────────────────
+let obState = { gender: null, ort: null, level: null, equipment: ['kw'], tage: null, planId: null };
+
+function showOnboarding() {
+  // Reset equipment checks to default (kw only checked)
+  document.querySelectorAll('#equip-checks .ob-check-item').forEach(el => {
+    const isKw = el.dataset.val === 'kw';
+    el.classList.toggle('checked', isKw);
+    const box = el.querySelector('.ob-check-box');
+    if (box) box.textContent = isKw ? '✓' : '';
+  });
+
+  // Pre-select gender from profile
+  if (obState.gender) {
+    const genderEl = document.querySelector(`.ob-option[data-val="${obState.gender}"]`);
+    if (genderEl) {
+      genderEl.closest('.ob-options')?.querySelectorAll('.ob-option').forEach(o => o.classList.remove('selected'));
+      genderEl.classList.add('selected');
+      const nextBtn = document.getElementById('ob-next-1');
+      if (nextBtn) nextBtn.disabled = false;
+    }
+  }
+
+  document.getElementById('ob-overlay').classList.remove('hidden');
+  obGoStep(1);
+}
+
+function hideOnboarding() {
+  document.getElementById('ob-overlay').classList.add('hidden');
+}
+
+function renderObProgress(activeStep) {
+  const prog = document.getElementById('ob-progress');
+  prog.innerHTML = '';
+  for (let i = 1; i <= 5; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'ob-step-dot' + (i <= activeStep ? ' done' : '');
+    prog.appendChild(dot);
+  }
+}
+
+function obGoStep(step) {
+  document.querySelectorAll('.ob-step').forEach(s => s.classList.remove('active'));
+  let stepId;
+  if (step === 2) {
+    stepId = obState.ort === 'gym' ? 'ob-step-2a' : 'ob-step-2b';
+  } else {
+    stepId = `ob-step-${step}`;
+  }
+  const el = document.getElementById(stepId);
+  if (el) el.classList.add('active');
+  renderObProgress(step);
+  // Always refresh plan result when showing step 5
+  if (step === 5 && obState.planId) {
+    const p5 = PLAN_DB.find(p => p.id === obState.planId);
+    if (p5) showPlanResult(p5);
+  }
+}
+
+function obSelect(step, field, el) {
+  const parent = el.closest('.ob-options');
+  if (parent) parent.querySelectorAll('.ob-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  obState[field] = el.dataset.val;
+  // Enable next buttons for this step (handles 2a/2b)
+  [`ob-next-${step}`, `ob-next-${step}a`, `ob-next-${step}b`].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) btn.disabled = false;
+  });
+}
+
+function obNext(step) {
+  if (step === 1) {
+    obGoStep(2);
+  } else if (step === 2) {
+    if (obState.ort === 'homefit') {
+      obState.equipment = [...document.querySelectorAll('#equip-checks .ob-check-item.checked')].map(c => c.dataset.val);
+      if (!obState.equipment.includes('kw')) obState.equipment.push('kw');
+    }
+    obGoStep(3);
+  } else if (step === 3) {
+    const matches = findMatchingPlans();
+    if (matches.length > 1) {
+      renderPlanOptions(matches);
+      obGoStep(4);
+    } else {
+      const plan = matches[0] || findClosestPlan();
+      if (plan) { obState.planId = plan.id; showPlanResult(plan); }
+      obGoStep(5);
+    }
+  } else if (step === 4) {
+    const plan = PLAN_DB.find(p => p.id === obState.planId);
+    if (plan) showPlanResult(plan);
+    obGoStep(5);
+  }
+}
+
+function obBack(step) {
+  if (step <= 2) { obGoStep(1); }
+  else if (step === 3) { obGoStep(2); }
+  else if (step === 4) { obGoStep(3); }
+  else if (step === 5) {
+    const matches = findMatchingPlans();
+    obGoStep(matches.length > 1 ? 4 : 3);
+  }
+}
+
+function obToggleCheck(el) {
+  el.classList.toggle('checked');
+  const box = el.querySelector('.ob-check-box');
+  if (box) box.textContent = el.classList.contains('checked') ? '✓' : '';
+}
+
+function findMatchingPlans() {
+  const gender = obState.gender || 'maenner';
+  const tage = parseInt(obState.tage);
+  return PLAN_DB.filter(p => {
+    if (p.gender !== gender) return false;
+    if (p.ort !== obState.ort) return false;
+    if (p.tage !== tage) return false;
+    if (obState.ort === 'gym' && p.level !== obState.level) return false;
+    return true;
+  });
+}
+
+function findClosestPlan() {
+  const gender = obState.gender || 'maenner';
+  const tage = parseInt(obState.tage) || 3;
+  let plans = PLAN_DB.filter(p => p.gender === gender && p.ort === obState.ort);
+  if (!plans.length) plans = PLAN_DB.filter(p => p.gender === gender);
+  plans.sort((a, b) => Math.abs(a.tage - tage) - Math.abs(b.tage - tage));
+  return plans[0] || null;
+}
+
+function renderPlanOptions(plans) {
+  document.getElementById('plan-options').innerHTML = plans.map(p =>
+    `<div class="plan-opt" data-id="${p.id}" onclick="obSelectPlan(this)">
+      <div class="plan-opt-title">${p.name}</div>
+      <div class="plan-opt-sub">${p.split}</div>
+    </div>`
+  ).join('');
+  document.getElementById('ob-next-4').disabled = true;
+  obState.planId = null;
+}
+
+function obSelectPlan(el) {
+  document.querySelectorAll('.plan-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  obState.planId = el.dataset.id;
+  document.getElementById('ob-next-4').disabled = false;
+}
+
+function showPlanResult(plan) {
+  document.getElementById('plan-result-name').textContent = plan.name;
+  document.getElementById('plan-result-sub').textContent =
+    `${plan.tage}×/Woche · ${plan.split} · ${plan.ort === 'gym' ? 'Fitnessstudio' : 'Homefit'}`;
+
+  // Show training days overview
+  const daysEl = document.getElementById('plan-result-days');
+  if (daysEl && plan.tagKonfig) {
+    daysEl.innerHTML = plan.tagKonfig.map((konfigId, i) => {
+      const k = ALLE_TAGE_KONFIGS[konfigId];
+      return k ? `<div style="flex:1;text-align:center;background:rgba(232,163,23,.1);border:1px solid rgba(232,163,23,.25);border-radius:10px;padding:8px 4px">
+        <div style="font-size:18px">${k.icon}</div>
+        <div style="font-size:10px;font-weight:700;margin-top:3px">${k.kurz}</div>
+      </div>` : '';
+    }).join('');
+  }
+}
+
+function confirmPlan() {
+  if (!obState.planId) return;
+  localStorage.setItem(LS_PLAN, obState.planId);
+  localStorage.setItem('tc_equipment', JSON.stringify(obState.equipment || ['kw']));
+  applyPlan(obState.planId);
+  hideOnboarding();
+  renderPlanBanner(obState.planId);
+  selectedDay = 0;
+  renderDayTabs();
+  renderWorkout();
+  showToast('Trainingsplan gespeichert! 💪', 'success');
+}
+
+function resetPlan() {
+  if (!confirm('Plan wirklich wechseln? Deine Übungsauswahl wird zurückgesetzt.')) return;
+  localStorage.removeItem(LS_PLAN);
+  localStorage.removeItem(LS_SELECTIONS);
+  exerciseSelections = {};
+  obState = { gender: obState.gender, ort: null, level: null, equipment: ['kw'], tage: null, planId: null };
+  document.getElementById('plan-banner').style.display = 'none';
+  showOnboarding();
+}
+
+function applyPlan(planId) {
+  const plan = PLAN_DB.find(p => p.id === planId);
+  if (!plan) return;
+  currentPlanOrt = plan.ort;
+  TAGE = plan.tagKonfig.map((konfigId, i) => {
+    const k = ALLE_TAGE_KONFIGS[konfigId];
+    if (!k) return null;
+    return { id: konfigId, label: `Tag ${i + 1}`, typ: k.typ, kurz: k.kurz, icon: k.icon, muster: k.muster };
+  }).filter(Boolean);
+  autoAssignDefaults();
+}
+
+function renderPlanBanner(planId) {
+  const plan = PLAN_DB.find(p => p.id === planId);
+  if (!plan) return;
+  document.getElementById('plan-banner-name').textContent = plan.name;
+  document.getElementById('plan-banner-sub').textContent =
+    `${plan.tage}×/Woche · ${plan.ort === 'gym' ? 'Studio' : 'Homefit'}`;
+  document.getElementById('plan-banner').style.display = 'flex';
+  // Update header label
+  const lbl = document.getElementById('header-plan-label')
+  if (lbl) lbl.textContent = `${plan.split} · ${plan.ort === 'gym' ? 'Studio' : 'Homefit'} · ${plan.tage}×/Woche`
+}
+
+// ── Helpers ──────────────────────────────────────────────────────
+function calcWeek(startdatum) {
+  if (!startdatum) return 1;
+  const start = new Date(startdatum);
+  const now = new Date();
+  const diffDays = Math.floor((now - start) / (1000 * 60 * 60 * 24));
+  if (diffDays < 0) return 1;
+  return Math.min(12, Math.max(1, Math.floor(diffDays / 7) + 1));
+}
+
+function getSätze(weekNr, movIdx) {
+  if (weekNr === 7) return 2;  // Deload: echtes halbes Volumen (Peak 4 → Deload 2)
+  if (weekNr > 12) weekNr = 12;
+  const phase = weekNr <= 6 ? weekNr - 1 : weekNr - 7;
+  return movIdx < phase ? 4 : 3;
+}
+
+// RIR progressiv: Einsteiger lernen Technik, dann steigend bis zum Peak
+function getRIR(weekNr) {
+  if (weekNr === 7) return 4;   // Deload — leicht, regenerativ
+  if (weekNr <= 2)  return 3;   // Einführung — Technik fokussieren
+  if (weekNr <= 4)  return 2;   // Aufbau — 2 Wdh. Reserve
+  if (weekNr <= 6)  return 1;   // Intensivierung — 1 Wdh. Reserve
+  if (weekNr <= 9)  return 2;   // Phase 2 Einführung — wieder aufbauen
+  if (weekNr <= 11) return 1;   // Phase 2 Intensivierung
+  return 0;                      // Woche 12 — Peak, alles geben
+}
+
+// Rep-Ranges nach Übungstyp
+const COMPOUND_MUSTER   = ['push_horizontal','pull_horizontal','push_vertikal','pull_vertikal','beine_quad','beine_hintere_kette'];
+const MEDIUM_MUSTER     = ['beine_glute','beinbeuger','beinstrecker'];
+// isolation: schulter_seite, brust_isoliert, waden
+
+function getRepRange(musterId) {
+  if (COMPOUND_MUSTER.includes(musterId)) return '6–12';
+  if (MEDIUM_MUSTER.includes(musterId))   return '8–15';
+  return '12–20';
+}
+
+function getRIRLabel(rir) {
+  if (rir === 0) return 'RIR 0 — bis zum Muskelversagen';
+  if (rir === 1) return 'RIR 1 — 1 Wdh. vor Versagen';
+  if (rir === 2) return 'RIR 2 — 2 Wdh. vor Versagen';
+  if (rir === 3) return 'RIR 3 — Technik & Gewöhnung';
+  return 'RIR 4 — regenerativ, leicht';
+}
+
+function getWeekName(w) {
+  if (w === 7) return 'Woche 7 — Deload';
+  if (w <= 6)  return `Woche ${w} — Phase 1`;
+  return `Woche ${w} — Phase 2`;
+}
+function getWeekSub(w) {
+  const rir = getRIR(w);
+  if (w === 7) return 'Regenerationswoche — 2 Sätze, gleiches Gewicht, RIR 4';
+  if (w === 1) return `Einführungswoche · 3 Sätze · ${getRIRLabel(rir)}`;
+  if (w <= 6)  return `Volumen steigt progressiv · bis zu 4 Sätze · ${getRIRLabel(rir)}`;
+  if (w === 12) return `Woche 12 — Peak · ${getRIRLabel(rir)}`;
+  return `Phase 2 · Sätze steigen an · ${getRIRLabel(rir)}`;
+}
+
+function getToday() {
+  return new Date().toISOString().split('T')[0];
+}
+
+// ── Pause Timer ──────────────────────────────────────────────────
+let timerInterval = null;
+let timerRemaining = 0;
+let timerTotal = 0;
+
+function startPauseTimer(seconds, hint) {
+  clearInterval(timerInterval);
+  timerRemaining = seconds;
+  timerTotal = seconds;
+  document.getElementById('timer-hint').textContent = hint || 'Erhole dich';
+  updateTimerDisplay();
+  document.getElementById('pause-timer').classList.add('visible');
+  timerInterval = setInterval(() => {
+    timerRemaining--;
+    updateTimerDisplay();
+    if (timerRemaining <= 0) {
+      clearInterval(timerInterval);
+      document.getElementById('pause-timer').classList.remove('visible');
+      if (navigator.vibrate) navigator.vibrate([150, 80, 150]);
+      showToast('💪 Nächster Satz!', 'success');
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const t = Math.max(0, timerRemaining);
+  const min = Math.floor(t / 60);
+  const sec = t % 60;
+  const el = document.getElementById('timer-display');
+  if (el) {
+    el.textContent = `${min}:${sec.toString().padStart(2,'0')}`;
+    el.classList.toggle('urgent', timerRemaining <= 10 && timerRemaining > 0);
+  }
+}
+
+function skipTimer() {
+  clearInterval(timerInterval);
+  document.getElementById('pause-timer').classList.remove('visible');
+}
+
+function adjustTimer(delta) {
+  timerRemaining = Math.max(5, timerRemaining + delta);
+  updateTimerDisplay();
+}
+
+// ── Init ─────────────────────────────────────────────────────────
+async function init() {
+  const ctx = await requireProfile();
+  if (!ctx) return;
+  const { user, profile } = ctx;
+  userId = user.id;
+
+  exerciseSelections = JSON.parse(localStorage.getItem(LS_SELECTIONS) || '{}');
+  currentWeek = calcWeek(profile.startdatum);
+
+  // Plan check
+  const savedPlanId = localStorage.getItem(LS_PLAN);
+  const rawGender = profile.geschlecht || 'maennlich';
+  obState.gender = (rawGender === 'weiblich' || rawGender === 'frauen') ? 'frauen' : 'maenner';
+  const savedEquip = localStorage.getItem('tc_equipment');
+  if (savedEquip) try { obState.equipment = JSON.parse(savedEquip); } catch(e) {}
+  if (savedPlanId) applyPlan(savedPlanId);
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('main').style.display = 'block';
+
+  // Topbar day
+  const dayNrTrain = calcDayNr ? calcDayNr(profile.startdatum) : 0
+  const topDayEl = document.getElementById('topbar-day-train')
+  if (topDayEl) topDayEl.textContent = dayNrTrain > 0 ? `TAG ${dayNrTrain} 🔥` : 'VORBEREITUNG'
+
+  // Plan label in header
+  const planLabel = document.getElementById('header-plan-label')
+  if (planLabel) planLabel.textContent = savedPlanId
+    ? (PLAN_DB.find(p=>p.id===savedPlanId)?.split || 'Training')
+    : 'Training'
+
+  // Week badge + progress fill
+  document.getElementById('week-badge').textContent = 'WOCHE ' + currentWeek + ' VON 12';
+  const progFill = document.getElementById('week-prog-fill')
+  if (progFill) progFill.style.width = Math.round((currentWeek / 12) * 100) + '%'
+  document.getElementById('week-title').textContent = getWeekName(currentWeek);
+  document.getElementById('week-sub').textContent = getWeekSub(currentWeek);
+  if (currentWeek === 7) {
+    document.getElementById('deload-pill').style.display = 'block';
+    document.getElementById('deload-banner').style.display = 'flex';
+  }
+
+  // Week dots
+  const dotsEl = document.getElementById('week-dots');
+  for (let w = 1; w <= 12; w++) {
+    const dot = document.createElement('div');
+    dot.className = 'week-dot';
+    if (w === 7) dot.classList.add('deload');
+    if (w < currentWeek) dot.classList.add('done');
+    if (w === currentWeek) dot.classList.add('current');
+    dot.textContent = w === 7 ? 'D' : w;
+    dotsEl.appendChild(dot);
+  }
+
+  // Load PRs + last session data in parallel
+  await Promise.all([loadPRs(), loadLastSessionData()]);
+
+  // Check active session today
+  await checkTodaySession();
+
+  // Show plan banner or launch onboarding
+  if (savedPlanId) {
+    renderPlanBanner(savedPlanId);
+  } else {
+    showOnboarding();
+  }
+
+  // Auto-select today's training day
+  const dow = new Date().getDay(); // 0=Sun, 1=Mon...
+  const dayMap = { 1:0, 2:1, 3:2, 4:3, 5:0, 6:1, 0:2 };
+  selectedDay = Math.min(dayMap[dow] ?? 0, TAGE.length - 1);
+  renderDayTabs();
+  renderWorkout();
+}
+
+async function loadPRs() {
+  try {
+    const { data } = await sb
+      .from('personal_records')
+      .select('uebung, gewicht_kg')
+      .eq('user_id', userId);
+    if (data) data.forEach(r => prData[r.uebung] = r.gewicht_kg);
+  } catch(e) {}
+}
+
+async function loadLastSessionData() {
+  try {
+    const { data: sessions } = await sb
+      .from('training_sessions')
+      .select('id, datum')
+      .eq('user_id', userId)
+      .lt('datum', getToday())
+      .order('datum', { ascending: false })
+      .limit(8);
+    if (!sessions?.length) return;
+
+    const { data: sets } = await sb
+      .from('training_sets')
+      .select('session_id, uebung, gewicht_kg, wiederholungen')
+      .in('session_id', sessions.map(s => s.id));
+    if (!sets?.length) return;
+
+    // Map session_id → date for sorting
+    const dateMap = {};
+    sessions.forEach(s => { dateMap[s.id] = s.datum; });
+    // Sort by date desc, take first occurrence per exercise
+    const sorted = [...sets].sort((a, b) =>
+      (dateMap[b.session_id] || '').localeCompare(dateMap[a.session_id] || ''));
+    sorted.forEach(s => {
+      if (!lastSessionData[s.uebung] && s.gewicht_kg > 0) {
+        lastSessionData[s.uebung] = { gewicht_kg: s.gewicht_kg, wiederholungen: s.wiederholungen };
+      }
+    });
+  } catch(e) {}
+}
+
+async function checkTodaySession() {
+  try {
+    const { data } = await sb
+      .from('training_sessions')
+      .select('id, plan_name')
+      .eq('user_id', userId)
+      .eq('datum', getToday())
+      .limit(1);
+    if (data && data.length) {
+      activeSession = { id: data[0].id, tag_id: data[0].plan_name };
+    }
+  } catch(e) {}
+}
+
+// ── Day Tabs ─────────────────────────────────────────────────────
+function getTagIconMS(tag) {
+  const k = (tag.kurz || '').toLowerCase()
+  if (k.includes('pause') || k.includes('rest')) return 'hotel'
+  if (k.includes('push')) return 'arrow_upward'
+  if (k.includes('pull')) return 'arrow_downward'
+  if (k.includes('uk') || k.includes('bein') || k.includes('leg')) return 'directions_run'
+  if (k.includes('ok') || k.includes('ober')) return 'horizontal_distribute'
+  return 'fitness_center'
+}
+
+function renderDayTabs() {
+  const el = document.getElementById('day-tabs')
+  el.innerHTML = ''
+  TAGE.forEach((tag, i) => {
+    const isActive = i === selectedDay
+    const isRest = (tag.kurz || '').toLowerCase().includes('pause') || (tag.typ || '').toLowerCase().includes('pause')
+    const icon = getTagIconMS(tag)
+    const div = document.createElement('div')
+    div.className = 'day-card-stitch' + (isActive ? ' active' : '') + (isRest ? ' rest-day' : '')
+    div.innerHTML = `
+      ${isActive ? '<div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,197,108,0.12),transparent);pointer-events:none"></div>' : ''}
+      <span class="material-symbols-outlined" style="font-size:26px;color:${isActive?'#ffc56c':'#aca9b7'}">${icon}</span>
+      <div>
+        <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:${isActive?'rgba(255,197,108,0.8)':'#aca9b7'};margin-bottom:2px">${tag.label}</p>
+        <p style="font-family:'Space Grotesk',sans-serif;font-weight:900;font-style:italic;font-size:14px;line-height:1.1;text-transform:uppercase;color:#e4e1ef">${tag.kurz}</p>
+      </div>`
+    div.onclick = () => { selectedDay = i; renderDayTabs(); renderWorkout() }
+    el.appendChild(div)
+  })
+}
+
+// ── Workout Content ───────────────────────────────────────────────
+function renderWorkout() {
+  const el = document.getElementById('workout-content');
+  const tag = TAGE[selectedDay];
+  const todayTag = activeSession?.tag_id;
+  const isThisDayActive = activeSession && todayTag === tag.id;
+  const isDone = isThisDayActive && sessionSets._completed;
+
+  let html = '';
+
+  // Done state
+  if (isDone) {
+    html += `<div class="session-done-card">
+      <div class="session-done-icon">🎉</div>
+      <div class="session-done-title">Training abgeschlossen!</div>
+      <div style="font-size:13px;color:var(--text2);margin-top:4px">Gut gemacht — alle Sätze erledigt</div>
+      ${lastSessionVolume > 0 || lastSessionDuration ? `<div style="display:flex;justify-content:center;gap:0;margin-top:14px;border-top:1px solid rgba(34,197,94,0.15);padding-top:14px">
+        ${lastSessionVolume > 0 ? `<div class="volume-stat"><div class="volume-stat-num" style="color:var(--green2)">${Math.round(lastSessionVolume).toLocaleString('de-DE')} kg</div><div class="volume-stat-lbl">Volumen</div></div>` : ''}
+        ${lastSessionDuration ? `<div class="volume-stat"><div class="volume-stat-num" style="color:var(--accent)">${lastSessionDuration}</div><div class="volume-stat-lbl">Dauer</div></div>` : ''}
+      </div>` : ''}
+    </div>`;
+  }
+
+  // Start button if no active session today
+  if (!activeSession && !isDone) {
+    html += `<div style="border-radius:20px;padding:20px;margin-bottom:16px;background:linear-gradient(135deg,rgba(255,197,108,0.05),rgba(0,0,0,0));border:1px solid rgba(255,197,108,0.12)">
+      <p style="font-size:10px;color:#aca9b7;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px">Bereit für heute?</p>
+      <p style="font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:900;font-style:italic;text-transform:uppercase;margin-bottom:2px">${tag.typ}</p>
+      <p style="font-size:12px;color:#aca9b7;margin-bottom:16px">${tag.muster.length} Bewegungsmuster · ${getRIRLabel(getRIR(currentWeek))}</p>
+      <button onclick="startSession('${tag.id}')" style="width:100%;padding:18px 24px;border-radius:16px;border:none;background:linear-gradient(135deg,#ffc56c,#cb9743);color:#321f00;font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:0.05em;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 8px 32px rgba(255,197,108,0.25);transition:transform 0.15s" onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'">
+        <span class="material-symbols-outlined" style="font-size:22px;font-variation-settings:'FILL' 1">rocket_launch</span>
+        Training starten
+      </button>
+    </div>`;
+  } else if (activeSession && todayTag !== tag.id && !isDone) {
+    // Different day was done
+    html += `<div class="card" style="border-color:var(--gold-dim);background:var(--gold-dim);margin-bottom:16px;display:flex;align-items:center;gap:12px">
+      <span style="font-size:24px">⚡</span>
+      <div>
+        <div style="font-weight:700">Heute schon trainiert</div>
+        <div style="font-size:12px;color:var(--text2)">Eine Session wurde bereits für heute gespeichert</div>
+      </div>
+    </div>`;
+  }
+
+  // Session duration display
+  if (isThisDayActive && !isDone) {
+    html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <span class="duration-live">⏱ <span id="session-duration">${sessionStartTime ? formatDuration(Date.now() - sessionStartTime) : '0:00'}</span></span>
+      <span style="font-size:12px;color:var(--text2);font-weight:600">${tag.typ} · läuft</span>
+    </div>`;
+  }
+
+  // RIR info — dynamisch nach Woche
+  const rir = getRIR(currentWeek);
+  const rirDesc = rir === 0 ? 'bis zum Muskelversagen'
+    : rir === 1 ? '1 Wiederholung vor dem Versagen'
+    : rir === 2 ? '2 Wiederholungen vor dem Versagen'
+    : rir === 3 ? 'Technik fokussieren — 3 Wdh. Reserve'
+    : 'leicht und regenerativ — 4 Wdh. Reserve';
+  html += `<div class="info-hint" style="margin-bottom:12px">
+    <strong>${getRIRLabel(rir)}</strong> — ${rirDesc}<br>
+    <span style="color:var(--text2)">Verbund: 6–12 Wdh. · Semi-Verbund: 8–15 · Isolation: 12–20</span><br>
+    <span style="color:var(--text2)">Verbundpause: 2–3 Min. · Isolation: 1–2 Min.</span>
+  </div>`;
+
+  // Movement cards
+  tag.muster.forEach((musterId, movIdx) => {
+    const sets = getSätze(currentWeek, movIdx);
+    const meta = MUSTER_META[musterId];
+    const uebungen = getUebungenForPlan(musterId);
+    const selectedUebung = exerciseSelections[musterId] || null;
+    const isTraining = isThisDayActive && !isDone;
+
+    html += renderMovementCard(musterId, meta, uebungen, sets, selectedUebung, isTraining, movIdx);
+  });
+
+  // End training button
+  if (isThisDayActive && !isDone) {
+    html += `<button class="end-workout-btn" onclick="endSession()">✅ Training beenden &amp; speichern</button>
+    <button onclick="cancelSession()" style="width:100%;padding:12px;border-radius:14px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px;font-family:inherit">Training abbrechen</button>`;
+  }
+
+  el.innerHTML = html;
+
+  // Attach set checkbox events
+  el.querySelectorAll('.set-done-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const isNowDone = !this.classList.contains('done');
+      this.classList.toggle('done', isNowDone);
+      this.textContent = isNowDone ? '✓' : '○';
+      if (!sessionSets[this.dataset.muster]) sessionSets[this.dataset.muster] = {};
+      if (!sessionSets[this.dataset.muster][this.dataset.satz]) sessionSets[this.dataset.muster][this.dataset.satz] = {};
+      sessionSets[this.dataset.muster][this.dataset.satz].done = isNowDone;
+      // Auto-start pause timer
+      if (isNowDone && activeSession) {
+        const meta = MUSTER_META[this.dataset.muster];
+        const isCompound = meta?.pause?.includes('Verbund');
+        startPauseTimer(isCompound ? 120 : 60, meta?.pause || 'Erhole dich');
+      }
+    });
+  });
+
+  // Collapse/expand movement cards
+  el.querySelectorAll('.movement-header').forEach(h => {
+    h.addEventListener('click', function() {
+      const body = this.nextElementSibling;
+      const chev = this.querySelector('.movement-chevron');
+      if (!body || !body.classList.contains('movement-body')) return;
+      const isOpen = body.style.display !== 'none';
+      body.style.display = isOpen ? 'none' : 'block';
+      chev?.classList.toggle('open', !isOpen);
+    });
+  });
+}
+
+function renderMovementCard(musterId, meta, uebungen, sets, selectedUebung, isTraining, movIdx) {
+  const repRange = getRepRange(musterId);
+  const rir = getRIR(currentWeek);
+  const setLabel = `${sets} × ${repRange} · RIR ${rir}`;
+
+  let body = '';
+
+  if (!selectedUebung) {
+    // Exercise selection
+    body += `<div class="exercise-select-label">Wähle deine Übung (bleibt für 90 Tage):</div>`;
+    uebungen.forEach(u => {
+      const catImg = EXERCISE_IMAGES[musterId];
+      const thumbHtml = catImg
+        ? `<div style="width:44px;height:44px;border-radius:10px;overflow:hidden;flex-shrink:0;background:var(--card-alt)"><img src="${catImg}" style="width:100%;height:100%;object-fit:cover" loading="lazy" onerror="this.parentElement.innerHTML='${u.eicon}'"></div>`
+        : `<span class="exercise-equip">${u.eicon}</span>`;
+      body += `<div class="exercise-btn" onclick="selectExercise('${musterId}', '${escStr(u.name)}')">
+        ${thumbHtml}
+        <div style="flex:1">
+          <div class="exercise-btn-name">${u.name}</div>
+          <div class="exercise-btn-info">${u.info}</div>
+        </div>
+      </div>`;
+    });
+    body += `<div class="info-hint">💡 Wähle deine Übung und bleib die ganze Challenge dabei — Konsistenz ist der Schlüssel!</div>`;
+  } else {
+    // Selected exercise with PR info
+    const prWeight = prData[selectedUebung];
+    const prHtml = prWeight ? `<div class="pr-badge">🏆 PR: ${prWeight} kg</div>` : '';
+    body += `<div style="margin-bottom:8px">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:4px">Ausgewählte Übung:</div>
+      <div style="font-size:14px;font-weight:700;color:var(--accent)">${selectedUebung}</div>
+      ${prHtml}
+    </div>`;
+    body += `<button onclick="changeExercise('${musterId}')" style="background:transparent;border:1px solid var(--border);color:var(--text2);padding:4px 10px;border-radius:8px;font-size:12px;cursor:pointer;margin-bottom:10px">Übung ändern</button>`;
+
+    if (isTraining) {
+      // Image banner
+      if (imgUrl) body += `<img src="${imgUrl}" class="ex-img-banner" loading="lazy" onerror="this.style.display='none'" alt="">`;
+      // Technik-Cue
+      const cue = getExerciseInfo(musterId, selectedUebung);
+      if (cue) body += `<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 10px;background:rgba(137,206,255,0.05);border:1px solid rgba(137,206,255,0.12);border-radius:10px;margin-bottom:10px"><span style="flex-shrink:0">💡</span><span style="font-size:12px;color:#89ceff;line-height:1.5">${cue}</span></div>`;
+      // Progressive overload: last session hint
+      const last = lastSessionData[selectedUebung];
+      if (last) {
+        const pr = prData[selectedUebung];
+        const isNewPR = pr && last.gewicht_kg >= pr;
+        const suggest = parseFloat((last.gewicht_kg + 2.5).toFixed(1));
+        body += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 10px;background:rgba(232,163,23,.08);border:1px solid rgba(232,163,23,.2);border-radius:10px">
+          <span style="font-size:16px">📊</span>
+          <div style="flex:1;font-size:12px">
+            <span style="color:var(--text2)">Letzte Einheit:</span>
+            <strong style="color:var(--text);margin-left:4px">${last.gewicht_kg} kg × ${last.wiederholungen || '?'} Wdh.</strong>
+          </div>
+          <span class="overload-arrow" title="Progression anstreben">↑</span>
+          <div onclick="prefillLastWeight('${musterId}',${suggest})" style="font-size:11px;font-weight:700;color:var(--accent);cursor:pointer;white-space:nowrap;background:rgba(232,163,23,.15);padding:4px 8px;border-radius:8px">
+            +2.5 → ${suggest}
+          </div>
+        </div>`;
+      }
+
+      // Set logger
+      body += `<div class="set-table">
+        <div class="set-row">
+          <div class="set-col-header">Satz</div>
+          <div class="set-col-header">Gewicht (kg)</div>
+          <div class="set-col-header">Wdh.</div>
+          <div class="set-col-header">✓</div>
+        </div>`;
+      for (let s = 1; s <= sets; s++) {
+        const stateGew = sessionSets[musterId]?.[s]?.gewicht || '';
+        const stateWdh = sessionSets[musterId]?.[s]?.wdh || '';
+        const stateDone = sessionSets[musterId]?.[s]?.done || false;
+        const lastGew = lastSessionData[selectedUebung]?.gewicht_kg || prData[selectedUebung] || '';
+        body += `<div class="set-row">
+          <div class="set-nr">${s}</div>
+          <input class="set-input" type="number" step="0.5" min="0" max="500"
+            placeholder="${lastGew || '—'}"
+            value="${stateGew}"
+            data-muster="${musterId}" data-satz="${s}" data-field="gewicht"
+            onchange="saveSetData(this)">
+          <input class="set-input" type="number" min="1" max="50"
+            placeholder="—"
+            value="${stateWdh}"
+            data-muster="${musterId}" data-satz="${s}" data-field="wdh"
+            onchange="saveSetData(this)">
+          <button class="set-done-btn ${stateDone ? 'done' : ''}"
+            data-key="${musterId}_${s}" data-muster="${musterId}" data-satz="${s}">
+            ${stateDone ? '✓' : '○'}
+          </button>
+        </div>`;
+      }
+      body += `</div>`;
+    }
+
+    body += `<div class="rest-hint">${meta.pause}</div>`;
+  }
+
+  const imgUrl = EXERCISE_IMAGES[musterId];
+  const imgHtml = imgUrl
+    ? `<div style="width:48px;height:48px;border-radius:12px;overflow:hidden;flex-shrink:0;background:var(--card2)"><img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover" loading="lazy" onerror="this.parentElement.style.display='none'"></div>`
+    : `<span class="movement-icon">${meta.icon}</span>`;
+
+  const muskeln = MUSTER_MUSKELN[musterId] || [];
+  return `<div class="movement-card">
+    <div class="movement-header">
+      ${imgHtml}
+      <div style="flex:1;min-width:0">
+        <div class="movement-name" style="font-size:13px;flex:unset">${meta.name}</div>
+        ${muskeln.length ? `<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:3px">${muskeln.map(m => `<span class="muscle-badge">${m}</span>`).join('')}</div>` : ''}
+      </div>
+      <span class="movement-prescription">${setLabel}</span>
+      <span class="movement-chevron open">▾</span>
+    </div>
+    <div class="movement-body">${body}</div>
+  </div>`;
+}
+
+function escStr(s) { return s.replace(/'/g, "\\'"); }
+
+function selectExercise(musterId, uebungName) {
+  exerciseSelections[musterId] = uebungName;
+  localStorage.setItem(LS_SELECTIONS, JSON.stringify(exerciseSelections));
+  renderWorkout();
+}
+
+function changeExercise(musterId) {
+  if (!confirm('Übung wirklich wechseln? Für beste Ergebnisse empfehlen wir, die Übung die gesamte Challenge beizubehalten.')) return;
+  delete exerciseSelections[musterId];
+  localStorage.setItem(LS_SELECTIONS, JSON.stringify(exerciseSelections));
+  renderWorkout();
+}
+
+function saveSetData(input) {
+  const { muster, satz, field } = input.dataset;
+  if (!sessionSets[muster]) sessionSets[muster] = {};
+  if (!sessionSets[muster][satz]) sessionSets[muster][satz] = {};
+  sessionSets[muster][satz][field] = parseFloat(input.value) || 0;
+}
+
+function prefillLastWeight(musterId, weight) {
+  // Fill all weight inputs for this muster with the suggested weight
+  document.querySelectorAll(`.set-input[data-muster="${musterId}"][data-field="gewicht"]`).forEach(inp => {
+    if (!inp.value) {
+      inp.value = weight;
+      saveSetData(inp);
+    }
+  });
+}
+
+// ── Session Speichern ─────────────────────────────────────────────
+async function startSession(tagId) {
+  const tag = TAGE.find(t => t.id === tagId);
+  if (!tag) return;
+
+  try {
+    const { data, error } = await sb
+      .from('training_sessions')
+      .insert({
+        user_id: userId,
+        datum: getToday(),
+        plan_name: tagId,
+        notizen: `Woche ${currentWeek} · ${tag.typ}`
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    activeSession = { id: data.id, tag_id: tagId };
+    sessionSets = {};
+    sessionStartTime = Date.now();
+    clearInterval(durationInterval);
+    durationInterval = setInterval(() => {
+      const el = document.getElementById('session-duration');
+      if (el) el.textContent = formatDuration(Date.now() - sessionStartTime);
+    }, 1000);
+    renderDayTabs();
+    renderWorkout();
+    showToast('Training gestartet! 💪', 'success');
+  } catch(e) {
+    const msg = e?.message?.includes('relation') || e?.message?.includes('does not exist')
+      ? 'Tabelle fehlt — Migration in Supabase ausführen!'
+      : (e?.message || 'Fehler beim Starten');
+    showToast(msg, 'error');
+  }
+}
+
+async function endSession() {
+  if (!activeSession) return;
+
+  clearInterval(durationInterval);
+  lastSessionDuration = sessionStartTime ? formatDuration(Date.now() - sessionStartTime) : null;
+
+  const tag = TAGE[selectedDay];
+  const allSets = [];
+  let newPRs = [];
+
+  // Collect all sets
+  for (const musterId of tag.muster) {
+    const uebung = exerciseSelections[musterId];
+    if (!uebung || !sessionSets[musterId]) continue;
+    const musterSets = sessionSets[musterId];
+    for (const [satzNr, setData] of Object.entries(musterSets)) {
+      if (!setData.done) continue;
+      const gewicht = setData.gewicht || 0;
+      const wdh = setData.wdh || 0;
+      const istPR = gewicht > 0 && gewicht > (prData[uebung] || 0);
+
+      allSets.push({
+        session_id: activeSession.id,
+        uebung,
+        satz_nr: parseInt(satzNr),
+        wiederholungen: wdh,
+        gewicht_kg: gewicht,
+        ist_pr: istPR
+      });
+
+      if (istPR) {
+        newPRs.push({ uebung, gewicht });
+        prData[uebung] = gewicht;
+      }
+    }
+  }
+
+  lastSessionVolume = allSets.reduce((sum, s) => sum + (s.gewicht_kg || 0) * (s.wiederholungen || 0), 0);
+
+  try {
+    // Save sets
+    if (allSets.length > 0) {
+      await sb.from('training_sets').insert(allSets);
+    }
+
+    // Update PRs
+    for (const pr of newPRs) {
+      await sb.from('personal_records').upsert({
+        user_id: userId,
+        uebung: pr.uebung,
+        gewicht_kg: pr.gewicht,
+        datum: getToday()
+      }, { onConflict: 'user_id,uebung' });
+    }
+
+    // Mark session completed in state
+    sessionSets._completed = true;
+
+    // XP award (+50 XP für Training)
+    await awardTrainingXP();
+
+    renderWorkout();
+
+    if (newPRs.length > 0) {
+      showToast(`🏆 ${newPRs.length} neuer PR! +50 XP`, 'success');
+      if (typeof firePRConfetti === 'function') firePRConfetti();
+    } else {
+      showToast('Training gespeichert! +50 XP 💪', 'success');
+      if (typeof confetti === 'function') confetti({ particleCount: 60, spread: 70, origin: { y: 0.7 }, colors: ['#E8A317','#22c55e','#ffffff'] });
+    }
+  } catch(e) {
+    showToast('Fehler beim Speichern', 'error');
+  }
+}
+
+async function cancelSession() {
+  if (!activeSession) return;
+  if (!confirm('Training wirklich abbrechen? Keine Daten werden gespeichert.')) return;
+  try {
+    await sb.from('training_sessions').delete().eq('id', activeSession.id);
+  } catch(e) {}
+  skipTimer();
+  activeSession = null;
+  sessionSets = {};
+  renderDayTabs();
+  renderWorkout();
+  showToast('Training abgebrochen', 'error');
+}
+
+async function awardTrainingXP() {
+  try {
+    const { data: profile } = await sb
+      .from('profiles')
+      .select('xp_gesamt')
+      .eq('id', userId)
+      .single();
+    if (profile) {
+      await sb.from('profiles')
+        .update({ xp_gesamt: (profile.xp_gesamt || 0) + 50 })
+        .eq('id', userId);
+    }
+  } catch(e) {}
+}
+
+init();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>

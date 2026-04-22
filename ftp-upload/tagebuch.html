@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>90TC — Tagebuch</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#E8A317">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="90TC">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <meta name="theme-color" content="#03030A">
+</head>
+<body>
+<div id="app">
+  <div class="splash" id="loading"><div class="spinner"></div></div>
+  <div id="main" style="display:none">
+    <div class="page">
+      <div class="page-header">
+        <a href="dashboard.html" class="page-back">←</a>
+        <div><div class="page-title">📖 Tagebuch</div><div class="page-subtitle" id="sub">Alle Einträge</div></div>
+        <div style="width:40px"></div>
+      </div>
+
+      <div id="entries"></div>
+      <div style="height:88px"></div>
+    </div>
+  </div>
+</div>
+
+<footer style="position:fixed;bottom:0;left:0;right:0;z-index:50;background:rgba(3,3,10,0.9);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(255,197,108,0.1);display:flex;align-items:flex-end;justify-content:space-around;padding-top:10px;height:auto;min-height:64px;padding-bottom:max(12px,env(safe-area-inset-bottom))">
+  <a href="dashboard.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:#ffc56c;filter:drop-shadow(0 0 6px rgba(255,197,108,0.5));font-size:10px;font-weight:600;letter-spacing:.05em;min-width:48px">
+    <span class="material-symbols-outlined" style="font-size:22px;font-variation-settings:'FILL' 1">home</span>
+    <span>HOME</span>
+  </a>
+  <a href="essen.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:rgba(255,255,255,0.4);font-size:10px;font-weight:600;letter-spacing:.05em;min-width:48px">
+    <span class="material-symbols-outlined" style="font-size:22px;font-variation-settings:'FILL' 0">restaurant</span>
+    <span>ESSEN</span>
+  </a>
+  <a href="training.html" style="display:flex;flex-direction:column;align-items:center;text-decoration:none;min-width:56px;margin-top:-4px">
+    <div style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#ffc56c,#f0a030);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(255,197,108,0.4)">
+      <span class="material-symbols-outlined" style="font-size:26px;color:#000;font-variation-settings:'FILL' 1">fitness_center</span>
+    </div>
+  </a>
+  <a href="fortschritt.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:rgba(255,255,255,0.4);font-size:10px;font-weight:600;letter-spacing:.05em;min-width:48px">
+    <span class="material-symbols-outlined" style="font-size:22px;font-variation-settings:'FILL' 0">query_stats</span>
+    <span>STATS</span>
+  </a>
+  <a href="profil.html" style="display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:rgba(255,255,255,0.4);font-size:10px;font-weight:600;letter-spacing:.05em;min-width:48px">
+    <span class="material-symbols-outlined" style="font-size:22px;font-variation-settings:'FILL' 0">person</span>
+    <span>PROFIL</span>
+  </a>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script>
+function scoreClass(s) {
+  if (s == null) return ''
+  if (s >= 7) return 'score-7'
+  if (s >= 5) return 'score-56'
+  if (s >= 3) return 'score-34'
+  return 'score-12'
+}
+
+function metaText(e) {
+  const parts = []
+  if (e.gewicht_kg) parts.push(`${e.gewicht_kg} kg`)
+  if (e.energie_level) parts.push(['😴','😐','⚡','🚀'][e.energie_level-1])
+  if (e.training_gemacht) parts.push('🏋️ Training')
+  if (e.kalorien_ist) parts.push(`${e.kalorien_ist} kcal`)
+  if (!parts.length) {
+    if (e.checkin_morgen) parts.push('☀️ Morgen')
+    if (e.checkin_abend) parts.push('🌙 Abend')
+  }
+  return parts.join(' · ') || '—'
+}
+
+async function init() {
+  const ctx = await requireProfile()
+  if (!ctx) return
+  const { user, profile } = ctx
+
+  const { data: entries } = await sb.from('daily_entries')
+    .select('*').eq('user_id', user.id)
+    .order('datum', { ascending: false })
+
+  document.getElementById('sub').textContent = (entries?.length || 0) + ' Einträge'
+  document.getElementById('loading').style.display = 'none'
+  document.getElementById('main').style.display = 'block'
+
+  const el = document.getElementById('entries')
+
+  if (!entries?.length) {
+    el.innerHTML = `
+      <div class="empty-state">
+        <span class="empty-emoji">📭</span>
+        <div class="empty-title">Noch keine Einträge</div>
+        <div class="empty-text">Mach deinen ersten Check-in<br>und schreib Geschichte!</div>
+        <br><a href="checkin.html" class="btn btn-primary" style="max-width:200px">Erster Check-in →</a>
+      </div>`
+    return
+  }
+
+  el.innerHTML = `<div class="entry-list">` + entries.map(e => {
+    const d = new Date(e.datum + 'T00:00:00')
+    const dateStr = d.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit',year:'2-digit'})
+    const scoreHtml = e.score_von_7 != null
+      ? `<span class="${scoreClass(e.score_von_7)}">${e.score_von_7}/7</span>`
+      : e.checkin_morgen ? '<span style="color:var(--text2)">☀️</span>' : '<span style="color:var(--muted)">—</span>'
+    return `
+      <a href="eintrag.html?datum=${e.datum}" class="entry-card">
+        <div class="entry-day-badge">
+          <div class="entry-day-nr">T${e.tag_nr}</div>
+          <div class="entry-day-label">TAG</div>
+        </div>
+        <div class="entry-info">
+          <div class="entry-date">${dateStr}</div>
+          <div class="entry-meta">${metaText(e)}</div>
+        </div>
+        <div class="entry-score">${scoreHtml}</div>
+      </a>`
+  }).join('') + `</div>`
+}
+
+init()
+</script>
+</body>
+</html>
