@@ -147,6 +147,31 @@
     }
     .session-done-icon { font-size:48px; margin-bottom:8px; }
     .session-done-title { font-size:18px; font-weight:800; color:var(--green2); }
+    .muscle-badge {
+      display:inline-flex; align-items:center;
+      background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);
+      border-radius:20px; padding:2px 7px;
+      font-size:9px; font-weight:700; color:var(--text2); letter-spacing:0.04em; text-transform:uppercase;
+    }
+    .duration-live {
+      display:inline-flex; align-items:center; gap:5px;
+      background:rgba(255,197,108,0.1); border:1px solid rgba(255,197,108,0.2);
+      border-radius:20px; padding:5px 12px;
+      font-size:12px; font-weight:700; color:var(--accent);
+    }
+    .ex-img-banner {
+      width:100%; height:96px; object-fit:cover; border-radius:12px;
+      display:block; margin-bottom:10px;
+    }
+    .overload-arrow {
+      display:inline-flex; align-items:center; justify-content:center;
+      width:22px; height:22px; border-radius:50%; flex-shrink:0;
+      background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.3);
+      color:var(--green2); font-size:12px; font-weight:900;
+    }
+    .volume-stat { text-align:center; padding:0 16px; }
+    .volume-stat-num { font-family:'Space Grotesk',sans-serif; font-size:1.6rem; font-weight:900; font-style:italic; }
+    .volume-stat-lbl { font-size:11px; color:var(--text2); margin-top:2px; }
 
     .deload-banner {
       background:rgba(139,92,246,0.08); border:1.5px solid rgba(139,92,246,0.3);
@@ -594,14 +619,14 @@
       <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Training</span>
     </div>
   </div>
-  <!-- Center: Essen FAB -->
+  <!-- Center: Tagebuch FAB -->
   <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:4px;margin-bottom:6px;pointer-events:auto;">
-    <a href="essen.html" style="text-decoration:none;display:block;">
+    <a href="tagebuch.html" style="text-decoration:none;display:block;">
       <div style="width:60px;height:60px;border-radius:20px;background:linear-gradient(135deg,#ffc56c,#cb9743);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(255,197,108,0.55);">
-        <span class="material-symbols-outlined" style="font-size:26px;color:#321f00;">restaurant</span>
+        <span class="material-symbols-outlined" style="font-size:26px;color:#321f00;">menu_book</span>
       </div>
     </a>
-    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#ffc56c;">Essen</span>
+    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#ffc56c;">Tagebuch</span>
   </div>
   <!-- Right island: Stats | Profil -->
   <div style="flex:1;display:flex;align-items:center;justify-content:space-around;height:60px;background:rgba(18,17,26,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.07);border-radius:22px;overflow:hidden;pointer-events:auto;">
@@ -705,6 +730,21 @@ const ALLE_TAGE_KONFIGS = {
   'pull_gym':      { label:'Pull', typ:'Pull', kurz:'Pull', icon:'⬇️', muster:['pull_vertikal','pull_horizontal','pull_vertikal'] },
   'beine_gym':     { label:'Beine', typ:'Beine', kurz:'Beine', icon:'🦵', muster:['beine_quad','beine_hintere_kette','beine_glute','beinbeuger','beinstrecker','waden'] },
 }
+
+const MUSTER_MUSKELN = {
+  'push_horizontal':     ['Brust','Trizeps'],
+  'pull_horizontal':     ['Rücken','Bizeps'],
+  'push_vertikal':       ['Schulter','Trizeps'],
+  'pull_vertikal':       ['Lat','Bizeps'],
+  'schulter_seite':      ['Schulter'],
+  'brust_isoliert':      ['Brust'],
+  'beine_quad':          ['Quads','Gesäß'],
+  'beine_hintere_kette': ['Hamstrings','Gesäß'],
+  'beine_glute':         ['Gesäß','Hamstrings'],
+  'beinbeuger':          ['Hamstrings'],
+  'beinstrecker':        ['Quads'],
+  'waden':               ['Waden'],
+};
 
 // ── Trainingsplan Daten (dynamisch befüllt) ──────────────────────
 let TAGE = [
@@ -866,6 +906,20 @@ let sessionSets = {};  // { muster_id: { gewicht, wdh, done } }
 let prData = {};  // { uebung: gewicht_kg }
 let lastSessionData = {};  // { uebung: { gewicht_kg, wiederholungen } }
 let userId = null;
+let sessionStartTime = null;
+let durationInterval = null;
+let lastSessionVolume = 0;
+let lastSessionDuration = null;
+
+function formatDuration(ms) {
+  const s = Math.floor(ms / 1000);
+  const m = Math.floor(s / 60);
+  return `${m}:${(s % 60).toString().padStart(2, '0')}`;
+}
+
+function getExerciseInfo(musterId, uebungName) {
+  return (UEBUNGEN[musterId] || []).find(u => u.name === uebungName)?.info || null;
+}
 
 // LocalStorage keys
 const LS_SELECTIONS = 'tc_exercise_sel';  // { muster_id: uebungName }
@@ -1446,6 +1500,10 @@ function renderWorkout() {
       <div class="session-done-icon">🎉</div>
       <div class="session-done-title">Training abgeschlossen!</div>
       <div style="font-size:13px;color:var(--text2);margin-top:4px">Gut gemacht — alle Sätze erledigt</div>
+      ${lastSessionVolume > 0 || lastSessionDuration ? `<div style="display:flex;justify-content:center;gap:0;margin-top:14px;border-top:1px solid rgba(34,197,94,0.15);padding-top:14px">
+        ${lastSessionVolume > 0 ? `<div class="volume-stat"><div class="volume-stat-num" style="color:var(--green2)">${Math.round(lastSessionVolume).toLocaleString('de-DE')} kg</div><div class="volume-stat-lbl">Volumen</div></div>` : ''}
+        ${lastSessionDuration ? `<div class="volume-stat"><div class="volume-stat-num" style="color:var(--accent)">${lastSessionDuration}</div><div class="volume-stat-lbl">Dauer</div></div>` : ''}
+      </div>` : ''}
     </div>`;
   }
 
@@ -1468,6 +1526,14 @@ function renderWorkout() {
         <div style="font-weight:700">Heute schon trainiert</div>
         <div style="font-size:12px;color:var(--text2)">Eine Session wurde bereits für heute gespeichert</div>
       </div>
+    </div>`;
+  }
+
+  // Session duration display
+  if (isThisDayActive && !isDone) {
+    html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <span class="duration-live">⏱ <span id="session-duration">${sessionStartTime ? formatDuration(Date.now() - sessionStartTime) : '0:00'}</span></span>
+      <span style="font-size:12px;color:var(--text2);font-weight:600">${tag.typ} · läuft</span>
     </div>`;
   }
 
@@ -1570,6 +1636,11 @@ function renderMovementCard(musterId, meta, uebungen, sets, selectedUebung, isTr
     body += `<button onclick="changeExercise('${musterId}')" style="background:transparent;border:1px solid var(--border);color:var(--text2);padding:4px 10px;border-radius:8px;font-size:12px;cursor:pointer;margin-bottom:10px">Übung ändern</button>`;
 
     if (isTraining) {
+      // Image banner
+      if (imgUrl) body += `<img src="${imgUrl}" class="ex-img-banner" loading="lazy" onerror="this.style.display='none'" alt="">`;
+      // Technik-Cue
+      const cue = getExerciseInfo(musterId, selectedUebung);
+      if (cue) body += `<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 10px;background:rgba(137,206,255,0.05);border:1px solid rgba(137,206,255,0.12);border-radius:10px;margin-bottom:10px"><span style="flex-shrink:0">💡</span><span style="font-size:12px;color:#89ceff;line-height:1.5">${cue}</span></div>`;
       // Progressive overload: last session hint
       const last = lastSessionData[selectedUebung];
       if (last) {
@@ -1582,6 +1653,7 @@ function renderMovementCard(musterId, meta, uebungen, sets, selectedUebung, isTr
             <span style="color:var(--text2)">Letzte Einheit:</span>
             <strong style="color:var(--text);margin-left:4px">${last.gewicht_kg} kg × ${last.wiederholungen || '?'} Wdh.</strong>
           </div>
+          <span class="overload-arrow" title="Progression anstreben">↑</span>
           <div onclick="prefillLastWeight('${musterId}',${suggest})" style="font-size:11px;font-weight:700;color:var(--accent);cursor:pointer;white-space:nowrap;background:rgba(232,163,23,.15);padding:4px 8px;border-radius:8px">
             +2.5 → ${suggest}
           </div>
@@ -1630,10 +1702,14 @@ function renderMovementCard(musterId, meta, uebungen, sets, selectedUebung, isTr
     ? `<div style="width:48px;height:48px;border-radius:12px;overflow:hidden;flex-shrink:0;background:var(--card2)"><img src="${imgUrl}" style="width:100%;height:100%;object-fit:cover" loading="lazy" onerror="this.parentElement.style.display='none'"></div>`
     : `<span class="movement-icon">${meta.icon}</span>`;
 
+  const muskeln = MUSTER_MUSKELN[musterId] || [];
   return `<div class="movement-card">
     <div class="movement-header">
       ${imgHtml}
-      <span class="movement-name" style="font-size:13px">${meta.name}</span>
+      <div style="flex:1;min-width:0">
+        <div class="movement-name" style="font-size:13px;flex:unset">${meta.name}</div>
+        ${muskeln.length ? `<div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:3px">${muskeln.map(m => `<span class="muscle-badge">${m}</span>`).join('')}</div>` : ''}
+      </div>
       <span class="movement-prescription">${setLabel}</span>
       <span class="movement-chevron open">▾</span>
     </div>
@@ -1693,6 +1769,12 @@ async function startSession(tagId) {
     if (error) throw error;
     activeSession = { id: data.id, tag_id: tagId };
     sessionSets = {};
+    sessionStartTime = Date.now();
+    clearInterval(durationInterval);
+    durationInterval = setInterval(() => {
+      const el = document.getElementById('session-duration');
+      if (el) el.textContent = formatDuration(Date.now() - sessionStartTime);
+    }, 1000);
     renderDayTabs();
     renderWorkout();
     showToast('Training gestartet! 💪', 'success');
@@ -1706,6 +1788,9 @@ async function startSession(tagId) {
 
 async function endSession() {
   if (!activeSession) return;
+
+  clearInterval(durationInterval);
+  lastSessionDuration = sessionStartTime ? formatDuration(Date.now() - sessionStartTime) : null;
 
   const tag = TAGE[selectedDay];
   const allSets = [];
@@ -1737,6 +1822,8 @@ async function endSession() {
       }
     }
   }
+
+  lastSessionVolume = allSets.reduce((sum, s) => sum + (s.gewicht_kg || 0) * (s.wiederholungen || 0), 0);
 
   try {
     // Save sets
