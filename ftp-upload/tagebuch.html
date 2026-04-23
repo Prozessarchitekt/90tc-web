@@ -87,6 +87,7 @@ async function init() {
 
   const { data: entries } = await sb.from('daily_entries')
     .select('*').eq('user_id', user.id)
+    .gte('datum', profile.startdatum)
     .order('datum', { ascending: false })
 
   document.getElementById('sub').textContent = (entries?.length || 0) + ' Einträge'
