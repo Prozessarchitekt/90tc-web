@@ -6,7 +6,8 @@
       "Bash(git push *)",
       "Read(//c/users/Chris Gessenhardt/.claude/projects/C--claudeprojektordner-90tc-web/**)",
       "Read(//c/users/Chris Gessenhardt/.claude/projects/C--claudeprojektordner-90tc-web/memory/**)",
-      "WebFetch(domain:unsplash.com)"
+      "WebFetch(domain:unsplash.com)",
+      "Bash(git mv *)"
     ]
   }
 }
