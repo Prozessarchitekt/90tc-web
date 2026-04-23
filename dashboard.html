@@ -633,7 +633,7 @@ async function init() {
 
   // Load today data in parallel
   const [{ data: entry }, { data: trainSessions }] = await Promise.all([
-    sb.from('daily_entries').select('*').eq('user_id', user.id).eq('datum', getToday()).maybeSingle(),
+    sb.from('daily_entries').select('kalorien_ist,protein_ist_g,checkin_morgen,checkin_abend,score_von_7,training_gemacht').eq('user_id', user.id).eq('datum', getToday()).maybeSingle(),
     sb.from('training_sessions').select('id').eq('user_id', user.id).eq('datum', getToday()).limit(1)
   ])
 

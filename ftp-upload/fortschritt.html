@@ -350,18 +350,25 @@ async function init() {
   if (!ctx) return
   const { user, profile } = ctx
 
-  const { data: entries } = await sb.from('daily_entries')
-    .select('*').eq('user_id', user.id).order('datum', { ascending: true })
-
-  const { data: badges } = await sb.from('user_badges')
-    .select('badge_id').eq('user_id', user.id)
-
-  const { data: wcs } = await sb.from('weekly_checks')
-    .select('*').eq('user_id', user.id).order('woche_nr', { ascending: true })
-
-  const [{ data: prs }, { data: trainSessions }] = await Promise.all([
-    sb.from('personal_records').select('*').eq('user_id', user.id).order('datum', { ascending: false }),
-    sb.from('training_sessions').select('id,datum,plan_name,notizen,dauer_min').eq('user_id', user.id).order('datum', { ascending: false }).limit(10)
+  const [
+    { data: entries },
+    { data: badges },
+    { data: wcs },
+    { data: prs },
+    { data: trainSessions }
+  ] = await Promise.all([
+    sb.from('daily_entries')
+      .select('datum,tag_nr,score_von_7,gewicht_kg,training_gemacht,energie_level,stimmung,schlaf_ist_h,schritte_ist,wasser_ist_l,protein_ist_g,kalorien_ist,progression,checkin_morgen,checkin_abend')
+      .eq('user_id', user.id).order('datum', { ascending: true }),
+    sb.from('user_badges')
+      .select('badge_id').eq('user_id', user.id),
+    sb.from('weekly_checks')
+      .select('woche_nr,schulter,brust,arm_rechts,arm_links,bauch_oben,bauch_mitte,bauch_unten,huefte,bein_rechts,bein_links')
+      .eq('user_id', user.id).order('woche_nr', { ascending: true }),
+    sb.from('personal_records')
+      .select('uebung,datum,gewicht_kg').eq('user_id', user.id).order('datum', { ascending: false }),
+    sb.from('training_sessions')
+      .select('id,datum,plan_name,notizen,dauer_min').eq('user_id', user.id).order('datum', { ascending: false }).limit(10)
   ])
 
   document.getElementById('loading').style.display = 'none'
