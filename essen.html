@@ -68,7 +68,7 @@ tailwind.config = {
 
   /* Toast */
   #toast {
-    position: fixed; bottom: calc(180px + env(safe-area-inset-bottom)); left: 50%;
+    position: fixed; bottom: calc(100px + env(safe-area-inset-bottom)); left: 50%;
     transform: translateX(-50%) translateY(12px);
     background: #12121a; color: #e4e1ef;
     border: 1px solid rgba(255,255,255,.12);
@@ -101,9 +101,6 @@ tailwind.config = {
     font-family: 'Inter', sans-serif; font-size: 16px; outline: none; width: 100%;
   }
   input:focus, select:focus { border-color: #ffc56c; }
-  /* Search input specifically */
-  #search-input { font-size: 16px !important; }
-
   /* Meal items */
   .meal-item-row {
     display:flex;align-items:center;gap:10px;
@@ -131,20 +128,6 @@ tailwind.config = {
     transition:all .15s;font-family:inherit;text-align:center;
   }
   .mahlzeit-tab.active { background:rgba(255,197,108,.1);border-color:#ffc56c;color:#ffc56c; }
-
-  /* Search results */
-  .result-item {
-    display:flex;align-items:center;gap:12px;
-    background:rgba(18,18,26,0.8);border:1.5px solid rgba(72,71,82,0.3);
-    border-radius:18px;padding:12px 14px;margin-bottom:8px;cursor:pointer;
-    transition:all .15s;
-  }
-  .result-item:active { background:rgba(255,197,108,0.06);border-color:rgba(255,197,108,0.2);transform:scale(.98); }
-  .result-img {
-    width:48px;height:48px;border-radius:12px;object-fit:cover;
-    background:rgba(255,255,255,.08);flex-shrink:0;
-    display:flex;align-items:center;justify-content:center;font-size:24px;
-  }
 
   /* ── Essen Hero ── */
   .essen-hero {
@@ -184,7 +167,7 @@ tailwind.config = {
   <div class="absolute bottom-0 left-0 bg-gradient-to-r from-transparent via-amber-500/20 to-transparent h-[1px] w-full"></div>
 </nav>
 
-<main class="max-w-lg mx-auto relative" style="overflow-x:clip;padding-bottom:calc(200px + env(safe-area-inset-bottom));">
+<main class="max-w-lg mx-auto relative" style="overflow-x:clip;padding-bottom:calc(100px + env(safe-area-inset-bottom));">
 
   <!-- ── HERO: Tag label + ERNÄHRUNG headline + Arc + Macro strip ── -->
   <div class="essen-hero">
@@ -299,9 +282,6 @@ tailwind.config = {
     </button>
   </div>
 
-  <!-- Search Results (inline, shown when searching) -->
-  <div id="search-results" style="display:none"></div>
-
   <!-- Plan Picker Sheet -->
   <div id="plan-picker-overlay" onclick="closePlanPicker()" style="display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,0.8);backdrop-filter:blur(16px);align-items:flex-end;">
     <div onclick="event.stopPropagation()" style="width:100%;background:linear-gradient(180deg,#191825,#0d0d17);border:1.5px solid rgba(255,197,108,0.15);border-bottom:none;border-radius:28px 28px 0 0;padding:0 20px max(28px,env(safe-area-inset-bottom));">
@@ -345,56 +325,6 @@ tailwind.config = {
   </div><!-- /.px-4 wrapper -->
 
 </main>
-
-<!-- ── Bottom Search Bar ── -->
-<div id="bottom-search-bar" style="position:fixed;left:0;right:0;z-index:40;padding:10px 16px;background:rgba(3,3,10,0.97);backdrop-filter:blur(24px);border-top:1px solid rgba(72,71,82,0.18);bottom:calc(86px + env(safe-area-inset-bottom));">
-  <div style="max-width:512px;margin:0 auto;display:flex;gap:10px;align-items:center;">
-    <!-- Search input -->
-    <div style="flex:1;display:flex;align-items:center;background:rgba(18,18,26,0.95);border:1.5px solid rgba(72,71,82,0.4);border-radius:18px;height:52px;overflow:hidden;">
-      <span class="material-symbols-outlined" style="font-size:20px;color:rgba(117,116,129,0.7);padding:0 12px;flex-shrink:0;">search</span>
-      <input id="search-input" type="text" placeholder="Lebensmittel suchen…"
-             style="flex:1;background:transparent;border:none;color:#efecfb;font-family:'Inter',sans-serif;font-size:16px;outline:none;padding:0;min-width:0;"/>
-      <button id="btn-clear-search" onclick="clearSearch()" style="width:36px;height:52px;display:none;align-items:center;justify-content:center;flex-shrink:0;">
-        <span class="material-symbols-outlined" style="font-size:17px;color:rgba(117,116,129,0.6);">close</span>
-      </button>
-      <button onclick="doSearch()" style="width:50px;height:52px;background:linear-gradient(135deg,rgba(255,197,108,0.22),rgba(255,197,108,0.07));border-left:1px solid rgba(255,197,108,0.18);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;" class="active:scale-90">
-        <span class="material-symbols-outlined text-primary" style="font-size:21px;">arrow_forward</span>
-      </button>
-    </div>
-    <!-- Barcode Scanner Button -->
-    <button onclick="openScanner()" style="width:52px;height:52px;border-radius:16px;background:rgba(137,206,255,0.1);border:1.5px solid rgba(137,206,255,0.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;" class="active:scale-90">
-      <span class="material-symbols-outlined" style="font-size:22px;color:#89ceff;font-variation-settings:'FILL' 1">barcode_scanner</span>
-    </button>
-  </div>
-</div>
-
-<!-- ── Barcode Scanner Overlay ── -->
-<div id="scanner-overlay" style="display:none;position:fixed;inset:0;z-index:2000;background:#000;flex-direction:column;">
-  <!-- Close -->
-  <button onclick="closeScanner()" style="position:absolute;top:calc(16px + env(safe-area-inset-top));right:16px;z-index:10;width:44px;height:44px;border-radius:14px;background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;">
-    <span class="material-symbols-outlined" style="color:#fff;font-size:22px;">close</span>
-  </button>
-  <!-- Video -->
-  <video id="scanner-video" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover;"></video>
-  <!-- Viewfinder -->
-  <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;">
-    <div style="width:80%;max-width:320px;height:130px;position:relative;">
-      <!-- Corner markers -->
-      <div style="position:absolute;top:0;left:0;width:24px;height:24px;border-top:3px solid #89ceff;border-left:3px solid #89ceff;border-radius:4px 0 0 0;"></div>
-      <div style="position:absolute;top:0;right:0;width:24px;height:24px;border-top:3px solid #89ceff;border-right:3px solid #89ceff;border-radius:0 4px 0 0;"></div>
-      <div style="position:absolute;bottom:0;left:0;width:24px;height:24px;border-bottom:3px solid #89ceff;border-left:3px solid #89ceff;border-radius:0 0 0 4px;"></div>
-      <div style="position:absolute;bottom:0;right:0;width:24px;height:24px;border-bottom:3px solid #89ceff;border-right:3px solid #89ceff;border-radius:0 0 4px 0;"></div>
-      <!-- Scan line -->
-      <div id="scan-line" style="position:absolute;left:4px;right:4px;height:2px;background:linear-gradient(90deg,transparent,#89ceff,transparent);animation:scanline 2s ease-in-out infinite;top:50%;"></div>
-    </div>
-    <p style="position:absolute;bottom:30%;color:rgba(255,255,255,0.6);font-size:13px;font-family:'Inter',sans-serif;">Barcode in den Rahmen halten</p>
-  </div>
-  <!-- Status -->
-  <div id="scanner-status" style="position:absolute;bottom:calc(40px + env(safe-area-inset-bottom));left:0;right:0;text-align:center;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:rgba(255,255,255,0.5);"></div>
-</div>
-<style>
-@keyframes scanline { 0%,100%{opacity:0.4;transform:translateY(-30px)} 50%{opacity:1;transform:translateY(30px)} }
-</style>
 
 <!-- ── Bottom Nav (Split Island) ── -->
 <div style="position:fixed;bottom:calc(16px + env(safe-area-inset-bottom));left:12px;right:12px;z-index:50;display:flex;align-items:flex-end;justify-content:space-between;gap:10px;pointer-events:none;">
@@ -595,431 +525,6 @@ function updateMacroRings(t) {
   document.getElementById('sub-carbs').textContent = cg ? `Ziel: ${cg}g` : '—'
 }
 
-// ── Lokale Lebensmitteldatenbank (immer verfügbar, keine API nötig) ──
-const LOCAL_FOODS = [
-  // Milchprodukte
-  { name:'Magerquark',          brand:'Generisch', kcal100:67,  protein100:12.0, fett100:0.3,  carbs100:4.1,  image:null, aliases:['quark','mager quark'] },
-  { name:'Skyr',                brand:'Generisch', kcal100:63,  protein100:11.0, fett100:0.2,  carbs100:4.0,  image:null, aliases:[] },
-  { name:'Hüttenkäse',          brand:'Generisch', kcal100:98,  protein100:11.0, fett100:5.0,  carbs100:3.0,  image:null, aliases:['cottage cheese','hütten käse'] },
-  { name:'Joghurt (3,5 %)',     brand:'Generisch', kcal100:63,  protein100:3.5,  fett100:3.5,  carbs100:5.0,  image:null, aliases:['joghurt','yogurt','naturjoghurt'] },
-  { name:'Vollmilch',           brand:'Generisch', kcal100:61,  protein100:3.3,  fett100:3.5,  carbs100:4.7,  image:null, aliases:['milch','milk'] },
-  { name:'Mozzarella',          brand:'Generisch', kcal100:280, protein100:17.0, fett100:22.0, carbs100:2.0,  image:null, aliases:[] },
-  { name:'Gouda',               brand:'Generisch', kcal100:356, protein100:25.0, fett100:28.0, carbs100:1.0,  image:null, aliases:[] },
-  { name:'Parmesan',            brand:'Generisch', kcal100:431, protein100:38.0, fett100:29.0, carbs100:3.0,  image:null, aliases:[] },
-  // Fleisch & Fisch
-  { name:'Hähnchenbrust',       brand:'Generisch', kcal100:110, protein100:23.0, fett100:1.3,  carbs100:0.0,  image:null, aliases:['hühnchenbrust','chicken','huhn','hähnchenfilet','hähnchen filet'] },
-  { name:'Hähnchenoberschenkel',brand:'Generisch', kcal100:191, protein100:18.0, fett100:13.0, carbs100:0.0,  image:null, aliases:['oberschenkel','chicken thigh'] },
-  { name:'Rinderhack (mager)',  brand:'Generisch', kcal100:144, protein100:20.0, fett100:7.0,  carbs100:0.0,  image:null, aliases:['hackfleisch','rinderhackfleisch','hack'] },
-  { name:'Lachs',               brand:'Generisch', kcal100:208, protein100:20.0, fett100:13.0, carbs100:0.0,  image:null, aliases:['lachsfilet','salmon'] },
-  { name:'Thunfisch (Wasser)',  brand:'Generisch', kcal100:86,  protein100:20.0, fett100:1.0,  carbs100:0.0,  image:null, aliases:['thunfisch','tuna'] },
-  { name:'Seelachs',            brand:'Generisch', kcal100:74,  protein100:17.0, fett100:0.5,  carbs100:0.0,  image:null, aliases:['pollock','seelachsfilet'] },
-  { name:'Ei (Hühnerei)',       brand:'Generisch', kcal100:155, protein100:13.0, fett100:11.0, carbs100:1.0,  image:null, aliases:['ei','eier','eggs','egg'] },
-  { name:'Eiweißpulver (Whey)', brand:'Generisch', kcal100:370, protein100:75.0, fett100:5.0,  carbs100:10.0, image:null, aliases:['whey','protein pulver','proteinpulver','whey protein'] },
-  // Getreide & Kohlenhydrate
-  { name:'Haferflocken',        brand:'Generisch', kcal100:366, protein100:13.0, fett100:7.0,  carbs100:58.0, image:null, aliases:['oats','oatmeal','hafer'] },
-  { name:'Weißer Reis (gekocht)',brand:'Generisch',kcal100:130, protein100:2.7,  fett100:0.3,  carbs100:28.0, image:null, aliases:['reis','rice','basmati','jasminreis'] },
-  { name:'Brauner Reis (gekocht)',brand:'Generisch',kcal100:111,protein100:2.6,  fett100:0.9,  carbs100:23.0, image:null, aliases:['vollkornreis'] },
-  { name:'Vollkornbrot',        brand:'Generisch', kcal100:240, protein100:9.0,  fett100:3.0,  carbs100:42.0, image:null, aliases:['brot','vollkorn','schwarzbrot'] },
-  { name:'Kartoffel',           brand:'Generisch', kcal100:77,  protein100:2.0,  fett100:0.1,  carbs100:17.0, image:null, aliases:['kartoffeln','potato','potatoes'] },
-  { name:'Süßkartoffel',        brand:'Generisch', kcal100:86,  protein100:1.6,  fett100:0.1,  carbs100:20.0, image:null, aliases:['sweet potato','süßkartoffeln','yam'] },
-  { name:'Quinoa (gekocht)',    brand:'Generisch', kcal100:120, protein100:4.4,  fett100:1.9,  carbs100:21.0, image:null, aliases:['quinoa'] },
-  { name:'Pasta (gekocht)',     brand:'Generisch', kcal100:131, protein100:5.0,  fett100:1.1,  carbs100:26.0, image:null, aliases:['nudeln','spaghetti','penne','pasta'] },
-  // Hülsenfrüchte & Pflanzlich
-  { name:'Linsen (gekocht)',    brand:'Generisch', kcal100:116, protein100:9.0,  fett100:0.4,  carbs100:20.0, image:null, aliases:['linsen','lentils'] },
-  { name:'Kichererbsen (gekocht)',brand:'Generisch',kcal100:164,protein100:9.0,  fett100:3.0,  carbs100:27.0, image:null, aliases:['chickpeas','kichererbsen'] },
-  { name:'Tofu (fest)',         brand:'Generisch', kcal100:76,  protein100:8.0,  fett100:4.0,  carbs100:2.0,  image:null, aliases:['tofu'] },
-  { name:'Tempeh',              brand:'Generisch', kcal100:193, protein100:19.0, fett100:11.0, carbs100:9.0,  image:null, aliases:[] },
-  // Gemüse
-  { name:'Brokkoli',            brand:'Generisch', kcal100:34,  protein100:2.8,  fett100:0.4,  carbs100:7.0,  image:null, aliases:['broccoli'] },
-  { name:'Spinat',              brand:'Generisch', kcal100:23,  protein100:2.9,  fett100:0.4,  carbs100:3.6,  image:null, aliases:['blattspinat','spinach'] },
-  { name:'Paprika (rot)',       brand:'Generisch', kcal100:31,  protein100:1.0,  fett100:0.3,  carbs100:6.0,  image:null, aliases:['paprika'] },
-  { name:'Gurke',               brand:'Generisch', kcal100:15,  protein100:0.7,  fett100:0.1,  carbs100:3.1,  image:null, aliases:['cucumber'] },
-  { name:'Grüner Spargel',      brand:'Generisch', kcal100:20,  protein100:2.2,  fett100:0.2,  carbs100:3.5,  image:null, aliases:['spargel','asparagus'] },
-  { name:'Zucchini',            brand:'Generisch', kcal100:17,  protein100:1.2,  fett100:0.1,  carbs100:3.1,  image:null, aliases:['zucchini'] },
-  // Früchte
-  { name:'Banane',              brand:'Generisch', kcal100:89,  protein100:1.1,  fett100:0.3,  carbs100:23.0, image:null, aliases:['banana'] },
-  { name:'Apfel',               brand:'Generisch', kcal100:52,  protein100:0.3,  fett100:0.2,  carbs100:14.0, image:null, aliases:['apple','äpfel'] },
-  { name:'Beeren (Heidelbeer)', brand:'Generisch', kcal100:57,  protein100:0.7,  fett100:0.3,  carbs100:14.0, image:null, aliases:['blaubeeren','heidelbeeren','blueberry','beeren'] },
-  // Nüsse & Fette
-  { name:'Mandeln',             brand:'Generisch', kcal100:579, protein100:21.0, fett100:50.0, carbs100:22.0, image:null, aliases:['almonds','almond'] },
-  { name:'Erdnussbutter',       brand:'Generisch', kcal100:588, protein100:25.0, fett100:50.0, carbs100:20.0, image:null, aliases:['peanut butter','pb','erdnussmus'] },
-  { name:'Avocado',             brand:'Generisch', kcal100:160, protein100:2.0,  fett100:15.0, carbs100:9.0,  image:null, aliases:[] },
-  { name:'Olivenöl',            brand:'Generisch', kcal100:884, protein100:0.0,  fett100:100.0,carbs100:0.0,  image:null, aliases:['olive oil','öl'] },
-]
-
-function searchLocal(query) {
-  const q = query.trim().toLowerCase()
-  return LOCAL_FOODS.filter(f =>
-    f.name.toLowerCase().includes(q) ||
-    (f.aliases || []).some(a => a.includes(q))
-  ).map(f => ({ ...f, barcode: '', _local: true }))
-}
-
-// ── Edamam Food Database ──────────────────────────────
-const EDAMAM_APP_ID  = '76b14197'
-const EDAMAM_APP_KEY = '665adfdf09e2e03e0e653799976b01b8'
-
-async function searchEdamam(query) {
-  try {
-    const ctrl = new AbortController()
-    const t = setTimeout(() => ctrl.abort(), 7000)
-    const r = await fetch('https://api.edamam.com/api/food-database/v2/parser?' + new URLSearchParams({
-      ingr: query,
-      app_id: EDAMAM_APP_ID,
-      app_key: EDAMAM_APP_KEY,
-    }), { signal: ctrl.signal })
-    clearTimeout(t)
-    if (!r.ok) return []
-    const d = await r.json()
-    const q = query.trim().toLowerCase()
-    return (d.hints || [])
-      .map(h => parseEdamamFood(h.food))
-      .filter(f => f && f.name && f.name !== '—' && f.kcal100 != null)
-      .sort((a, b) => {
-        const na = a.name.toLowerCase(), nb = b.name.toLowerCase()
-        if (na.startsWith(q) !== nb.startsWith(q)) return na.startsWith(q) ? -1 : 1
-        return 0
-      })
-  } catch(e) { return [] }
-}
-
-function parseEdamamFood(food) {
-  if (!food) return null
-  const n = food.nutrients || {}
-  return {
-    name: food.label || '—',
-    brand: food.brand || '',
-    barcode: '',
-    image: food.image || null,
-    kcal100:    n.ENERC_KCAL != null ? Math.round(n.ENERC_KCAL)        : null,
-    protein100: n.PROCNT     != null ? Math.round(n.PROCNT * 10) / 10  : null,
-    fett100:    n.FAT        != null ? Math.round(n.FAT    * 10) / 10  : null,
-    carbs100:   n.CHOCDF     != null ? Math.round(n.CHOCDF * 10) / 10  : null,
-  }
-}
-
-// ── FatSecret ─────────────────────────────────────────
-let _fsToken = null, _fsTokenExp = 0
-
-async function getFSToken() {
-  if (_fsToken && Date.now() < _fsTokenExp) return _fsToken
-  try {
-    const r = await fetch('https://oauth.fatsecret.com/connect/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ grant_type:'client_credentials', client_id:FATSECRET_CLIENT_ID, client_secret:FATSECRET_CLIENT_SECRET, scope:'basic' }),
-    })
-    const d = await r.json()
-    _fsToken = d.access_token
-    _fsTokenExp = Date.now() + (d.expires_in - 60) * 1000
-    return _fsToken
-  } catch(e) { return null }
-}
-
-async function fsGet(params) {
-  const token = await getFSToken()
-  if (!token) return null
-  try {
-    const url = 'https://platform.fatsecret.com/rest/server.api?' + new URLSearchParams({ ...params, format:'json' })
-    const ctrl = new AbortController()
-    const t = setTimeout(() => ctrl.abort(), 4000)
-    const r = await fetch(url, { headers:{ Authorization:'Bearer '+token }, signal: ctrl.signal })
-    clearTimeout(t)
-    return await r.json()
-  } catch(e) { return null }
-}
-
-async function lookupBarcode(code) {
-  const fields = 'product_name,product_name_de,generic_name_de,generic_name,brands,nutriments,image_small_url,code'
-
-  const fsPromise = (async () => {
-    const fs = await fsGet({ method:'food.find_id_for_barcode', barcode:code })
-    if (!fs?.food_id?.value) return null
-    const detail = await fsGet({ method:'food.get.v4', food_id:fs.food_id.value, include_food_images:true })
-    if (detail?.food) { const p = parseFSProduct(detail.food); if (p?.kcal100 != null) return p }
-    return null
-  })()
-
-  // OpenFoodFacts: world first (fastest), DE as fallback
-  const offPromise = (async () => {
-    for (const base of ['https://world.openfoodfacts.org','https://de.openfoodfacts.org']) {
-      try {
-        const bCtrl = new AbortController()
-        const bT = setTimeout(() => bCtrl.abort(), 5000)
-        const r = await fetch(`${base}/api/v2/product/${code}?fields=${fields}`, { signal: bCtrl.signal })
-        clearTimeout(bT)
-        const d = await r.json()
-        if (d.status === 1 && d.product) { const p = parseOFFProduct(d.product); if (p?.kcal100 != null) return p }
-      } catch(e) {}
-    }
-    return null
-  })()
-
-  // Return first non-null result (FatSecret preferred, OFF as fast fallback)
-  const result = await Promise.race([
-    fsPromise,
-    offPromise.then(r => r ? new Promise(res => setTimeout(() => res(r), 300)) : new Promise(() => {})),
-  ].filter(Boolean))
-
-  if (result) return result
-  // Wait for both if race returned nothing
-  return await fsPromise || await offPromise || null
-}
-
-async function searchProducts(query) {
-  const q = query.trim().toLowerCase()
-  const fields = 'product_name,product_name_de,generic_name,generic_name_de,brands,nutriments,image_small_url,code'
-
-  function rankAndFilter(prods) {
-    if (!Array.isArray(prods)) return []
-    return prods
-      .filter(p => p && (p.product_name || p.product_name_de || p.generic_name_de || p.generic_name))
-      .map(parseOFFProduct)
-      .filter(p => p && p.name && p.name !== '—')
-      .sort((a, b) => {
-        const na = (a.name||'').toLowerCase(), nb = (b.name||'').toLowerCase()
-        const aS = na.startsWith(q), bS = nb.startsWith(q)
-        if (aS !== bS) return aS ? -1 : 1
-        const aC = na.includes(q), bC = nb.includes(q)
-        if (aC !== bC) return aC ? -1 : 1
-        return 0
-      })
-  }
-
-  // Alle drei APIs parallel starten
-  const edamamPromise = searchEdamam(query)
-  const fsPromise = (async () => {
-    try {
-      const d = await fsGet({ method:'foods.search', search_expression:query, max_results:20, page_number:0 })
-      const raw = d?.foods?.food
-      if (!raw) return []
-      return (Array.isArray(raw) ? raw : [raw]).map(parseFSSearchItem).filter(p => p && p.name && p.name !== '—')
-    } catch(e) { return [] }
-  })()
-
-  const offPromise = (async () => {
-    for (const base of ['https://de.openfoodfacts.org', 'https://world.openfoodfacts.org']) {
-      try {
-        const ctrl = new AbortController()
-        const t = setTimeout(() => ctrl.abort(), 8000)
-        const r = await fetch(`${base}/cgi/search.pl?` + new URLSearchParams({
-          search_terms: query, action: 'process', json: '1', page_size: '40', fields
-        }), { signal: ctrl.signal })
-        clearTimeout(t)
-        if (r.ok) {
-          const d = await r.json()
-          const result = rankAndFilter(d.products || [])
-          if (result.length) return result
-        }
-      } catch(e) {}
-    }
-    return []
-  })()
-
-  // Edamam ist primäre Quelle — auf sie warten
-  const edamamResults = await edamamPromise
-
-  // Wenn Edamam gute Ergebnisse hat → sofort zurückgeben (+ lokale oben)
-  if (edamamResults.length >= 3) {
-    const localMatches = searchLocal(query)
-    const edSeen = new Set(edamamResults.map(r => r.name.toLowerCase()))
-    const newLocals = localMatches.filter(f => !edSeen.has(f.name.toLowerCase()))
-    return [...newLocals, ...edamamResults]
-  }
-
-  // Edamam hat wenig → OFF und FS als Fallback abwarten
-  const [offResults, fsResults] = await Promise.all([
-    offPromise,
-    Promise.race([fsPromise, new Promise(r => setTimeout(() => r([]), 3000))]),
-  ])
-
-  // Merge: Edamam + OFF + FS, Duplikate raus
-  const seen = new Set()
-  const merged = []
-  for (const r of [...edamamResults, ...offResults, ...fsResults]) {
-    const key = r.name.toLowerCase()
-    if (!seen.has(key)) { seen.add(key); merged.push(r) }
-  }
-
-  // Lokale DB immer oben
-  const localMatches = searchLocal(query)
-  const finalSeen = new Set(merged.map(r => r.name.toLowerCase()))
-  const newLocals = localMatches.filter(f => !finalSeen.has(f.name.toLowerCase()))
-  return [...newLocals, ...merged]
-}
-
-function parseFSProduct(food) {
-  const servings = food.servings?.serving; if (!servings) return null
-  const list = Array.isArray(servings) ? servings : [servings]
-  const s100 = list.find(s => parseFloat(s.metric_serving_amount)===100 && s.metric_serving_unit==='g')
-    || list.find(s => s.metric_serving_unit==='g') || list[0]
-  if (!s100) return null
-  const factor = s100.metric_serving_unit==='g' ? 100/parseFloat(s100.metric_serving_amount||100) : 1
-  const img = food.food_images?.food_image?.[0]?.image_url || food.food_images?.food_image?.image_url || null
-  return { name:food.food_name||'—', brand:food.brand_name||'', barcode:'', image:img,
-    kcal100: s100.calories!=null ? Math.round(s100.calories*factor) : null,
-    protein100: s100.protein!=null ? Math.round(s100.protein*factor*10)/10 : null,
-    fett100: s100.fat!=null ? Math.round(s100.fat*factor*10)/10 : null,
-    carbs100: s100.carbohydrate!=null ? Math.round(s100.carbohydrate*factor*10)/10 : null }
-}
-
-function parseFSSearchItem(food) {
-  const desc = food.food_description||''
-  const get = k => { const m = desc.match(new RegExp(k+'[:\\s]+([0-9.]+)','i')); return m ? parseFloat(m[1]) : null }
-  return { name:food.food_name||'—', brand:food.brand_name||'', barcode:'', image:null,
-    kcal100:get('Calories'), protein100:get('Protein'), fett100:get('Fat'), carbs100:get('Carbs'), _fsId:food.food_id }
-}
-
-function parseOFFProduct(p) {
-  const n = p.nutriments||{}
-  const raw = n['energy-kcal_100g']??n['energy-kcal_value']??n['energy-kcal']
-               ??n['energy-kcal_serving']??null
-  const kcal = raw != null ? raw : (n['energy_100g'] ? Math.round(n['energy_100g']/4.184) : null)
-  const name = p.product_name_de||p.product_name||p.generic_name_de||p.generic_name||'—'
-  return {
-    name: name.charAt(0).toUpperCase()+name.slice(1),
-    brand: (p.brands||'').split(',')[0].trim(),
-    barcode: p.code||'',
-    image: p.image_small_url||null,
-    kcal100: kcal != null ? Math.round(kcal) : null,
-    protein100: n.proteins_100g != null ? Math.round(n.proteins_100g*10)/10 : null,
-    fett100: n.fat_100g != null ? Math.round(n.fat_100g*10)/10 : null,
-    carbs100: n.carbohydrates_100g != null ? Math.round(n.carbohydrates_100g*10)/10 : null
-  }
-}
-
-// ── Search ─────────────────────────────────────────────
-// ── Barcode Scanner ────────────────────────────────────
-let _scannerStream = null
-let _scannerDetector = null
-let _scannerRAF = null
-let _scannerActive = false
-
-async function openScanner() {
-  if (!('BarcodeDetector' in window)) {
-    alert('Barcode-Scanner wird in diesem Browser nicht unterstützt.\nBitte Chrome oder Safari 17+ verwenden.')
-    return
-  }
-  try {
-    _scannerDetector = new BarcodeDetector({ formats: ['ean_13','ean_8','upc_a','upc_e','code_128','code_39'] })
-  } catch(e) {
-    alert('Barcode-Scanner nicht verfügbar.'); return
-  }
-  try {
-    _scannerStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
-    })
-  } catch(e) {
-    alert('Kamera-Zugriff verweigert. Bitte in den Einstellungen erlauben.'); return
-  }
-  const video = document.getElementById('scanner-video')
-  video.srcObject = _scannerStream
-  document.getElementById('scanner-overlay').style.display = 'flex'
-  document.getElementById('scanner-status').textContent = ''
-  _scannerActive = true
-  scanFrame(video)
-}
-
-async function scanFrame(video) {
-  if (!_scannerActive) return
-  try {
-    const barcodes = await _scannerDetector.detect(video)
-    if (barcodes.length > 0) {
-      const code = barcodes[0].rawValue
-      _scannerActive = false
-      document.getElementById('scanner-status').textContent = '🔍 Produkt wird gesucht…'
-      await handleBarcode(code)
-      return
-    }
-  } catch(e) {}
-  _scannerRAF = requestAnimationFrame(() => scanFrame(video))
-}
-
-function closeScanner() {
-  _scannerActive = false
-  if (_scannerRAF) cancelAnimationFrame(_scannerRAF)
-  if (_scannerStream) { _scannerStream.getTracks().forEach(t => t.stop()); _scannerStream = null }
-  document.getElementById('scanner-video').srcObject = null
-  document.getElementById('scanner-overlay').style.display = 'none'
-}
-
-async function handleBarcode(code) {
-  // Edamam UPC lookup (primär)
-  try {
-    const ctrl = new AbortController()
-    const t = setTimeout(() => ctrl.abort(), 7000)
-    const r = await fetch('https://api.edamam.com/api/food-database/v2/parser?' + new URLSearchParams({
-      upc: code, app_id: EDAMAM_APP_ID, app_key: EDAMAM_APP_KEY,
-    }), { signal: ctrl.signal })
-    clearTimeout(t)
-    if (r.ok) {
-      const d = await r.json()
-      const hints = d.hints || []
-      if (hints.length > 0) {
-        const food = parseEdamamFood(hints[0].food)
-        if (food?.kcal100 != null) { closeScanner(); showSheet(food); return }
-      }
-    }
-  } catch(e) {}
-
-  // FatSecret Barcode Fallback
-  const fsResult = await lookupBarcode(code)
-  if (fsResult) { closeScanner(); showSheet(fsResult); return }
-
-  // Nicht gefunden
-  document.getElementById('scanner-status').textContent = '❌ Produkt nicht gefunden'
-  setTimeout(() => {
-    _scannerActive = true
-    scanFrame(document.getElementById('scanner-video'))
-  }, 2000)
-}
-
-// ── Search ─────────────────────────────────────────────
-async function doSearch() {
-  const q = document.getElementById('search-input').value.trim()
-  if (!q) return
-  const el = document.getElementById('search-results')
-  el.style.display = 'block'
-  el.innerHTML = '<div class="flex flex-col items-center gap-3 py-6"><div class="w-7 h-7 rounded-full border-2 border-on-surface-variant/20 border-t-primary animate-spin"></div><div class="text-on-surface-variant text-sm">Suche läuft…</div></div>'
-  let results
-  try { results = await searchProducts(q) } catch(e) {
-    el.innerHTML = '<div class="text-center py-4 text-error text-sm">Suche fehlgeschlagen. Bitte erneut versuchen.</div>'
-    return
-  }
-  if (!results.length) { el.innerHTML = '<div class="text-center py-4 text-on-surface-variant text-sm">Keine Produkte gefunden</div>'; return }
-  window._sr = results
-  el.innerHTML = results.map((p,i) => `
-    <div class="result-item" onclick="pickResult(${i})">
-      ${p.image ? `<img src="${p.image}" class="result-img" alt="">` : `<div class="result-img">🍽️</div>`}
-      <div style="flex:1;min-width:0">
-        <div style="font-size:14px;font-weight:700;margin-bottom:3px">${p.name}</div>
-        ${p.brand ? `<div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:5px">${p.brand}</div>` : ''}
-        <div style="display:flex;gap:5px;flex-wrap:wrap">
-          ${p.kcal100!=null?`<span class="macro-pill-small" style="background:rgba(251,191,36,.15);color:#fbbf24">${p.kcal100} kcal</span>`:''}
-          ${p.protein100!=null?`<span class="macro-pill-small" style="background:rgba(137,206,255,.15);color:#89ceff">P ${p.protein100}g</span>`:''}
-          ${p.fett100!=null?`<span class="macro-pill-small" style="background:rgba(0,237,125,.12);color:#00ed7d">F ${p.fett100}g</span>`:''}
-          ${p.carbs100!=null?`<span class="macro-pill-small" style="background:rgba(255,255,255,.08);color:rgba(255,255,255,.6)">C ${p.carbs100}g</span>`:''}
-        </div>
-      </div>
-    </div>`).join('')
-}
-
-async function pickResult(i) {
-  document.getElementById('search-results').style.display = 'none'
-  document.getElementById('search-input').value = ''
-  const p = window._sr[i]
-  // If FatSecret result, fetch full detail for accurate per-100g values
-  if (p._fsId) {
-    showLoadingSheet()
-    const detail = await fsGet({ method:'food.get.v4', food_id:p._fsId, include_food_images:true })
-    if (detail?.food) {
-      const full = parseFSProduct(detail.food)
-      if (full?.kcal100 != null) { showSheet(full); return }
-    }
-  }
-  showSheet(p)
-}
-
 // ── Product Sheet ──────────────────────────────────────
 function showLoadingSheet() {
   document.getElementById('p-img-wrap').textContent = '⏳'
@@ -1211,7 +716,7 @@ function renderMeals() {
     sec.innerHTML = `<div class="text-center py-16 opacity-40">
       <span class="material-symbols-outlined text-5xl block mb-3" style="font-size:52px">restaurant</span>
       <p class="font-headline font-bold uppercase tracking-widest text-sm">Noch nichts eingetragen</p>
-      <p class="text-on-surface-variant text-xs mt-2">Scanne einen Barcode oder suche nach einem Produkt</p>
+      <p class="text-on-surface-variant text-xs mt-2">Tippe auf + um eine Mahlzeit einzutragen</p>
     </div>`
     document.getElementById('transfer-section').style.display = 'none'
     return
@@ -1291,8 +796,7 @@ function openAddForCat(cat) {
   _pendingCat = cat
   currentMahlzeit = cat
   const names = { frühstück:'Frühstück', mittagessen:'Mittagessen', abendessen:'Abendessen', snack:'Snack' }
-  document.getElementById('search-input').focus()
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+  showSheet({ name: '', kcal100: null, protein100: null, fett100: null, carbs100: null, barcode: '' })
   showToast(`+ ${names[cat]}`)
 }
 
@@ -1401,23 +905,6 @@ async function loadStandardday() {
 document.getElementById('btn-add').addEventListener('click', addMeal)
 document.getElementById('btn-cancel-sheet').addEventListener('click', closeSheet)
 document.getElementById('btn-transfer').addEventListener('click', transferToCheckin)
-document.getElementById('search-input').addEventListener('keydown', e => { if (e.key === 'Enter') { e.target.blur(); doSearch() } })
-document.getElementById('search-input').addEventListener('input', e => {
-  const hasValue = e.target.value.trim().length > 0
-  document.getElementById('btn-clear-search').style.display = hasValue ? 'flex' : 'none'
-  if (!hasValue) {
-    document.getElementById('search-results').style.display = 'none'
-    document.getElementById('search-results').innerHTML = ''
-  }
-})
-function clearSearch() {
-  const input = document.getElementById('search-input')
-  input.value = ''
-  input.focus()
-  document.getElementById('btn-clear-search').style.display = 'none'
-  document.getElementById('search-results').style.display = 'none'
-  document.getElementById('search-results').innerHTML = ''
-}
 document.getElementById('menge-input').addEventListener('input', updateCalc)
 
 // ── Init ───────────────────────────────────────────────
