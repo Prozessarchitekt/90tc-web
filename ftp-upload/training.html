@@ -797,6 +797,140 @@ const EXERCISE_IMAGES = {
   'waden':               'https://images.unsplash.com/photo-1434682881908-b43d0467b798?w=120&h=120&fit=crop&crop=center&q=70',
 };
 
+// Per-exercise specific images (verified Unsplash photo IDs)
+const _IM = id => `https://images.unsplash.com/${id}?w=800&h=300&fit=crop&auto=format&q=80`;
+const EXERCISE_SPECIFIC_IMAGES = {
+  // ── Brust drücken ──────────────────────────────────────────
+  'KH-Bankdrücken flach':           _IM('fGAgXh6QQEU'),
+  'KH-Bankdrücken Schrägbank':      _IM('fGAgXh6QQEU'),
+  'LH-Bankdrücken flach':           _IM('Dueawl5Q75s'),
+  'LH-Bankdrücken Schrägbank':      _IM('Dueawl5Q75s'),
+  'Maschine Brustdrücken':          _IM('Dueawl5Q75s'),
+  'Liegestütze':                    _IM('sIkOGHT6H7Y'),
+  'Liegestütze im Defizit':         _IM('sIkOGHT6H7Y'),
+  'Liegestütze mit Band':           _IM('sIkOGHT6H7Y'),
+  // ── Schulter drücken ───────────────────────────────────────
+  'KH-Schulterdrücken sitzend':     _IM('q9NuDxQJaV0'),
+  'KH-Schulterdrücken stehend':     _IM('q9NuDxQJaV0'),
+  'Schulterdrücken mit Band':       _IM('q9NuDxQJaV0'),
+  'LH-Schulterdrücken':             _IM('q9NuDxQJaV0'),
+  'Maschine Schulterdrücken':       _IM('q9NuDxQJaV0'),
+  'Kabelzug Schulterdrücken':       _IM('q9NuDxQJaV0'),
+  // ── Rücken vertikal ────────────────────────────────────────
+  'Lat-Ziehen am Kabel':            _IM('PJ-02CkAXQg'),
+  'Maschine Lat-Ziehen':            _IM('PJ-02CkAXQg'),
+  'Latzug mit Band':                _IM('PJ-02CkAXQg'),
+  'Latzug einarmig mit Band':       _IM('PJ-02CkAXQg'),
+  'Klimmzüge':                      _IM('kjHIG5xJpYw'),
+  // ── Rücken horizontal ──────────────────────────────────────
+  'KH-Rudern einarmig':             _IM('gnrmPE6E8Ag'),
+  'KH-Rudern vorgebeugt':           _IM('gnrmPE6E8Ag'),
+  // ── Schulter Seite ─────────────────────────────────────────
+  'KH-Seitheben':                   _IM('FeIVyHICRqY'),
+  'Seitheben mit Band':             _IM('FeIVyHICRqY'),
+  'V-Raises mit Band':              _IM('FeIVyHICRqY'),
+  'KH-Seitheben sitzend':           _IM('FeIVyHICRqY'),
+  'Kabelzug Seitheben':             _IM('FeIVyHICRqY'),
+  // ── Beine Quad ─────────────────────────────────────────────
+  'Goblet Squat mit KH':            _IM('LpnJrI2rJEA'),
+  'Bulgarian Split Squat mit KH':   _IM('LpnJrI2rJEA'),
+  'Ausfallschritte mit KH':         _IM('LpnJrI2rJEA'),
+  'Ausfallschritte mit Band':       _IM('LpnJrI2rJEA'),
+  'Kniebeugen (LH)':                _IM('LpnJrI2rJEA'),
+  'Bulgarian Split Squat (LH)':     _IM('LpnJrI2rJEA'),
+  'Beinpresse':                     _IM('aY1OAh-a-t0'),
+  'Hack Squat / Hackenschmidt':     _IM('aY1OAh-a-t0'),
+  // ── Hintere Kette / Kreuzheben ─────────────────────────────
+  'Rumänisches KH-Kreuzheben':      _IM('j_YmEH6sB38'),
+  'Einbeiniges rum. KH-Kreuzheben': _IM('j_YmEH6sB38'),
+  'Rum. Kreuzheben mit Band':       _IM('j_YmEH6sB38'),
+  'Good Mornings mit Band':         _IM('j_YmEH6sB38'),
+  'Kreuzheben (LH)':                _IM('j_YmEH6sB38'),
+  'Rum. Kreuzheben (LH)':           _IM('j_YmEH6sB38'),
+  // ── Maschinen-Beine ────────────────────────────────────────
+  'Maschine Beinbeuger liegend':    _IM('aY1OAh-a-t0'),
+  'Maschine Beinbeuger sitzend':    _IM('aY1OAh-a-t0'),
+  'Maschine Beinstrecker':          _IM('aY1OAh-a-t0'),
+  'Wadenpresse an Beinpresse':      _IM('aY1OAh-a-t0'),
+  'Maschine Wadenheben':            _IM('aY1OAh-a-t0'),
+};
+
+// Proper technique cues per exercise (replaces the brief info strings)
+const EXERCISE_CUES = {
+  'KH-Bankdrücken flach':           'Schulterblätter zusammen & auf Bank fixieren. Ellbogen 45–70° vom Körper. KH langsam bis Brust senken, dann explosiv drücken.',
+  'KH-Bankdrücken Schrägbank':      'Bank auf 30–45°. Obere Brust anvisieren. Schulterblätter fixiert halten. Gleiche Technik wie flach — mehr Stretch oben.',
+  'Liegestütze':                    'Körper gerade wie ein Brett — Hüfte nicht durchhängen. Hände schulterbreit. Brust fast auf Boden senken, dann explosiv drücken.',
+  'Liegestütze im Defizit':         'Hände auf KH für tieferen Stretch. Schulterblätter fixiert. Langsam senken — die Tiefe macht den Unterschied.',
+  'Liegestütze mit Band':           'Band über den Rücken, unter den Händen. Sorgt für Widerstand im oberen Teil. Core straff halten.',
+  'LH-Bankdrücken flach':           'Griffbreite: Ellbogen formen bei 90° ein L. Schulterblätter fixiert. Stange zur unteren Brust, Handgelenke gerade.',
+  'LH-Bankdrücken Schrägbank':      'Bank 30°. Stange zur oberen Brust führen. Enger Griff als flach. Ellbogen dürfen mehr ausgestellt werden.',
+  'Maschine Brustdrücken':          'Sitz einstellen: Griffe auf Brusthöhe. Schulterblätter zusammen. Langsam zurück für maximalen Stretch, dann kontrolliert drücken.',
+  'Kabelzug Fliegende':             'Kabel auf mittlere Höhe. Arme leicht gebeugt die ganze Zeit. Breiter Bogen wie ein Baum umarmen — Ellbogen bei 150°.',
+  'Maschine Pec Deck':              'Arme auf Polster. Langsam zurück für Stretch. Dann zusammenführen und Brust 1 Sek anspannen. Kontrolle, kein Schwung.',
+  'KH-Fliegende flach':             'Arme minimal gebeugt. Weiter Bogen. Nicht bis zur Schmerzhürde senken — Ellbogen auf 150°, nicht weiter.',
+  'KH-Fliegende Schrägbank':        'Bank 30°. Obere Brust fokussieren. Gleiche Technik wie flach, aber mehr Stretch in der oberen Brust.',
+  'KH-Schulterdrücken sitzend':     'Bank senkrecht. KH auf Schulterhöhe, Ellbogen 90°. Direkt nach oben drücken — nicht nach vorne neigen.',
+  'KH-Schulterdrücken stehend':     'Core anspannen — kein Hohlkreuz. KH Schulterhöhe. Gerade nach oben drücken, Ellbogen leicht vorne.',
+  'LH-Schulterdrücken':             'Stange vor dem Kopf auf Schulterhöhe. Core stark, kein Hohlkreuz. Explosiv drücken, kontrolliert senken.',
+  'Maschine Schulterdrücken':       'Sitz auf richtige Höhe einstellen. Gleichmäßige Spannung, keine Hocke nutzen. Ideal zum Muskelgefühl entwickeln.',
+  'Kabelzug Schulterdrücken':       'Kabel von unten, einarmig. Core stark für Stabilität. Mehr Freiheit in der Bewegungsbahn als Maschine.',
+  'KH-Seitheben':                   'Leichtes Gewicht! Kein Schwung. Arme leicht gebeugt. Heben bis Schulterhöhe. Kleiner Finger oben (Gießkanne). Langsam senken.',
+  'Seitheben mit Band':             'Band unter Fuß. Langsame kontrollierte Bewegung. Kein Schwingen. Lieber weniger Gewicht als Schwung benutzen.',
+  'V-Raises mit Band':              'Arme in Y-Form diagonal nach vorne-oben heben. Trainiert vorderen & seitlichen Deltamuskel. Leichtes Band, hohe Reps.',
+  'KH-Seitheben sitzend':           'Sitzend eliminiert Schwung komplett. Oberkörper minimal vorbeugen. Perfekt für Isolation des seitlichen Deltamuskels.',
+  'Kabelzug Seitheben':             'Kabel auf Bodenhöhe, Griff kreuzt vor dem Körper. Konstante Spannung am Ende der Bewegung — besser als KH.',
+  'KH-Pullover auf Bank':           '1 KH beidarmig über Brust. Arme leicht gebeugt. KH über den Kopf senken, Rippenbogen bleibt auf der Bank. Lat-Stretch!',
+  'Latzug mit Band':                'Band hoch fixieren (Türrahmen/Stange). Schulterblätter zuerst nach unten, dann Arme beugen. Ellbogen zur Hüfte ziehen.',
+  'Latzug einarmig mit Band':       'Einarmig ermöglicht mehr Range of Motion. Schulter nicht hochziehen. Langsam strecken für maximalen Lat-Stretch.',
+  'Klimmzüge':                      'Schulterbreiter Griff. Scapula-Pullup als Warm-up. Schulterblätter zuerst — dann Arme beugen. Kinn über Stange.',
+  'Lat-Ziehen am Kabel':            'Stange zur oberen Brust ziehen. Ellbogen am Ende Richtung Hüfte. Kurz halten. Dann kontrolliert strecken — Lat spüren.',
+  'Maschine Lat-Ziehen':            'Griff und Sitz einstellen. Oberkörper leicht zurück. Stange zur Brust, Schulterblätter zusammen. Langsam zurück mit Kontrolle.',
+  'KH-Rudern einarmig':             'Knie und Hand auf Bank. Rücken parallel zum Boden. KH zur Hüfte ziehen (nicht Schulter). Schulterblatt am Ende zusammendrücken.',
+  'KH-Rudern vorgebeugt':           'Oberkörper ~45° geneigt. Knie leicht gebeugt. Beide KH gleichzeitig zur Hüfte. Schulterblätter am Ende maximal zusammen.',
+  'LH-Rudern vorgebeugt':           'Rücken gerade, ~45–60° vorgeneigt. Stange zur unteren Bauch-/Hüftgegend. Ellbogen eng am Körper führen.',
+  'Kabelrudern sitzend':            'Brust ans Pad. Griff zur Bauchgegend. Schulterblätter zusammen und 1 Sek halten. Langsam zur vollen Streckung zurück.',
+  'Maschine Rudern':                'Brust anlehnen. Griff eng = mittlerer Rücken. Griff breit = oberer Rücken. Volle ROM nutzen, kontrolliert.',
+  'Goblet Squat mit KH':            'KH vertikal vor der Brust. Füße schulterbreit, Zehen leicht nach außen. Tief sitzen bis Oberschenkel parallel — Knie über Zehen.',
+  'Bulgarian Split Squat mit KH':   'Hinterer Fuß auf Bank (Schnürsenkel unten). Vorderer Fuß weit vor. Senkrecht nach unten sinken, nicht nach vorne lehnen.',
+  'Ausfallschritte mit KH':         'Großer Schritt. Hinteres Knie fast auf Boden. Oberkörper aufrecht. Vorderes Knie bleibt hinter Zehenspitze.',
+  'Kniebeugen (LH)':                'Stange auf Trapezius. Füße schulterbreit, Zehen nach außen. Knie über Zehen. Brust hoch. Bis Oberschenkel parallel.',
+  'Bulgarian Split Squat (LH)':     'LH auf Schultern. Hinterer Fuß hoch auf Bank. Stabiles Core. Tief gehen für maximalen Stretch der Hüftbeuger.',
+  'Beinpresse':                     'Füße schulterbreit auf Plattform. Knie beugen bis ~90°. Knie NICHT nach innen fallen lassen. Langsam senken, schnell drücken.',
+  'Hack Squat / Hackenschmidt':     'Schultern unter Polster. Füße vorne auf Plattform. Fersen enger für mehr Quaddominanz. Knie verlängern die Schienbeintlinie.',
+  'Rumänisches KH-Kreuzheben':      'Knie leicht gebeugt — und bleibt so! Hüfte zurück. KH nah am Körper senken. Rücken gerade. Hamstring-Stretch spüren.',
+  'Einbeiniges rum. KH-Kreuzheben': 'Standknie leicht gebeugt. KH in Gegenhand. Balance + Kraft. Rücken gerade. Langsam — Gleichgewicht vor Gewicht.',
+  'Rum. Kreuzheben mit Band':       'Band unter Fußballen. Hip-Hinge Bewegung. Spannung oben halten — Hüfte nicht ganz öffnen am Ende.',
+  'Good Mornings mit Band':         'Band über Schultern. Knie leicht gebeugt (bleibt so!). Oberkörper vorneigen bis fast parallel. Hamstrings maximal dehnen.',
+  'Kreuzheben (LH)':                'Stange über Mittelfuß. Rücken gerade, Brust hoch, Lats angespannt. Stange nah am Körper hochführen — schleift fast die Schienbeine.',
+  'Rum. Kreuzheben (LH)':           'Wie KH-RDL aber mit Stange. Knie leicht gebeugt (bleibt so). Stange nah am Körper. Schulterblätter hinten fixiert.',
+  'Hip Thrust auf Bank mit KH':     'Schultern auf Bank. KH auf Hüfte. Füße hüftbreit. Hüfte ganz öffnen oben — Glute 1–2 Sek anspannen.',
+  'Hip Thrust mit Booty-Band':      'Band über Knie. Knie aktiv nach außen drücken. Glute Maximus + Medius aktivieren. Hohe Reps für maximalen Pump.',
+  'Einbeinige Hip Thrust auf Bank': 'Einbeinig = mehr Last pro Seite. Anderes Bein in der Luft strecken. Langsam senken für exzentrischen Fokus.',
+  'Po Brücke mit Booty-Band':       'Liegend auf Matte. Band über Knie. Hüfte nach oben drücken. Einstieg für Glute-Training — Volumen wichtiger als Gewicht.',
+  'Hip Thrust (LH)':                'Stange auf Hüfte (mit Polster!). Schultern hoch auf Bank, Kinn zur Brust schauen. Volle Hüftextension oben. Schwere Lasten möglich.',
+  'Glute Kickback Maschine':        'Brust ans Pad. Kontrolliertes Kickback — kein Schwung. Glute oben 1 Sek anspannen. Langsam zurück für Exzentrik.',
+  'Bulgarian Split Squat tief':     'Hinteres Bein hoch auf Bank. Vorderer Fuß weiter weg als normal. Maximaler Stretch der Hüftbeuger. Sehr langsam senken.',
+  'Nordic Curl':                    'Füße fixieren (Partner oder Gerät). Knie auf Polster. Langsam nach vorne fallen (exzentrisch). Arme fangen auf. Progressiv weiter fallen.',
+  'Beinbeuger mit Band':            'Liegend auf Bauch. Band am Knöchel. Knie beugen bis Ferse Richtung Po. Langsam strecken — nicht los schnellen.',
+  'Medizinball Leg Curl':           '6kg MB zwischen Knöcheln klemmen. Liegend auf Bauch. Langsam beugen und strecken. Isometrisches Halten für mehr Intensität.',
+  'Maschine Beinbeuger liegend':    'Knieachse auf Maschinenachse ausrichten. Langsam senken für exzentrische Arbeit. Kurz halten oben für bessere Kontraktion.',
+  'Maschine Beinbeuger sitzend':    'Knieachse auf Maschinenachse. Volle Streckung am Start für maximale Dehnung. Langsam beugen bis Ende der ROM.',
+  'Beinstrecker mit Band':          'Sitzend. Band am Knöchel fixiert. Langsam strecken, kurz oben halten, langsam beugen. Quad immer unter Spannung.',
+  'Reverse Nordic Curl mit Band':   'Knie auf Matte. Band als Unterstützung. Oberkörper gerade. Langsam nach hinten lehnen. Quad unter starker exzentrischer Last.',
+  'Einbeinige Kniebeuge (Negativ)': 'An Wand oder Stange halten. Einbeinig langsam hinsetzen (3–5 Sek). Quad stark belasten. Progressiv weniger Hilfe nutzen.',
+  'Maschine Beinstrecker':          'Sitz einstellen: Knie über Maschinenachse. Oben kurz halten für Quad-Kontraktion. Langsam senken — Exzentrik ist entscheidend.',
+  'KH-Wadenheben einbeinig':        'KH in einer Hand. Auf Zehenspitze gehen. Ferse tief unter Ständerhöhe senken für maximale ROM. Langsam und kontrolliert.',
+  'Wadenheben mit Band stehend':    'Band unter Fußballen. Volle Streckung auf Zehenspitzen. Langsam senken für Exzentrik. Spannung durch Band konstant.',
+  'Wadenheben auf Stufe':           'Fußballen auf Stufenkante. Ferse unter Stufenhöhe senken. Volle ROM! Waden brauchen hohe Reps und kontrolliertes Tempo.',
+  'Wadenpresse an Beinpresse':      'Nur Fußballen am unteren Rand der Plattform. Kontrolliertes Ein- und Ausfedern. Mehr Gewicht als stehend möglich.',
+  'Maschine Wadenheben':            'Sitzend = Soleus. Stehend = Gastrocnemius. Beide variieren für vollständige Wadenentwicklung. Volle ROM nutzen.',
+};
+
+function getExerciseImage(musterId, uebungName) {
+  if (uebungName && EXERCISE_SPECIFIC_IMAGES[uebungName]) return EXERCISE_SPECIFIC_IMAGES[uebungName];
+  return EXERCISE_IMAGES[musterId] || null;
+}
+
 // Equipment-Icons: kw=Körpergewicht, kh=Kurzhantel, bank=Bank, band=Widerstandsband, booty=Booty-Band, matte=Matte, mb=Medizinball, lh=Langhantel, maschine=Maschine, kabel=Kabelzug
 const UEBUNGEN = {
   'push_horizontal': [
@@ -918,6 +1052,7 @@ function formatDuration(ms) {
 }
 
 function getExerciseInfo(musterId, uebungName) {
+  if (EXERCISE_CUES[uebungName]) return EXERCISE_CUES[uebungName];
   return (UEBUNGEN[musterId] || []).find(u => u.name === uebungName)?.info || null;
 }
 
@@ -1602,7 +1737,7 @@ function renderWorkout() {
 }
 
 function renderMovementCard(musterId, meta, uebungen, sets, selectedUebung, isTraining, movIdx) {
-  const imgUrl = EXERCISE_IMAGES[musterId];
+  const imgUrl = getExerciseImage(musterId, selectedUebung);
   const repRange = getRepRange(musterId);
   const rir = getRIR(currentWeek);
   const setLabel = `${sets} × ${repRange} · RIR ${rir}`;
@@ -1613,7 +1748,7 @@ function renderMovementCard(musterId, meta, uebungen, sets, selectedUebung, isTr
     // Exercise selection
     body += `<div class="exercise-select-label">Wähle deine Übung (bleibt für 90 Tage):</div>`;
     uebungen.forEach(u => {
-      const catImg = EXERCISE_IMAGES[musterId];
+      const catImg = getExerciseImage(musterId, u.name);
       const thumbHtml = catImg
         ? `<div style="width:44px;height:44px;border-radius:10px;overflow:hidden;flex-shrink:0;background:var(--card-alt)"><img src="${catImg}" style="width:100%;height:100%;object-fit:cover" loading="lazy" onerror="this.parentElement.innerHTML='${u.eicon}'"></div>`
         : `<span class="exercise-equip">${u.eicon}</span>`;
