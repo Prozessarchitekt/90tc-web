@@ -3,7 +3,9 @@
     "allow": [
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Read(//c/users/Chris Gessenhardt/.claude/projects/C--claudeprojektordner-90tc-web/**)",
+      "Read(//c/users/Chris Gessenhardt/.claude/projects/C--claudeprojektordner-90tc-web/memory/**)"
     ]
   }
 }
