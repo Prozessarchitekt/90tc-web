@@ -284,6 +284,20 @@
     </a>
   </section>
 
+  <!-- Bevel Recovery Card -->
+  <div id="bevel-card" style="display:none;">
+    <div style="background:rgba(17,240,128,0.04);border:1px solid rgba(17,240,128,0.18);border-radius:20px;padding:14px 18px;display:flex;align-items:center;gap:14px;">
+      <div id="bevel-ring" style="width:52px;height:52px;border-radius:50%;border:3px solid rgba(17,240,128,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(17,240,128,0.06);">
+        <span id="bevel-pct" class="font-headline font-black italic" style="font-size:14px;color:#11f080;line-height:1;">—</span>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;color:rgba(17,240,128,0.5);margin-bottom:3px;">BEVEL RECOVERY</div>
+        <div id="bevel-rec" class="font-headline font-black uppercase" style="font-size:14px;color:#e4e1ef;line-height:1.1;">—</div>
+      </div>
+      <div id="bevel-badge" style="flex-shrink:0;font-size:22px;">💪</div>
+    </div>
+  </div>
+
   <!-- Wochenrückblick -->
   <div id="wochenrueckblick" style="display:none;">
     <div style="background:rgba(18,18,26,0.8);border:1px solid rgba(255,197,108,0.18);border-radius:24px;padding:20px 20px 18px;position:relative;">
@@ -375,8 +389,9 @@
       </div>
       <div class="flex items-baseline gap-1">
         <span id="s-kcal" class="font-headline italic text-3xl font-black text-secondary">—</span>
-        <span class="font-label text-[10px] text-on-surface-variant">KCAL</span>
+        <span id="s-kcal-unit" class="font-label text-[10px] text-on-surface-variant">KCAL</span>
       </div>
+      <div id="s-kcal-raw" style="display:none;font-size:10px;color:#757481;margin-top:-2px;line-height:1.3;"></div>
     </div>
     <div class="bg-surface-container-low p-5 rounded-[24px] flex flex-col gap-1.5 border border-outline-variant/10 shadow-xl backdrop-blur-md">
       <div class="flex items-center gap-1.5">
@@ -397,6 +412,31 @@
       <span id="s-train-sub" class="font-label text-[9px] text-on-surface-variant uppercase tracking-widest">Heute</span>
     </div>
   </section>
+
+  <!-- Energie-Muster Mini -->
+  <div id="energie-mini" style="display:none;">
+    <div style="background:rgba(18,18,26,0.7);border:1px solid rgba(255,197,108,0.12);border-radius:16px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px;">
+      <span id="energie-mini-icon" style="font-size:22px;flex-shrink:0;margin-top:2px;">⚡</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;color:rgba(255,197,108,0.5);margin-bottom:2px;">ENERGIE-MUSTER</div>
+        <div id="energie-mini-label" style="font-size:11px;font-weight:700;color:#aca9b7;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:1px;">—</div>
+        <div id="energie-mini-value" class="font-headline font-black italic" style="font-size:15px;color:#ffc56c;">—</div>
+      </div>
+      <a href="fortschritt.html" style="flex-shrink:0;color:#757481;text-decoration:none;display:flex;align-items:center;">
+        <span class="material-symbols-outlined" style="font-size:18px;">chevron_right</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Transformation Story (shown at day 90+) -->
+  <a href="transformation.html" id="transformation-banner" style="display:none;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(255,197,108,0.12),rgba(255,197,108,0.04));border:1px solid rgba(255,197,108,0.35);border-radius:18px;padding:14px 18px;text-decoration:none;">
+    <div style="width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,rgba(255,197,108,0.25),rgba(255,197,108,0.1));border:1px solid rgba(255,197,108,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;">🏆</div>
+    <div style="flex:1;">
+      <div class="font-headline" style="font-size:13px;font-weight:800;text-transform:uppercase;color:#ffc56c;letter-spacing:.02em;">Deine Transformation</div>
+      <div style="font-size:11px;color:#757481;margin-top:1px;">90 Tage — sieh was du erreicht hast</div>
+    </div>
+    <span class="material-symbols-outlined" style="font-size:18px;color:#ffc56c;">chevron_right</span>
+  </a>
 
   <!-- Kalender Link -->
   <a href="kalender.html" style="display:flex;align-items:center;gap:14px;background:rgba(137,206,255,0.05);border:1px solid rgba(137,206,255,0.14);border-radius:18px;padding:14px 18px;text-decoration:none;">
@@ -428,14 +468,14 @@
       <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Training</span>
     </a>
   </div>
-  <!-- Center: Essen FAB -->
+  <!-- Center: Tagebuch FAB -->
   <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:4px;margin-bottom:6px;pointer-events:auto;">
-    <a href="essen.html" style="text-decoration:none;display:block;">
+    <a href="tagebuch.html" style="text-decoration:none;display:block;">
       <div style="width:60px;height:60px;border-radius:20px;background:linear-gradient(135deg,#ffc56c,#cb9743);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(255,197,108,0.55);">
-        <span class="material-symbols-outlined" style="font-size:26px;color:#321f00;">restaurant</span>
+        <span class="material-symbols-outlined" style="font-size:26px;color:#321f00;">menu_book</span>
       </div>
     </a>
-    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#ffc56c;">Essen</span>
+    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#ffc56c;">Tagebuch</span>
   </div>
   <!-- Right island: Stats | Profil -->
   <div style="flex:1;display:flex;align-items:center;justify-content:space-around;height:60px;background:rgba(18,17,26,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.07);border-radius:22px;overflow:hidden;pointer-events:auto;">
@@ -529,6 +569,32 @@
 <script src="js/auth.js"></script>
 <script src="js/notifications.js"></script>
 <script>
+function getBestEnergieMuster(entries, profile) {
+  if (!entries || entries.length < 7) return null
+  const tDays = entries.filter(e=>e.training_gemacht&&e.stimmung)
+  const rDays = entries.filter(e=>e.training_gemacht===false&&e.stimmung)
+  if (tDays.length >= 3 && rDays.length >= 3) {
+    const avgT = tDays.reduce((s,e)=>s+e.stimmung,0)/tDays.length
+    const avgR = rDays.reduce((s,e)=>s+e.stimmung,0)/rDays.length
+    if (avgT > avgR + 0.3) return { icon:'🏋️', label:'Training hebt deine Stimmung', value:`+${((avgT-avgR)/5*100).toFixed(0)}% bessere Stimmung` }
+  }
+  const wb = entries.filter(e=>e.schlaf_ist_h&&e.energie_level)
+  if (wb.length >= 5) {
+    const gut = wb.filter(e=>e.schlaf_ist_h>=7); const sc = wb.filter(e=>e.schlaf_ist_h<7)
+    if (gut.length && sc.length) {
+      const gAvg = gut.reduce((s,e)=>s+e.energie_level,0)/gut.length
+      const sAvg = sc.reduce((s,e)=>s+e.energie_level,0)/sc.length
+      if (gAvg > sAvg + 0.3) return { icon:'😴', label:'Schlaf macht den Unterschied', value:`+${((gAvg-sAvg)/4*100).toFixed(0)}% mehr Energie` }
+    }
+  }
+  const byDay = {}
+  entries.forEach(e=>{ if(!e.energie_level) return; const d=new Date(e.datum+'T00:00:00').getDay(); if(!byDay[d]) byDay[d]=[]; byDay[d].push(e.energie_level) })
+  let bestDay=-1, bestAvg=0
+  Object.entries(byDay).forEach(([d,v])=>{ const a=v.reduce((s,x)=>s+x,0)/v.length; if(a>bestAvg){bestAvg=a;bestDay=parseInt(d)} })
+  if (bestDay>=0) { const n=['So','Mo','Di','Mi','Do','Fr','Sa']; return { icon:'⚡', label:'Bester Wochentag', value:`${n[bestDay]} — Ø ${bestAvg.toFixed(1)}/4 Energie` } }
+  return null
+}
+
 async function init() {
   const ctx = await requireProfile()
   if (!ctx) return
@@ -589,6 +655,11 @@ async function init() {
     }
   }
 
+  // Transformation Story banner (day 90+)
+  if (dayNr >= 90) {
+    document.getElementById('transformation-banner').style.display = 'flex'
+  }
+
   // Boss-Woche
   const bossWeeks = [[22,28],[50,56],[78,84]]
   const bossNr = bossWeeks.findIndex(([a,b]) => dayNr >= a && dayNr <= b)
@@ -631,14 +702,30 @@ async function init() {
     document.getElementById('foto-rem').style.display = 'flex'
   }
 
-  // Load today data in parallel
-  const [{ data: entry }, { data: trainSessions }] = await Promise.all([
-    sb.from('daily_entries').select('kalorien_ist,protein_ist_g,checkin_morgen,checkin_abend,score_von_7,training_gemacht').eq('user_id', user.id).eq('datum', getToday()).maybeSingle(),
-    sb.from('training_sessions').select('id').eq('user_id', user.id).eq('datum', getToday()).limit(1)
+  // Load today data + full history in parallel
+  const [{ data: entry }, { data: trainSessions }, { data: allEntries }] = await Promise.all([
+    sb.from('daily_entries').select('kalorien_ist,protein_ist_g,checkin_morgen,checkin_abend,score_von_7,training_gemacht,bevel_recovery_pct').eq('user_id', user.id).eq('datum', getToday()).maybeSingle(),
+    sb.from('training_sessions').select('id').eq('user_id', user.id).eq('datum', getToday()).limit(1),
+    sb.from('daily_entries').select('datum,energie_level,stimmung,schlaf_ist_h,training_gemacht,schritte_ist').eq('user_id', user.id).order('datum', { ascending: true })
   ])
 
   // Macro stats
-  if (entry?.kalorien_ist) document.getElementById('s-kcal').textContent = entry.kalorien_ist.toLocaleString('de-DE')
+  if (entry?.kalorien_ist) {
+    const kcal = entry.kalorien_ist
+    const ziel = profile.kalorien_ziel || 0
+    if (ziel > 0) {
+      const delta = kcal - ziel
+      const isDeficit = delta < 0
+      document.getElementById('s-kcal').textContent = (isDeficit ? '' : '+') + delta.toLocaleString('de-DE')
+      document.getElementById('s-kcal').style.color = isDeficit ? '#11f080' : '#ff7351'
+      document.getElementById('s-kcal-unit').textContent = isDeficit ? 'DEFIZIT' : 'ÜBER'
+      const rawEl = document.getElementById('s-kcal-raw')
+      rawEl.textContent = kcal.toLocaleString('de-DE') + ' von ' + ziel.toLocaleString('de-DE') + ' kcal'
+      rawEl.style.display = 'block'
+    } else {
+      document.getElementById('s-kcal').textContent = kcal.toLocaleString('de-DE')
+    }
+  }
   if (entry?.protein_ist_g) document.getElementById('s-prot').textContent = Math.round(entry.protein_ist_g)
 
   // Training
@@ -653,6 +740,30 @@ async function init() {
     const statCard = document.getElementById('stat-training')
     statCard.style.borderColor = 'rgba(0,237,125,0.2)'
     statCard.style.background = 'rgba(0,237,125,0.04)'
+  }
+
+  // Bevel Recovery Card
+  if (entry?.bevel_recovery_pct != null) {
+    const pct = entry.bevel_recovery_pct
+    let color, borderColor, rec, badge
+    if (pct >= 75)      { color='#11f080'; borderColor='rgba(17,240,128,0.4)';  rec='Volle Kraft!';     badge='🚀' }
+    else if (pct >= 50) { color='#ffc56c'; borderColor='rgba(255,197,108,0.4)'; rec='Mittleres Tempo'; badge='⚡' }
+    else                { color='#ff7351'; borderColor='rgba(255,115,81,0.4)';  rec='Leichter Tag';    badge='🛌' }
+    document.getElementById('bevel-pct').textContent    = pct + '%'
+    document.getElementById('bevel-pct').style.color    = color
+    document.getElementById('bevel-ring').style.borderColor = borderColor
+    document.getElementById('bevel-rec').textContent    = rec
+    document.getElementById('bevel-badge').textContent  = badge
+    document.getElementById('bevel-card').style.display = 'block'
+  }
+
+  // Energie-Muster Mini
+  const bestMuster = getBestEnergieMuster(allEntries, profile)
+  if (bestMuster) {
+    document.getElementById('energie-mini-icon').textContent  = bestMuster.icon
+    document.getElementById('energie-mini-label').textContent = bestMuster.label
+    document.getElementById('energie-mini-value').textContent = bestMuster.value
+    document.getElementById('energie-mini').style.display     = 'block'
   }
 
   // Check-in Buttons

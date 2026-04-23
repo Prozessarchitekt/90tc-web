@@ -200,9 +200,10 @@
         Gewichtsverlauf <span id="weight-range" style="margin-left:auto;font-weight:600;color:#757481;font-size:10px;text-transform:none;letter-spacing:0;">letzte 30 Tage</span>
       </div>
       <div class="chart-wrap"><canvas id="weight-chart"></canvas></div>
-      <div style="display:flex;gap:16px;margin-top:10px;">
+      <div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;">
         <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#aca9b7;"><span style="width:16px;height:2px;background:#ffc56c;display:inline-block;border-radius:2px;"></span>Täglich</span>
         <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#aca9b7;"><span style="width:16px;height:3px;background:#f0b760;display:inline-block;border-radius:2px;"></span>7-Tage-Schnitt</span>
+        <span id="goal-legend" style="display:none;align-items:center;gap:5px;font-size:11px;color:#89ceff;"><span style="width:16px;height:0;border-top:2px dashed #89ceff;display:inline-block;"></span>Zielpfad</span>
       </div>
     </div>
 
@@ -295,14 +296,14 @@
       <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Training</span>
     </a>
   </div>
-  <!-- Center: Essen FAB -->
+  <!-- Center: Tagebuch FAB -->
   <div style="flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:4px;margin-bottom:6px;pointer-events:auto;">
-    <a href="essen.html" style="text-decoration:none;display:block;">
+    <a href="tagebuch.html" style="text-decoration:none;display:block;">
       <div style="width:60px;height:60px;border-radius:20px;background:linear-gradient(135deg,#ffc56c,#cb9743);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(255,197,108,0.55);">
-        <span class="material-symbols-outlined" style="font-size:26px;color:#321f00;">restaurant</span>
+        <span class="material-symbols-outlined" style="font-size:26px;color:#321f00;">menu_book</span>
       </div>
     </a>
-    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#ffc56c;">Essen</span>
+    <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#ffc56c;">Tagebuch</span>
   </div>
   <!-- Right island: Stats | Profil -->
   <div style="flex:1;display:flex;align-items:center;justify-content:space-around;height:60px;background:rgba(18,17,26,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.07);border-radius:22px;overflow:hidden;pointer-events:auto;">
@@ -407,15 +408,27 @@ async function init() {
     const labels  = weightData.map(e => { const d = new Date(e.datum+'T00:00:00'); return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}) })
     const weights = weightData.map(e => e.gewicht_kg)
     const avg     = weights.map((_, i) => { const slice = weights.slice(Math.max(0,i-6),i+1); return parseFloat((slice.reduce((s,v)=>s+v,0)/slice.length).toFixed(1)) })
+    let goalDataset = null
+    if (profile.zielgewicht && profile.gewicht_kg && profile.startdatum) {
+      const startKg = profile.gewicht_kg, goalKg = profile.zielgewicht
+      const startDate = new Date(profile.startdatum + 'T00:00:00')
+      const goalData = weightData.map(e => {
+        const days = Math.max(0, Math.round((new Date(e.datum+'T00:00:00') - startDate) / 86400000))
+        return parseFloat((startKg + (goalKg - startKg) * Math.min(1, days / 89)).toFixed(1))
+      })
+      goalDataset = { label:'Zielpfad', data:goalData, borderColor:'#89ceff', borderWidth:1.5, borderDash:[6,4], pointRadius:0, tension:0, fill:false }
+    }
     new Chart(document.getElementById('weight-chart'), {
       type: 'line',
       data: { labels, datasets: [
         { label:'Gewicht', data:weights, borderColor:'#ffc56c', borderWidth:1.5, pointRadius:2, pointBackgroundColor:'#ffc56c', tension:0.3, fill:false },
         { label:'7-Tage-Schnitt', data:avg, borderColor:'#f0b760', borderWidth:2.5, pointRadius:0, tension:0.4, fill:false },
+        ...(goalDataset ? [goalDataset] : [])
       ]},
       options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } },
         scales: { x:{ ticks:{ maxTicksLimit:6, font:{ size:10 } }, grid:{ color:'rgba(255,255,255,0.04)' } }, y:{ ticks:{ font:{ size:10 } }, grid:{ color:'rgba(255,255,255,0.04)' } } } }
     })
+    if (goalDataset) document.getElementById('goal-legend').style.display = 'flex'
   }
 
   // Heatmap

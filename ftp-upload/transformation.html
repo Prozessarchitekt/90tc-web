@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>90TC — Deine Transformation</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ffc56c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icon.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: { colors: {
+        'background': '#03030A', 'surface': '#0d0d17',
+        'surface-container': '#191825', 'surface-container-low': '#12121d',
+        'on-surface': '#efecfb', 'on-surface-variant': '#aca9b7',
+        'primary': '#ffc56c', 'tertiary': '#11f080', 'secondary': '#89ceff',
+        'outline-variant': '#484752',
+      }, fontFamily: { headline: ['Space Grotesk'], body: ['Inter'] } } }
+    }
+  </script>
+  <style>
+    body { background: #03030A; color: #efecfb; font-family: 'Inter', sans-serif; min-height: 100dvh; }
+    .grainy-overlay { pointer-events:none;position:fixed;inset:0;z-index:9999;opacity:0.035;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size:180px 180px; }
+    .splash { position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#03030A;z-index:200; }
+    .spinner { width:32px;height:32px;border:3px solid rgba(255,197,108,0.15);border-top-color:#ffc56c;border-radius:50%;animation:spin .7s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg) } }
+
+    #main { padding-bottom: max(120px, calc(env(safe-area-inset-bottom) + 100px)); }
+
+    .hero-bg {
+      position:absolute; inset:0; z-index:0;
+      background:
+        radial-gradient(ellipse at 65% 8%, rgba(255,197,108,0.45) 0%, transparent 50%),
+        radial-gradient(ellipse at 10% 90%, rgba(17,240,128,0.18) 0%, transparent 50%),
+        linear-gradient(180deg, #070510 0%, #03030A 100%);
+    }
+    .hero-overlay {
+      position:absolute; inset:0; z-index:1;
+      background: linear-gradient(180deg, transparent 30%, #03030A 100%);
+    }
+
+    .stat-card {
+      background: rgba(25,24,37,0.7); backdrop-filter: blur(16px);
+      border: 1.5px solid rgba(72,71,82,0.35); border-radius: 20px; padding: 20px;
+    }
+    .stat-num {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(2rem, 9vw, 2.8rem);
+      font-weight: 900; font-style: italic; line-height: 1;
+    }
+    .badge-row { display:flex; gap:10px; flex-wrap:wrap; }
+    .badge-chip {
+      display:inline-flex; align-items:center; gap:6px;
+      background:rgba(255,197,108,0.08); border:1px solid rgba(255,197,108,0.2);
+      border-radius:99px; padding:6px 12px;
+      font-size:12px; font-weight:700; color:#ffc56c;
+    }
+
+    @keyframes fadeUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:none; } }
+    .fade-up { animation: fadeUp .6s ease both; }
+    .fade-up:nth-child(1) { animation-delay:.05s; }
+    .fade-up:nth-child(2) { animation-delay:.15s; }
+    .fade-up:nth-child(3) { animation-delay:.25s; }
+    .fade-up:nth-child(4) { animation-delay:.35s; }
+    .fade-up:nth-child(5) { animation-delay:.45s; }
+  </style>
+</head>
+<body>
+<div class="grainy-overlay"></div>
+<div class="splash" id="splash"><div class="spinner"></div></div>
+
+<div id="main" style="display:none;">
+
+  <!-- Hero -->
+  <div style="position:relative;overflow:hidden;min-height:360px;display:flex;flex-direction:column;justify-content:flex-end;">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+    <div style="position:relative;z-index:2;padding:max(72px,calc(env(safe-area-inset-top)+56px)) 20px 32px;">
+      <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.25em;color:rgba(255,197,108,0.55);margin-bottom:10px;">
+        🏆 90 TAGE CHALLENGE · ABGESCHLOSSEN
+      </div>
+      <h1 class="font-headline" style="font-size:clamp(2.8rem,13vw,4.5rem);font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:-0.03em;line-height:.88;color:#e4e1ef;margin-bottom:12px;">
+        Du hast<br><span style="color:#ffc56c;text-shadow:0 0 40px rgba(255,197,108,0.45);">es</span><br>geschafft!
+      </h1>
+      <p style="font-size:14px;color:rgba(172,169,183,0.8);line-height:1.6;max-width:320px;" id="hero-sub">
+        90 Tage. Kein Kompromiss. Das bist jetzt du.
+      </p>
+    </div>
+  </div>
+
+  <div style="padding:0 16px;max-width:600px;margin:0 auto;display:flex;flex-direction:column;gap:14px;">
+
+    <!-- Gewicht Transformation -->
+    <div class="stat-card fade-up" id="weight-card" style="display:none;">
+      <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,197,108,0.5);margin-bottom:12px;">
+        ⚖️ GEWICHT
+      </div>
+      <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;">
+        <div>
+          <div style="font-size:10px;color:#757481;font-weight:700;margin-bottom:2px;">START</div>
+          <div class="stat-num" style="color:#aca9b7;" id="weight-start">—</div>
+          <div style="font-size:10px;color:#757481;margin-top:2px;">kg</div>
+        </div>
+        <div style="font-size:28px;color:#484752;padding-bottom:12px;">→</div>
+        <div>
+          <div style="font-size:10px;color:#757481;font-weight:700;margin-bottom:2px;">JETZT</div>
+          <div class="stat-num" style="color:#ffc56c;" id="weight-now">—</div>
+          <div style="font-size:10px;color:#757481;margin-top:2px;">kg</div>
+        </div>
+        <div style="flex:1;min-width:80px;">
+          <div style="font-size:10px;color:#11f080;font-weight:700;margin-bottom:2px;">VERLOREN</div>
+          <div class="stat-num" style="color:#11f080;" id="weight-delta">—</div>
+          <div style="font-size:10px;color:#11f080;margin-top:2px;">kg</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;" class="fade-up">
+      <div class="stat-card">
+        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(17,240,128,0.55);margin-bottom:8px;">🏋️ TRAININGS</div>
+        <div class="stat-num" id="s-trainings" style="color:#11f080;">—</div>
+        <div style="font-size:10px;color:#757481;margin-top:4px;">von 90 Tagen</div>
+      </div>
+      <div class="stat-card">
+        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,197,108,0.55);margin-bottom:8px;">🔥 STREAK</div>
+        <div class="stat-num" id="s-streak" style="color:#ffc56c;">—</div>
+        <div style="font-size:10px;color:#757481;margin-top:4px;">Tage Rekord</div>
+      </div>
+      <div class="stat-card">
+        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(137,206,255,0.55);margin-bottom:8px;">⭐ PERFEKTE TAGE</div>
+        <div class="stat-num" id="s-perfect" style="color:#89ceff;">—</div>
+        <div style="font-size:10px;color:#757481;margin-top:4px;">Score 7/7</div>
+      </div>
+      <div class="stat-card">
+        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,197,108,0.55);margin-bottom:8px;">🏆 XP GESAMT</div>
+        <div class="stat-num" id="s-xp" style="color:#ffc56c;">—</div>
+        <div style="font-size:10px;color:#757481;margin-top:4px;">Erfahrungspunkte</div>
+      </div>
+    </div>
+
+    <!-- Earned Badges -->
+    <div class="stat-card fade-up" id="badge-card" style="display:none;">
+      <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,197,108,0.5);margin-bottom:12px;">
+        <span class="material-symbols-outlined" style="font-size:12px;font-variation-settings:'FILL' 1;vertical-align:middle;">workspace_premium</span>
+        BADGES VERDIENT
+      </div>
+      <div class="badge-row" id="badge-list"></div>
+    </div>
+
+    <!-- Foto CTA -->
+    <a href="fotos.html" class="stat-card fade-up" style="text-decoration:none;display:flex;align-items:center;gap:16px;background:rgba(17,240,128,0.04);border-color:rgba(17,240,128,0.25);">
+      <div style="width:52px;height:52px;border-radius:16px;background:rgba(17,240,128,0.1);border:1px solid rgba(17,240,128,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:24px;">📸</div>
+      <div style="flex:1;">
+        <div class="font-headline" style="font-size:14px;font-weight:800;text-transform:uppercase;color:#e4e1ef;margin-bottom:2px;">Vorher / Nachher</div>
+        <div style="font-size:12px;color:#757481;">Dein Körper vor 90 Tagen vs. heute</div>
+      </div>
+      <span class="material-symbols-outlined" style="font-size:20px;color:#11f080;">chevron_right</span>
+    </a>
+
+    <!-- Share Inspiration -->
+    <div class="stat-card fade-up" style="text-align:center;background:linear-gradient(135deg,rgba(255,197,108,0.08),rgba(255,197,108,0.03));border-color:rgba(255,197,108,0.2);">
+      <div style="font-size:36px;margin-bottom:12px;">🌟</div>
+      <div class="font-headline" style="font-size:20px;font-weight:900;font-style:italic;text-transform:uppercase;color:#e4e1ef;margin-bottom:8px;">Was kommt als Nächstes?</div>
+      <p style="font-size:13px;color:#aca9b7;line-height:1.65;margin-bottom:20px;">
+        Du hast bewiesen, dass du 90 Tage Disziplin halten kannst.
+        Das ist keine Kleinigkeit — das ist dein neues Fundament.
+      </p>
+      <a href="dashboard.html" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#ffc56c,#cb9743);border-radius:14px;padding:14px 24px;text-decoration:none;color:#321f00;font-weight:800;font-family:'Space Grotesk',sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:.04em;">
+        <span class="material-symbols-outlined" style="font-size:18px;font-variation-settings:'FILL' 1">rocket_launch</span>
+        Neue Challenge starten
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/gamification.js"></script>
+<script src="js/auth.js"></script>
+<script>
+const ALL_BADGES = [
+  { id:'erster_schritt', emoji:'🌱', name:'Erster Schritt' },
+  { id:'eine_woche', emoji:'💪', name:'Eine Woche' },
+  { id:'halbzeit', emoji:'🏃', name:'Halbzeit-Held' },
+  { id:'streak_30', emoji:'🔥', name:'Unaufhaltsam' },
+  { id:'die_letzten_10', emoji:'⭐', name:'Die letzten 10' },
+  { id:'champion', emoji:'🏆', name:'90TC Champion' },
+  { id:'proteinmaschine', emoji:'🥩', name:'Proteinmaschine' },
+  { id:'wasserheld', emoji:'💧', name:'Wasserheld' },
+  { id:'steps_club', emoji:'👟', name:'10k Steps Club' },
+  { id:'schlafkoenig', emoji:'😴', name:'Schlafkönig' },
+  { id:'progressive', emoji:'📈', name:'Progressive Overload' },
+  { id:'fruehaufsteher', emoji:'🌅', name:'Frühaufsteher' },
+  { id:'nachtaktiv', emoji:'🌙', name:'Nachtaktiv' },
+  { id:'perfekter_tag', emoji:'⚡', name:'Perfekter Tag' },
+  { id:'perfekte_woche', emoji:'💯', name:'Perfekte Woche' },
+]
+
+async function init() {
+  const ctx = await requireProfile()
+  if (!ctx) return
+  const { user, profile } = ctx
+
+  document.getElementById('splash').style.display = 'none'
+  document.getElementById('main').style.display = 'block'
+
+  const name = profile.vorname || profile.name || 'Champ'
+  document.getElementById('hero-sub').textContent = `90 Tage. Kein Kompromiss. Das bist jetzt du, ${name}.`
+
+  const [{ data: entries }, { data: badges }, { data: lastEntry }] = await Promise.all([
+    sb.from('daily_entries').select('training_gemacht,score_von_7,gewicht_kg').eq('user_id', user.id),
+    sb.from('user_badges').select('badge_id').eq('user_id', user.id),
+    sb.from('daily_entries').select('gewicht_kg').eq('user_id', user.id).order('datum', {ascending: false}).limit(1)
+  ])
+
+  // Stats
+  const trainDays   = (entries||[]).filter(e=>e.training_gemacht).length
+  const perfectDays = (entries||[]).filter(e=>e.score_von_7===7).length
+  document.getElementById('s-trainings').textContent = trainDays
+  document.getElementById('s-streak').textContent    = profile.streak_rekord || 0
+  document.getElementById('s-perfect').textContent   = perfectDays
+  document.getElementById('s-xp').textContent        = (profile.xp_gesamt || 0).toLocaleString('de-DE')
+
+  // Weight transformation
+  const startKg = profile.gewicht_kg
+  const nowKg   = lastEntry?.[0]?.gewicht_kg || startKg
+  if (startKg && nowKg) {
+    const delta = parseFloat((startKg - nowKg).toFixed(1))
+    document.getElementById('weight-start').textContent = startKg
+    document.getElementById('weight-now').textContent   = nowKg
+    document.getElementById('weight-delta').textContent = delta > 0 ? delta : Math.abs(delta)
+    if (delta <= 0) {
+      document.getElementById('weight-delta').style.color = '#ff7351'
+      document.querySelector('#weight-card [style*="VERLOREN"]').textContent = 'ZUGENOMMEN'
+    }
+    document.getElementById('weight-card').style.display = 'block'
+  }
+
+  // Badges
+  const earnedIds = new Set((badges||[]).map(b=>b.badge_id))
+  const earned = ALL_BADGES.filter(b=>earnedIds.has(b.id))
+  if (earned.length > 0) {
+    document.getElementById('badge-list').innerHTML = earned.map(b =>
+      `<div class="badge-chip">${b.emoji} ${b.name}</div>`
+    ).join('')
+    document.getElementById('badge-card').style.display = 'block'
+  }
+}
+init()
+</script>
+</body>
+</html>

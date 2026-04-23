@@ -428,6 +428,16 @@
     </div>
   </div>
 
+  <!-- Transformation Story (shown at day 90+) -->
+  <a href="transformation.html" id="transformation-banner" style="display:none;align-items:center;gap:14px;background:linear-gradient(135deg,rgba(255,197,108,0.12),rgba(255,197,108,0.04));border:1px solid rgba(255,197,108,0.35);border-radius:18px;padding:14px 18px;text-decoration:none;">
+    <div style="width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,rgba(255,197,108,0.25),rgba(255,197,108,0.1));border:1px solid rgba(255,197,108,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;">🏆</div>
+    <div style="flex:1;">
+      <div class="font-headline" style="font-size:13px;font-weight:800;text-transform:uppercase;color:#ffc56c;letter-spacing:.02em;">Deine Transformation</div>
+      <div style="font-size:11px;color:#757481;margin-top:1px;">90 Tage — sieh was du erreicht hast</div>
+    </div>
+    <span class="material-symbols-outlined" style="font-size:18px;color:#ffc56c;">chevron_right</span>
+  </a>
+
   <!-- Kalender Link -->
   <a href="kalender.html" style="display:flex;align-items:center;gap:14px;background:rgba(137,206,255,0.05);border:1px solid rgba(137,206,255,0.14);border-radius:18px;padding:14px 18px;text-decoration:none;">
     <div style="width:40px;height:40px;border-radius:13px;background:rgba(137,206,255,0.1);border:1px solid rgba(137,206,255,0.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
@@ -643,6 +653,11 @@ async function init() {
       document.getElementById('quote-text').textContent = q.text || '—'
       if (q.author) document.getElementById('quote-author').textContent = '— ' + q.author
     }
+  }
+
+  // Transformation Story banner (day 90+)
+  if (dayNr >= 90) {
+    document.getElementById('transformation-banner').style.display = 'flex'
   }
 
   // Boss-Woche

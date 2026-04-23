@@ -772,6 +772,13 @@
       <span class="score-xp" id="score-xp">+50 XP 🪙+50</span>
     </div>
     <div class="score-factors" id="score-factors"></div>
+    <div id="coach-section" style="display:none;margin-top:14px;padding:14px;background:rgba(137,206,255,0.05);border:1px solid rgba(137,206,255,0.14);border-radius:16px;text-align:left;">
+      <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:rgba(137,206,255,0.6);margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+        <span class="material-symbols-outlined" style="font-size:12px;font-variation-settings:'FILL' 1">psychology</span>
+        COACH FEEDBACK
+      </div>
+      <div id="coach-msg" style="font-size:13px;color:#aca9b7;line-height:1.65;"></div>
+    </div>
     <button class="btn-save-gold" onclick="closeScore()" style="margin-bottom:0;">
       <span class="material-symbols-outlined" style="font-size:20px;">local_fire_department</span>
       Weiter
@@ -945,6 +952,7 @@ async function saveAbend() {
   }
 
   showScoreOverlay(score, xpEarned, fullEntry, profile)
+  fetchCoachMessage(fullEntry, profile, score)
   document.getElementById('abend-section').style.borderColor = 'rgba(17,240,128,0.4)'
   btn.disabled = false
   btn.querySelector('span:last-child').textContent = '✓ Gespeichert'
@@ -987,6 +995,40 @@ function showScoreOverlay(score, xpEarned, entry, profile) {
 
 function closeScore() {
   document.getElementById('score-overlay').style.display = 'none'
+  document.getElementById('coach-section').style.display = 'none'
+  document.getElementById('coach-msg').textContent = ''
+}
+
+async function fetchCoachMessage(entry, profile, score) {
+  const coachSec = document.getElementById('coach-section')
+  const coachMsg = document.getElementById('coach-msg')
+  if (!coachSec) return
+  coachSec.style.display = 'block'
+  coachMsg.innerHTML = '<span style="color:#757481;font-style:italic;">⏳ Analysiere deinen Tag…</span>'
+  try {
+    const res = await fetch('/api/coach', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        score,
+        kalorien: entry.kalorien_ist,
+        protein: entry.protein_ist_g,
+        wasser: entry.wasser_ist_l,
+        schlaf: entry.schlaf_ist_h,
+        schritte: entry.schritte_ist,
+        stimmung: entry.stimmung,
+        training: entry.training_gemacht
+      })
+    })
+    const data = await res.json()
+    if (data.message && data.message !== '—') {
+      coachMsg.textContent = data.message
+    } else {
+      coachSec.style.display = 'none'
+    }
+  } catch {
+    coachSec.style.display = 'none'
+  }
 }
 
 function v(id) { return document.getElementById(id)?.value }
