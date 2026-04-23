@@ -12,15 +12,15 @@
   --border:       rgba(255,255,255,0.05);
   --border2:      rgba(255,255,255,0.10);
 
-  --accent:       #E8A317;
-  --accent2:      #F0BA3A;
-  --accent-dim:   rgba(232,163,23,0.08);
-  --accent-glow:  rgba(232,163,23,0.25);
-  --accent-border:rgba(232,163,23,0.32);
+  --accent:       #ffc56c;
+  --accent2:      #f0a030;
+  --accent-dim:   rgba(255,197,108,0.08);
+  --accent-glow:  rgba(255,197,108,0.25);
+  --accent-border:rgba(255,197,108,0.32);
 
-  --gold:         #E8A317;
-  --gold2:        #F0BA3A;
-  --gold-dim:     rgba(232,163,23,0.08);
+  --gold:         #ffc56c;
+  --gold2:        #f0a030;
+  --gold-dim:     rgba(255,197,108,0.08);
 
   --green:        #16a34a;
   --green2:       #22c55e;
@@ -49,7 +49,7 @@
 
   --shadow:       0 8px 32px rgba(0,0,0,0.6);
   --shadow-sm:    0 2px 12px rgba(0,0,0,0.5);
-  --shadow-accent:0 0 40px rgba(232,163,23,0.18);
+  --shadow-accent:0 0 40px rgba(255,197,108,0.18);
   --glass:        rgba(255,255,255,0.03);
   --glass-border: 1px solid rgba(255,255,255,0.06);
 }
@@ -270,10 +270,10 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent) 0%, #c8880f 100%);
-  color: #000; font-weight: 800; box-shadow: 0 6px 24px rgba(232,163,23,.35);
+  background: linear-gradient(135deg, var(--accent) 0%, #d48010 100%);
+  color: #000; font-weight: 800; box-shadow: 0 6px 24px rgba(255,197,108,.35);
 }
-.btn-primary:hover:not(:disabled) { box-shadow: 0 8px 32px rgba(232,163,23,.5); transform: translateY(-1px); }
+.btn-primary:hover:not(:disabled) { box-shadow: 0 8px 32px rgba(255,197,108,.5); transform: translateY(-1px); }
 
 .btn-gold {
   background: linear-gradient(135deg, var(--gold), var(--gold2));
@@ -432,7 +432,7 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
   stroke-linecap: round; stroke-dasharray: 408.4;
   transform: rotate(-90deg); transform-origin: 80px 80px;
   transition: stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1);
-  filter: drop-shadow(0 0 10px rgba(232,163,23,0.6));
+  filter: drop-shadow(0 0 10px rgba(255,197,108,0.6));
 }
 .ring-inner {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -450,7 +450,7 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
 .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
 .stat-card { padding: 18px 16px; }
 .stat-fire  { font-size: 32px; line-height: 1; margin-bottom: 4px; animation: fireGlow 2s infinite; }
-@keyframes fireGlow { 0%,100% { filter: drop-shadow(0 0 4px rgba(232,163,23,0.6)); } 50% { filter: drop-shadow(0 0 12px rgba(232,163,23,1)); } }
+@keyframes fireGlow { 0%,100% { filter: drop-shadow(0 0 4px rgba(255,197,108,0.6)); } 50% { filter: drop-shadow(0 0 12px rgba(255,197,108,1)); } }
 .stat-number { font-size: 32px; font-weight: 900; line-height: 1; }
 .stat-label  { font-size: 11px; font-family: var(--mono); color: var(--text2); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
 .stat-record { font-size: 11px; color: var(--muted); margin-top: 4px; }
@@ -502,7 +502,7 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
 .macro-mini-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
 .macro-mini-box  { background: var(--surface); border-radius: var(--r-sm); padding: 12px 6px; text-align: center; }
 .macro-mini-val  { font-size: 16px; font-weight: 900; line-height: 1; }
-.macro-mini-lbl  { font-size: 10px; font-family: var(--mono); color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; }
+.macro-mini-lbl  { font-size: 11px; font-family: var(--mono); color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; }
 
 /* ── Check-in Page ───────────────────────────── */
 .checkin-section {
@@ -534,7 +534,7 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
 .energie-btn:hover   { border-color: var(--accent-border); }
 .energie-btn.active  { border-color: var(--accent); background: var(--accent-dim); }
 .energie-emoji { font-size: 28px; }
-.energie-label { font-size: 10px; color: var(--text2); font-weight: 600; }
+.energie-label { font-size: 11px; color: var(--text2); font-weight: 600; }
 
 /* Stimmung */
 .stimmung-row { display: flex; gap: 6px; }
@@ -701,7 +701,7 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
 .macro-target-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
 .macro-target-box  { background: var(--surface); border-radius: var(--r-sm); padding: 14px 8px; text-align: center; }
 .macro-target-val  { font-size: 22px; font-weight: 900; }
-.macro-target-lbl  { font-size: 10px; font-family: var(--mono); color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+.macro-target-lbl  { font-size: 11px; font-family: var(--mono); color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
 
 .setting-row {
   display: flex; align-items: center; gap: 14px;
@@ -781,6 +781,11 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
 .macro-bar-wrap { height: 6px; background: var(--surface); border-radius: 99px; overflow: hidden; margin-bottom: 3px; }
 .macro-bar-fill { height: 100%; border-radius: 99px; transition: width 0.8s ease; }
 
+/* ── Focus & Accessibility ───────────────────── */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+input:focus-visible, textarea:focus-visible, select:focus-visible { outline: none; }
+.btn:focus-visible { outline-offset: 4px; }
+
 /* ── Animations ──────────────────────────────── */
 @keyframes slideUp  { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 @keyframes fadeInUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -807,7 +812,7 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
 }
 .bnav-item svg { width: 22px; height: 22px; }
 .bnav-item.active { color: var(--accent); }
-.bnav-item.active svg { filter: drop-shadow(0 0 6px rgba(232,163,23,.6)); }
+.bnav-item.active svg { filter: drop-shadow(0 0 6px rgba(255,197,108,.6)); }
 
 /* ── Responsive ──────────────────────────────── */
 @media (min-width: 431px) {

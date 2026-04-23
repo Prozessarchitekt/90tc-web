@@ -980,8 +980,12 @@ async function doSearch() {
   if (!q) return
   const el = document.getElementById('search-results')
   el.style.display = 'block'
-  el.innerHTML = '<div class="text-center py-4 text-on-surface-variant text-sm">Suche läuft…</div>'
-  const results = await searchProducts(q)
+  el.innerHTML = '<div class="flex flex-col items-center gap-3 py-6"><div class="w-7 h-7 rounded-full border-2 border-on-surface-variant/20 border-t-primary animate-spin"></div><div class="text-on-surface-variant text-sm">Suche läuft…</div></div>'
+  let results
+  try { results = await searchProducts(q) } catch(e) {
+    el.innerHTML = '<div class="text-center py-4 text-error text-sm">Suche fehlgeschlagen. Bitte erneut versuchen.</div>'
+    return
+  }
   if (!results.length) { el.innerHTML = '<div class="text-center py-4 text-on-surface-variant text-sm">Keine Produkte gefunden</div>'; return }
   window._sr = results
   el.innerHTML = results.map((p,i) => `
