@@ -1011,9 +1011,12 @@ async function fetchCoachMessage(entry, profile, score) {
   if (!coachSec) return
   coachSec.style.display = 'block'
   coachMsg.innerHTML = '<span style="color:#757481;font-style:italic;">⏳ Analysiere deinen Tag…</span>'
+  const ctrl = new AbortController()
+  const timer = setTimeout(() => ctrl.abort(), 8000)
   try {
     const res = await fetch('/api/coach', {
       method: 'POST',
+      signal: ctrl.signal,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         score,
@@ -1029,6 +1032,7 @@ async function fetchCoachMessage(entry, profile, score) {
         rhr: entry.bevel_resting_hr
       })
     })
+    clearTimeout(timer)
     const data = await res.json()
     if (data.message && data.message !== '—') {
       coachMsg.textContent = data.message
@@ -1036,6 +1040,7 @@ async function fetchCoachMessage(entry, profile, score) {
       coachSec.style.display = 'none'
     }
   } catch {
+    clearTimeout(timer)
     coachSec.style.display = 'none'
   }
 }
