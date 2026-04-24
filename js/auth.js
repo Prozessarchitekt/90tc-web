@@ -12,7 +12,8 @@ async function requireAuth() {
 async function requireProfile() {
   const user = await requireAuth()
   if (!user) return null
-  const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle()
+  const { data: profile, error: profileErr } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle()
+  if (profileErr) { window.location.href = 'login.html'; return null }
   if (!profile) { window.location.href = 'onboarding.html'; return null }
   // Apply theme globally
   if (profile.theme) {
@@ -53,5 +54,5 @@ function showToast(msg, type = 'success') {
   t.textContent = msg
   document.body.appendChild(t)
   setTimeout(() => t.classList.add('toast-show'), 10)
-  setTimeout(() => { t.classList.remove('toast-show'); setTimeout(() => t.remove(), 300) }, 3000)
+  setTimeout(() => { t.classList.remove('toast-show'); setTimeout(() => t.remove(), 300) }, 4500)
 }

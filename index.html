@@ -46,7 +46,8 @@
       const { data: { session } } = await sb.auth.getSession()
       clearTimeout(fallback)
       if (!session) { window.location.href = 'login.html'; return }
-      const { data: profile } = await sb.from('profiles').select('id').eq('id', session.user.id).maybeSingle()
+      const { data: profile, error: profileErr } = await sb.from('profiles').select('id').eq('id', session.user.id).maybeSingle()
+      if (profileErr) { window.location.href = 'login.html'; return }
       window.location.href = profile ? 'dashboard.html' : 'onboarding.html'
     } catch(e) {
       clearTimeout(fallback)

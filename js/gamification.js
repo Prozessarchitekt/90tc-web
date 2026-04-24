@@ -251,7 +251,7 @@ function calculateMacrosFromTable(geschlecht, ziel, kfa, groesse, gewicht, alter
   if (alter >= 65)  protein = Math.round(protein * 1.25) // Ab 65 +25% Protein
   if (vegan)        protein = Math.round(protein * 1.20) // Vegan +20% Protein
 
-  const carbs = Math.max(0, Math.round((kcal - protein * 4 - fett * 9) / 4))
+  const carbs = Math.max(0, Math.round((kcal - protein * 4.1 - fett * 9.3) / 4.1))
   return {
     kalorien: kcal, protein, fett, carbs,
     kfaGruppe: `KFA ${group.kfaMin}–${group.kfaMax}%`,

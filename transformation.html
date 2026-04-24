@@ -119,9 +119,9 @@
           <div style="font-size:10px;color:#757481;margin-top:2px;">kg</div>
         </div>
         <div style="flex:1;min-width:80px;">
-          <div style="font-size:10px;color:#11f080;font-weight:700;margin-bottom:2px;">VERLOREN</div>
+          <div id="weight-delta-label" style="font-size:10px;color:#11f080;font-weight:700;margin-bottom:2px;">VERLOREN</div>
           <div class="stat-num" style="color:#11f080;" id="weight-delta">—</div>
-          <div style="font-size:10px;color:#11f080;margin-top:2px;">kg</div>
+          <div id="weight-delta-unit" style="font-size:10px;color:#11f080;margin-top:2px;">kg</div>
         </div>
       </div>
     </div>
@@ -244,7 +244,9 @@ async function init() {
     document.getElementById('weight-delta').textContent = delta > 0 ? delta : Math.abs(delta)
     if (delta <= 0) {
       document.getElementById('weight-delta').style.color = '#ff7351'
-      document.querySelector('#weight-card [style*="VERLOREN"]').textContent = 'ZUGENOMMEN'
+      document.getElementById('weight-delta-label').style.color = '#ff7351'
+      document.getElementById('weight-delta-unit').style.color = '#ff7351'
+      document.getElementById('weight-delta-label').textContent = 'ZUGENOMMEN'
     }
     document.getElementById('weight-card').style.display = 'block'
   }

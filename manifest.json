@@ -22,6 +22,29 @@
       "purpose": "maskable"
     }
   ],
+  "shortcuts": [
+    {
+      "name": "Check-in",
+      "short_name": "Check-in",
+      "description": "Täglicher Morgen- und Abend-Check-in",
+      "url": "/checkin.html",
+      "icons": [{ "src": "icon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Home",
+      "description": "Übersicht und Tagesstatus",
+      "url": "/dashboard.html",
+      "icons": [{ "src": "icon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Training",
+      "short_name": "Training",
+      "description": "Workout starten",
+      "url": "/training.html",
+      "icons": [{ "src": "icon.svg", "sizes": "any" }]
+    }
+  ],
   "screenshots": [],
   "categories": ["health", "fitness"]
 }

@@ -27,6 +27,7 @@
 
     <!-- Footer -->
     <div class="ob-footer" id="ob-footer">
+      <div id="ob-error" style="display:none;width:100%;text-align:center;color:#ff7351;font-size:12px;font-weight:700;padding:0 0 8px;letter-spacing:0.05em;"></div>
       <button class="btn btn-ghost" id="btn-back" onclick="prevStep()" style="flex:1;display:none">← Zurück</button>
       <button class="btn btn-primary" id="btn-next" onclick="nextStep()" style="flex:2">Weiter →</button>
     </div>
@@ -309,7 +310,6 @@ function renderStep() {
       <div style="text-align:center;margin-top:6px;font-size:12px;color:var(--muted)">
         ${obFotoFile ? '✓ Foto ausgewählt — jetzt Challenge starten!' : 'Optional — kannst du auch später in der App machen'}
       </div>
-      <div id="ob-error"></div>
     `
   }
 }
@@ -346,12 +346,21 @@ function canProceed() {
   return true // step 4 + 5 always ok
 }
 
+function showStepError(msg) {
+  const el = document.getElementById('ob-error')
+  if (!el) return
+  el.textContent = '⚠️ ' + msg
+  el.style.display = 'block'
+  setTimeout(() => { el.style.display = 'none' }, 3500)
+}
+
 function nextStep() {
   if (!canProceed()) {
-    const msgs = ['Name eingeben', 'Ziel auswählen', 'Gewicht eingeben', 'Stunden müssen 24 ergeben', '', '']
-    if (msgs[step]) alert(msgs[step])
+    const msgs = ['Name eingeben', 'Ziel auswählen', 'Gewicht eingeben', 'Stunden müssen genau 24 ergeben', '', '']
+    if (msgs[step]) showStepError(msgs[step])
     return
   }
+  document.getElementById('ob-error').style.display = 'none'
   if (step < TOTAL - 1) { step++; renderStep() }
   else finish()
 }
