@@ -760,7 +760,7 @@ async function init() {
   if (entry?.protein_ist_g) document.getElementById('s-prot').textContent = Math.round(entry.protein_ist_g)
 
   // Training
-  const trainedToday = trainSessions && trainSessions.length > 0
+  const trainedToday = (trainSessions && trainSessions.length > 0) || !!entry?.training_gemacht
   const trainEl = document.getElementById('s-train')
   trainEl.textContent = trainedToday ? '✓' : '–'
   trainEl.className = trainedToday

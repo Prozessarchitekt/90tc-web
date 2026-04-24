@@ -70,7 +70,7 @@ function scoreClass(s) {
 function metaText(e) {
   const parts = []
   if (e.gewicht_kg) parts.push(`${e.gewicht_kg} kg`)
-  if (e.energie_level) parts.push(['😴','😐','⚡','🚀'][e.energie_level-1])
+  if (e.energie_level) parts.push(['😴 Müde','😐 Okay','⚡ Gut','🚀 Top-Energie'][e.energie_level-1])
   if (e.training_gemacht) parts.push('🏋️ Training')
   if (e.kalorien_ist) parts.push(`${e.kalorien_ist} kcal`)
   if (!parts.length) {

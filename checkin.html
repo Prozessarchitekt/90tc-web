@@ -1150,10 +1150,14 @@ async function init() {
     const wocheNr = Math.ceil(dayNr / 7)
     const { data: ref } = await sb.from('weekly_reflections')
       .select('*').eq('user_id', user.id).eq('woche_nr', wocheNr).maybeSingle()
-    if (ref) {
-      if (ref.gut_gelaufen) document.getElementById('ref-gut').value = ref.gut_gelaufen
-      if (ref.schwer_gewesen) document.getElementById('ref-schwer').value = ref.schwer_gewesen
-      if (ref.aenderung) document.getElementById('ref-aenderung').value = ref.aenderung
+    const refMap = { 'ref-gut': ref?.gut_gelaufen, 'ref-schwer': ref?.schwer_gewesen, 'ref-aenderung': ref?.aenderung }
+    for (const [id, dbVal] of Object.entries(refMap)) {
+      const el = document.getElementById(id)
+      if (!el) continue
+      const lsKey = `90tc_ref_w${wocheNr}_${id}`
+      // Restore: prefer DB value, fall back to localStorage draft
+      el.value = dbVal || localStorage.getItem(lsKey) || ''
+      el.addEventListener('input', () => localStorage.setItem(lsKey, el.value))
     }
   }
 

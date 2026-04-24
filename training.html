@@ -2035,6 +2035,11 @@ async function awardTrainingXP() {
 
 init();
 
+window.addEventListener('pagehide', () => {
+  clearInterval(durationInterval)
+  clearInterval(timerInterval)
+})
+
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(() => {});
 }

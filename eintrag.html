@@ -150,9 +150,19 @@ async function init() {
   const datum = params.get('datum')
   if (!datum) { location.href = 'tagebuch.html'; return }
 
-  const { data: e } = await sb.from('daily_entries')
+  const { data: e, error: entryErr } = await sb.from('daily_entries')
     .select('*').eq('user_id', user.id).eq('datum', datum).maybeSingle()
 
+  if (entryErr) {
+    document.getElementById('loading').innerHTML = `
+      <div style="text-align:center;padding:48px 20px;">
+        <div style="font-size:36px;margin-bottom:12px;">⚠️</div>
+        <div style="font-size:15px;color:rgba(228,225,239,0.7);font-weight:700;">Fehler beim Laden</div>
+        <div style="font-size:12px;color:rgba(228,225,239,0.35);margin-top:6px;">${entryErr.message}</div>
+        <a href="tagebuch.html" style="display:inline-block;margin-top:20px;color:#ffc56c;font-size:13px;font-weight:700;">← Zurück zum Tagebuch</a>
+      </div>`
+    return
+  }
   if (!e) { location.href = 'tagebuch.html'; return }
 
   const d = new Date(datum + 'T00:00:00')
@@ -200,6 +210,12 @@ async function init() {
       html += row('Schlaf', e.schlaf_ist_h + ' h', c)
     }
     if (e.energie_level) html += row('Energie', ENERGIE_LABEL[e.energie_level - 1] || '—', 'var(--text)')
+    if (e.bevel_recovery_pct != null) {
+      const rc = e.bevel_recovery_pct >= 75 ? 'var(--green2)' : e.bevel_recovery_pct >= 50 ? 'var(--gold2)' : 'var(--danger)'
+      html += row('Recovery', e.bevel_recovery_pct + '%', rc)
+    }
+    if (e.bevel_hrv_ms != null) html += row('HRV', e.bevel_hrv_ms + ' ms', 'var(--text2)')
+    if (e.bevel_resting_hr != null) html += row('Ruhepuls', e.bevel_resting_hr + ' bpm', 'var(--text2)')
     if (e.intention) html += row('Intention', '„' + e.intention + '"', 'var(--purple)')
     if (!html) html = row('—', 'Keine Details', '')
     document.getElementById('morgen-grid').innerHTML = html

@@ -575,7 +575,7 @@ async function renderMissionen(entries, profile, user) {
         </div>
         <div class="mission-reward">${wasAwarded ? '✓ Kassiert' : m.reward}</div>
       </div>
-      <div class="mission-bar-track"><div class="mission-bar-fill" style="width:${pct}%;${done?'background:#11f080':''}"></div></div>
+      <div class="mission-bar-track"><div class="mission-bar-fill" style="width:${pct}%;background:${done?'#11f080':pct>0?'linear-gradient(90deg,#ffc56c,#f0a500)':''}"></div></div>
       <div class="mission-status ${done?'done':''}">${done?'Abgeschlossen! 🎉':m.current+' / '+m.target}</div>
     </div>`
   }).join('')
@@ -589,7 +589,7 @@ async function renderMissionen(entries, profile, user) {
         profile.xp_gesamt = newXP
         awarded.push(m.id)
         showToast(`${m.icon} Mission abgeschlossen! ${m.reward} 🎉`)
-      } catch {}
+      } catch { showToast('Missions-XP konnte nicht gespeichert werden', 'error') }
     }
   }
   localStorage.setItem(weekKey, JSON.stringify(awarded))
