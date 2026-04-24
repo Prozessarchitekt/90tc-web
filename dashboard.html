@@ -394,14 +394,6 @@
         <span id="s-kcal-unit" class="font-label text-[10px] text-on-surface-variant">KCAL</span>
       </div>
       <div id="s-kcal-raw" style="display:none;font-size:10px;color:#757481;margin-top:-2px;line-height:1.3;"></div>
-      <div id="s-kcal-week" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid rgba(72,71,82,0.25);">
-        <div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,0.22);margin-bottom:3px;">7 TAGE</div>
-        <div style="display:flex;align-items:baseline;gap:3px;">
-          <span id="s-kcal-week-delta" class="font-headline font-black italic" style="font-size:17px;color:#89ceff;">—</span>
-          <span id="s-kcal-week-unit" style="font-size:8px;font-weight:700;color:#757481;">KCAL</span>
-        </div>
-        <div id="s-kcal-week-raw" style="font-size:9px;color:#757481;line-height:1.4;margin-top:1px;"></div>
-      </div>
     </div>
     <div class="bg-surface-container-low p-5 rounded-[24px] flex flex-col gap-1.5 border border-outline-variant/10 shadow-xl backdrop-blur-md">
       <div class="flex items-center gap-1.5">
@@ -422,6 +414,23 @@
       <span id="s-train-sub" class="font-label text-[9px] text-on-surface-variant uppercase tracking-widest">Heute</span>
     </div>
   </section>
+
+  <!-- Wochenbilanz Kalorien -->
+  <div id="s-kcal-week" style="display:none;">
+    <div style="background:rgba(18,18,26,0.7);border:1px solid rgba(137,206,255,0.14);border-radius:18px;padding:14px 18px;display:flex;align-items:center;gap:14px;">
+      <div style="width:40px;height:40px;border-radius:13px;background:rgba(137,206,255,0.08);border:1px solid rgba(137,206,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <span class="material-symbols-outlined" style="font-size:20px;color:#89ceff;font-variation-settings:'FILL' 1">calendar_month</span>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;color:rgba(137,206,255,0.5);margin-bottom:3px;">WOCHENBILANZ KALORIEN</div>
+        <div style="display:flex;align-items:baseline;gap:5px;">
+          <span id="s-kcal-week-delta" class="font-headline font-black italic" style="font-size:26px;line-height:1;color:#89ceff;">—</span>
+          <span id="s-kcal-week-unit" style="font-size:10px;font-weight:700;color:#757481;">KCAL</span>
+        </div>
+        <div id="s-kcal-week-raw" style="font-size:10px;color:#757481;margin-top:2px;line-height:1.4;"></div>
+      </div>
+    </div>
+  </div>
 
   <!-- Energie-Muster Mini -->
   <div id="energie-mini" style="display:none;">
