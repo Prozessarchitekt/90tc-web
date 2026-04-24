@@ -392,6 +392,14 @@
         <span id="s-kcal-unit" class="font-label text-[10px] text-on-surface-variant">KCAL</span>
       </div>
       <div id="s-kcal-raw" style="display:none;font-size:10px;color:#757481;margin-top:-2px;line-height:1.3;"></div>
+      <div id="s-kcal-week" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid rgba(72,71,82,0.25);">
+        <div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,0.22);margin-bottom:3px;">7 TAGE</div>
+        <div style="display:flex;align-items:baseline;gap:3px;">
+          <span id="s-kcal-week-delta" class="font-headline font-black italic" style="font-size:17px;color:#89ceff;">—</span>
+          <span id="s-kcal-week-unit" style="font-size:8px;font-weight:700;color:#757481;">KCAL</span>
+        </div>
+        <div id="s-kcal-week-raw" style="font-size:9px;color:#757481;line-height:1.4;margin-top:1px;"></div>
+      </div>
     </div>
     <div class="bg-surface-container-low p-5 rounded-[24px] flex flex-col gap-1.5 border border-outline-variant/10 shadow-xl backdrop-blur-md">
       <div class="flex items-center gap-1.5">
@@ -706,7 +714,7 @@ async function init() {
   const [{ data: entry }, { data: trainSessions }, { data: allEntries }] = await Promise.all([
     sb.from('daily_entries').select('kalorien_ist,protein_ist_g,checkin_morgen,checkin_abend,score_von_7,training_gemacht,bevel_recovery_pct').eq('user_id', user.id).eq('datum', getToday()).maybeSingle(),
     sb.from('training_sessions').select('id').eq('user_id', user.id).eq('datum', getToday()).limit(1),
-    sb.from('daily_entries').select('datum,energie_level,stimmung,schlaf_ist_h,training_gemacht,schritte_ist').eq('user_id', user.id).order('datum', { ascending: true })
+    sb.from('daily_entries').select('datum,energie_level,stimmung,schlaf_ist_h,training_gemacht,schritte_ist,kalorien_ist').eq('user_id', user.id).order('datum', { ascending: true })
   ])
 
   // Macro stats
@@ -726,6 +734,27 @@ async function init() {
       document.getElementById('s-kcal').textContent = kcal.toLocaleString('de-DE')
     }
   }
+
+  // Wochenübersicht Kalorien (letzte 7 Tage aus allEntries)
+  if (profile.kalorien_ziel > 0 && allEntries?.length) {
+    const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 6)
+    const cutoffStr = cutoff.toISOString().split('T')[0]
+    const weekRows = allEntries.filter(e => e.datum >= cutoffStr && e.kalorien_ist > 0)
+    if (weekRows.length > 0) {
+      const weekTotal  = weekRows.reduce((s, e) => s + e.kalorien_ist, 0)
+      const weekTarget = weekRows.length * profile.kalorien_ziel
+      const weekDelta  = weekTotal - weekTarget
+      const wDef = weekDelta < 0
+      const wEl  = document.getElementById('s-kcal-week-delta')
+      wEl.textContent = (wDef ? '' : '+') + weekDelta.toLocaleString('de-DE')
+      wEl.style.color = wDef ? '#11f080' : '#ff7351'
+      document.getElementById('s-kcal-week-unit').textContent = wDef ? 'DEF' : 'ÜBER'
+      document.getElementById('s-kcal-week-raw').textContent =
+        weekTotal.toLocaleString('de-DE') + ' / ' + weekTarget.toLocaleString('de-DE') + ' (' + weekRows.length + 'T)'
+      document.getElementById('s-kcal-week').style.display = 'block'
+    }
+  }
+
   if (entry?.protein_ist_g) document.getElementById('s-prot').textContent = Math.round(entry.protein_ist_g)
 
   // Training
