@@ -1982,6 +1982,14 @@ async function endSession() {
     // XP award (+50 XP für Training)
     await awardTrainingXP();
 
+    // Mark training in daily entry
+    await sb.from('daily_entries').upsert({
+      user_id: userId,
+      datum: getToday(),
+      training_gemacht: true,
+      ...(newPRs.length > 0 ? { progression: true } : {})
+    }, { onConflict: 'user_id,datum' });
+
     renderWorkout();
 
     if (newPRs.length > 0) {

@@ -278,6 +278,7 @@
         <div>
           <div class="font-label text-[9px] uppercase tracking-widest mb-0.5" style="color:rgba(137,206,255,0.4)">TAGES CHECK-IN</div>
           <div class="font-headline font-black text-base uppercase tracking-tight text-on-surface-variant" id="btn-abend-label">Abend</div>
+          <div id="btn-abend-hint" style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:rgba(255,115,81,0.65);margin-top:2px;display:none;">Erst Morgen-Check-in</div>
         </div>
       </div>
       <span id="btn-abend-icon" class="material-symbols-outlined text-on-surface-variant" style="font-size:22px;opacity:0.3">lock</span>
@@ -295,6 +296,7 @@
         <div id="bevel-rec" class="font-headline font-black uppercase" style="font-size:14px;color:#e4e1ef;line-height:1.1;">—</div>
       </div>
       <div id="bevel-badge" style="flex-shrink:0;font-size:22px;">💪</div>
+      <div id="bevel-trend" style="display:flex;flex-direction:column;align-items:center;gap:3px;flex-shrink:0;"></div>
     </div>
   </div>
 
@@ -714,7 +716,7 @@ async function init() {
   const [{ data: entry }, { data: trainSessions }, { data: allEntries }] = await Promise.all([
     sb.from('daily_entries').select('kalorien_ist,protein_ist_g,checkin_morgen,checkin_abend,score_von_7,training_gemacht,bevel_recovery_pct').eq('user_id', user.id).eq('datum', getToday()).maybeSingle(),
     sb.from('training_sessions').select('id').eq('user_id', user.id).eq('datum', getToday()).limit(1),
-    sb.from('daily_entries').select('datum,energie_level,stimmung,schlaf_ist_h,training_gemacht,schritte_ist,kalorien_ist').eq('user_id', user.id).order('datum', { ascending: true })
+    sb.from('daily_entries').select('datum,energie_level,stimmung,schlaf_ist_h,training_gemacht,schritte_ist,kalorien_ist,bevel_recovery_pct').eq('user_id', user.id).order('datum', { ascending: true })
   ])
 
   // Macro stats
@@ -784,6 +786,22 @@ async function init() {
     document.getElementById('bevel-rec').textContent    = rec
     document.getElementById('bevel-badge').textContent  = badge
     document.getElementById('bevel-card').style.display = 'block'
+    // 3-Tage-Minitrend
+    const trendEl = document.getElementById('bevel-trend')
+    const last3 = (allEntries||[]).filter(e => e.bevel_recovery_pct != null).slice(-3)
+    if (last3.length > 0) {
+      trendEl.innerHTML = last3.map(e => {
+        const p = e.bevel_recovery_pct
+        const c = p >= 75 ? '#11f080' : p >= 50 ? '#ffc56c' : '#ff7351'
+        return `<span style="width:7px;height:7px;border-radius:50%;background:${c};display:inline-block;" title="${p}%"></span>`
+      }).join('')
+    }
+  }
+
+  // Abend hint when locked
+  if (!morgenDone) {
+    const hint = document.getElementById('btn-abend-hint')
+    if (hint) hint.style.display = 'block'
   }
 
   // Energie-Muster Mini

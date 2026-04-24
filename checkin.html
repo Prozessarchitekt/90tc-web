@@ -918,8 +918,14 @@ async function saveAbend() {
   }
 
   const { data: existing } = await sb.from('daily_entries')
-    .select('schlaf_ist_h').eq('user_id', profile.id).eq('datum', today).maybeSingle()
-  const fullEntry = { ...entry, schlaf_ist_h: existing?.schlaf_ist_h || (v('schlaf') ? parseFloat(v('schlaf')) : null) }
+    .select('schlaf_ist_h,bevel_recovery_pct,bevel_hrv_ms,bevel_resting_hr').eq('user_id', profile.id).eq('datum', today).maybeSingle()
+  const fullEntry = {
+    ...entry,
+    schlaf_ist_h: existing?.schlaf_ist_h || (v('schlaf') ? parseFloat(v('schlaf')) : null),
+    bevel_recovery_pct: existing?.bevel_recovery_pct ?? null,
+    bevel_hrv_ms:       existing?.bevel_hrv_ms       ?? null,
+    bevel_resting_hr:   existing?.bevel_resting_hr   ?? null,
+  }
 
   const { score, faktoren } = berechneScoreDetail(fullEntry, profile)
   entry.score_von_7 = score
@@ -1017,7 +1023,10 @@ async function fetchCoachMessage(entry, profile, score) {
         schlaf: entry.schlaf_ist_h,
         schritte: entry.schritte_ist,
         stimmung: entry.stimmung,
-        training: entry.training_gemacht
+        training: entry.training_gemacht,
+        recovery: entry.bevel_recovery_pct,
+        hrv: entry.bevel_hrv_ms,
+        rhr: entry.bevel_resting_hr
       })
     })
     const data = await res.json()

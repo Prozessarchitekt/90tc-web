@@ -35,7 +35,11 @@ async function handleCoach(request, env) {
     return Response.json({ message: '—' }, { headers })
   }
 
-  const { score, kalorien, protein, wasser, schlaf, schritte, stimmung, training } = data
+  const { score, kalorien, protein, wasser, schlaf, schritte, stimmung, training, recovery, hrv, rhr } = data
+
+  const bevelLines = recovery != null
+    ? `- Bevel Recovery: ${recovery}%${hrv != null ? ` · HRV: ${hrv} ms` : ''}${rhr != null ? ` · Ruhepuls: ${rhr} bpm` : ''}`
+    : null
 
   const prompt = `Du bist ein direkter, motivierender Fitness-Coach für die 90-Tage-Challenge. \
 Schreib eine persönliche Abend-Nachricht auf Deutsch — max. 3 kurze Sätze. \
@@ -49,9 +53,9 @@ Tageswerte:
 - Schlaf letzte Nacht: ${schlaf ?? '—'} h
 - Schritte: ${schritte ?? '—'}
 - Stimmung: ${stimmung ?? '—'}/5
-- Training heute: ${training ? 'Ja ✓' : 'Nein'}
+- Training heute: ${training ? 'Ja ✓' : 'Nein'}${bevelLines ? '\n' + bevelLines : ''}
 
-Wenn etwas nicht optimal war: kurz ansprechen + konkreter Tipp für morgen. Wenn gut: kurze echte Anerkennung + was morgen zählt.`
+Wenn etwas nicht optimal war: kurz ansprechen + konkreter Tipp für morgen. Wenn gut: kurze echte Anerkennung + was morgen zählt.${bevelLines && recovery < 50 ? ' Recovery ist niedrig — berücksichtige das in deiner Empfehlung für morgen.' : ''}`
 
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {

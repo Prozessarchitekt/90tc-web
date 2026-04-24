@@ -189,7 +189,10 @@ tailwind.config = {
 
         <!-- Name & Level -->
         <div class="flex flex-col">
-          <span class="text-primary font-headline font-medium tracking-[0.2em] text-xs uppercase mb-1">Elite Status</span>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-primary font-headline font-medium tracking-[0.2em] text-xs uppercase">Elite Status</span>
+            <span id="p-ziel-badge" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;padding:2px 8px;border-radius:6px;display:none;"></span>
+          </div>
           <h2 class="font-headline text-[3.5rem] leading-[0.9] font-black italic tracking-tighter text-on-surface uppercase drop-shadow-2xl" id="p-hero-headline">
             LEVEL 1 <span class="text-primary">—</span> <span id="p-level-name">ROOKIE</span>
           </h2>
@@ -575,6 +578,23 @@ function renderProfile(p) {
   document.getElementById('p-level-name').textContent = lvlName
   const heroH = document.getElementById('p-hero-headline')
   heroH.innerHTML = `LEVEL ${li.level} <span class="text-primary">—</span> ${lvlName}`
+
+  // Ziel-Badge
+  const zielBadge = document.getElementById('p-ziel-badge')
+  if (zielBadge && p.ziel) {
+    const ZIEL_MAP = {
+      abnehmen:  { emoji:'🔥', label:'Definieren',  bg:'rgba(255,115,81,0.15)',  color:'#ff7351' },
+      aufbauen:  { emoji:'💪', label:'Aufbauen',     bg:'rgba(17,240,128,0.12)', color:'#11f080' },
+      recomp:    { emoji:'⚖️', label:'Recomp',       bg:'rgba(137,206,255,0.12)',color:'#89ceff' },
+      maintain:  { emoji:'🛡️', label:'Halten',       bg:'rgba(255,197,108,0.12)',color:'#ffc56c' },
+    }
+    const z = ZIEL_MAP[p.ziel] || ZIEL_MAP['abnehmen']
+    zielBadge.textContent = `${z.emoji} ${z.label}`
+    zielBadge.style.background = z.bg
+    zielBadge.style.color = z.color
+    zielBadge.style.border = `1px solid ${z.color}40`
+    zielBadge.style.display = 'inline-block'
+  }
 
   // XP bar
   document.getElementById('xp-fill').style.width = pct + '%'

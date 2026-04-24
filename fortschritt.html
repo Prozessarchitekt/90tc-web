@@ -337,8 +337,8 @@ const ALL_BADGES = [
   { id:'steps_club',       emoji:'👟', name:'10.000 Steps Club',desc:'10× Schritte erreicht' },
   { id:'schlafkoenig',     emoji:'😴', name:'Schlafkönig',      desc:'5× ≥ 7h Schlaf' },
   { id:'progressive',      emoji:'📈', name:'Progressive Overload',desc:'5× Progression' },
-  { id:'fruehaufsteher',   emoji:'🌅', name:'Frühaufsteher',    desc:'7× vor 7:00 Uhr' },
-  { id:'nachtaktiv',       emoji:'🌙', name:'Nachtaktiv',       desc:'3× nach 23:00 Uhr' },
+  { id:'kalorien_krieger',  emoji:'🔥', name:'Kalorien-Krieger', desc:'10× Kaloriendefizit erreicht' },
+  { id:'volles_programm',  emoji:'💎', name:'Volles Programm',  desc:'12 Trainings absolviert' },
   { id:'perfekter_tag',    emoji:'⚡', name:'Perfekter Tag',    desc:'Alle 7 + Training + PR' },
   { id:'perfekte_woche',   emoji:'💯', name:'Perfekte Woche',   desc:'7/7 Tage alle Faktoren' },
 ]
@@ -515,7 +515,7 @@ async function init() {
   ).join('')
 
   if (entries?.length >= 7) renderEnergieMuster(entries, profile)
-  renderMissionen(entries, profile)
+  renderMissionen(entries, profile, user)
 }
 
 function renderEnergieMuster(entries, profile) {
@@ -551,18 +551,21 @@ function renderEnergieMuster(entries, profile) {
   el.innerHTML = insights.map(i => `<div class="insight-card"><div class="insight-icon">${i.icon}</div><div class="insight-info"><div class="insight-label">${i.label}</div><div class="insight-value">${i.value}</div><div class="insight-sub">${i.sub}</div></div></div>`).join('')
 }
 
-function renderMissionen(entries, profile) {
+async function renderMissionen(entries, profile, user) {
   const el = document.getElementById('mission-list')
   const thisWeekEntries = (entries||[]).slice(-7)
+  const weekKey = '90tc_missions_' + new Date().toISOString().slice(0, 7)
+  const awarded = JSON.parse(localStorage.getItem(weekKey) || '[]')
   const MISSIONEN = [
-    { icon:'💧', name:'Hydrations-Champion', desc:'5× diese Woche Wasserziel erreichen', reward:'+100 XP', current:thisWeekEntries.filter(e=>e.wasser_ist_l&&profile.wasser_ziel_l&&e.wasser_ist_l>=profile.wasser_ziel_l).length, target:5 },
-    { icon:'🏋️', name:'Trainings-Krieger', desc:'4× diese Woche trainieren', reward:'+150 XP', current:thisWeekEntries.filter(e=>e.training_gemacht).length, target:4 },
-    { icon:'💪', name:'Protein-Profi', desc:'5× Proteinziel erreichen', reward:'+100 XP', current:thisWeekEntries.filter(e=>e.protein_ist_g&&profile.protein_ziel_g&&e.protein_ist_g>=profile.protein_ziel_g).length, target:5 },
-    { icon:'😴', name:'Schlaf-Meister', desc:'5× mindestens 7h schlafen', reward:'+100 XP', current:thisWeekEntries.filter(e=>e.schlaf_ist_h&&e.schlaf_ist_h>=7).length, target:5 },
-    { icon:'⭐', name:'Perfekte Woche', desc:'7 Tage Streak + alle 7 Check-ins', reward:'+300 XP 🏆', current:thisWeekEntries.filter(e=>e.checkin_morgen&&e.checkin_abend).length, target:7 },
+    { id:'hydration', icon:'💧', name:'Hydrations-Champion', desc:'5× diese Woche Wasserziel erreichen', reward:'+100 XP', xp:100, current:thisWeekEntries.filter(e=>e.wasser_ist_l&&profile.wasser_ziel_l&&e.wasser_ist_l>=profile.wasser_ziel_l).length, target:5 },
+    { id:'training',  icon:'🏋️', name:'Trainings-Krieger',   desc:'4× diese Woche trainieren',          reward:'+150 XP', xp:150, current:thisWeekEntries.filter(e=>e.training_gemacht).length, target:4 },
+    { id:'protein',   icon:'💪', name:'Protein-Profi',        desc:'5× Proteinziel erreichen',            reward:'+100 XP', xp:100, current:thisWeekEntries.filter(e=>e.protein_ist_g&&profile.protein_ziel_g&&e.protein_ist_g>=profile.protein_ziel_g).length, target:5 },
+    { id:'sleep',     icon:'😴', name:'Schlaf-Meister',       desc:'5× mindestens 7h schlafen',           reward:'+100 XP', xp:100, current:thisWeekEntries.filter(e=>e.schlaf_ist_h&&e.schlaf_ist_h>=7).length, target:5 },
+    { id:'perfect',   icon:'⭐', name:'Perfekte Woche',       desc:'7 Tage Streak + alle 7 Check-ins',    reward:'+300 XP 🏆', xp:300, current:thisWeekEntries.filter(e=>e.checkin_morgen&&e.checkin_abend).length, target:7 },
   ]
   el.innerHTML = MISSIONEN.map(m => {
     const pct=Math.min(100,Math.round(m.current/m.target*100)); const done=m.current>=m.target
+    const wasAwarded = awarded.includes(m.id)
     return `<div class="mission-card ${done?'done':''}">
       <div class="mission-header">
         <div class="mission-icon">${m.icon}</div>
@@ -570,12 +573,26 @@ function renderMissionen(entries, profile) {
           <div class="mission-name">${m.name} ${done?'✅':''}</div>
           <div class="mission-desc">${m.desc}</div>
         </div>
-        <div class="mission-reward">${m.reward}</div>
+        <div class="mission-reward">${wasAwarded ? '✓ Kassiert' : m.reward}</div>
       </div>
       <div class="mission-bar-track"><div class="mission-bar-fill" style="width:${pct}%;${done?'background:#11f080':''}"></div></div>
       <div class="mission-status ${done?'done':''}">${done?'Abgeschlossen! 🎉':m.current+' / '+m.target}</div>
     </div>`
   }).join('')
+
+  // Award XP for newly completed missions
+  for (const m of MISSIONEN) {
+    if (m.current >= m.target && !awarded.includes(m.id) && user) {
+      try {
+        const newXP = (profile.xp_gesamt || 0) + m.xp
+        await sb.from('profiles').update({ xp_gesamt: newXP }).eq('id', user.id)
+        profile.xp_gesamt = newXP
+        awarded.push(m.id)
+        showToast(`${m.icon} Mission abgeschlossen! ${m.reward} 🎉`)
+      } catch {}
+    }
+  }
+  localStorage.setItem(weekKey, JSON.stringify(awarded))
 }
 
 async function checkBadges(user, profile, entries, earnedIds) {
@@ -601,6 +618,9 @@ async function checkBadges(user, profile, entries, earnedIds) {
     check('schlafkoenig', sleepHits >= 5)
     check('progressive', progDays >= 5)
     check('perfekter_tag', entries.some(e=>e.score_von_7===7&&e.training_gemacht&&e.progression))
+    const defizitDays = entries.filter(e=>e.kalorien_ist&&profile.kalorien_ziel&&e.kalorien_ist<profile.kalorien_ziel).length
+    check('kalorien_krieger', defizitDays >= 10)
+    check('volles_programm', trainDays >= 12)
   }
   if (toAward.length) await sb.from('user_badges').upsert(toAward, {onConflict:'user_id,badge_id',ignoreDuplicates:true})
 }
