@@ -417,18 +417,23 @@
 
   <!-- Wochenbilanz Kalorien -->
   <div id="s-kcal-week" style="display:none;">
-    <div style="background:rgba(18,18,26,0.7);border:1px solid rgba(137,206,255,0.14);border-radius:18px;padding:14px 18px;display:flex;align-items:center;gap:14px;">
-      <div style="width:40px;height:40px;border-radius:13px;background:rgba(137,206,255,0.08);border:1px solid rgba(137,206,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-        <span class="material-symbols-outlined" style="font-size:20px;color:#89ceff;font-variation-settings:'FILL' 1">calendar_month</span>
-      </div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;color:rgba(137,206,255,0.5);margin-bottom:3px;">WOCHENBILANZ KALORIEN</div>
-        <div style="display:flex;align-items:baseline;gap:5px;">
-          <span id="s-kcal-week-delta" class="font-headline font-black italic" style="font-size:26px;line-height:1;color:#89ceff;">—</span>
-          <span id="s-kcal-week-unit" style="font-size:10px;font-weight:700;color:#757481;">KCAL</span>
+    <div style="background:rgba(18,18,26,0.7);border:1px solid rgba(137,206,255,0.14);border-radius:18px;padding:14px 18px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+        <div>
+          <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;color:rgba(137,206,255,0.5);margin-bottom:3px;">WOCHENBILANZ KALORIEN</div>
+          <div style="display:flex;align-items:baseline;gap:5px;">
+            <span id="s-kcal-week-delta" class="font-headline font-black italic" style="font-size:24px;line-height:1;color:#89ceff;">—</span>
+            <span id="s-kcal-week-unit" style="font-size:10px;font-weight:700;color:#757481;">KCAL</span>
+          </div>
+          <div id="s-kcal-week-raw" style="font-size:10px;color:#757481;margin-top:2px;line-height:1.4;"></div>
         </div>
-        <div id="s-kcal-week-raw" style="font-size:10px;color:#757481;margin-top:2px;line-height:1.4;"></div>
       </div>
+      <div style="position:relative;padding-top:14px;">
+        <div style="position:absolute;top:0;left:0;right:0;height:1px;background:repeating-linear-gradient(90deg,rgba(137,206,255,0.25) 0,rgba(137,206,255,0.25) 4px,transparent 4px,transparent 7px);"></div>
+        <div style="position:absolute;top:-9px;right:0;font-size:8px;font-weight:800;color:rgba(137,206,255,0.35);letter-spacing:.1em;text-transform:uppercase;">ZIEL</div>
+        <div id="s-kcal-week-bars" style="display:flex;gap:5px;height:52px;align-items:flex-end;"></div>
+      </div>
+      <div id="s-kcal-week-labels" style="display:flex;gap:5px;margin-top:6px;"></div>
     </div>
   </div>
 
@@ -773,9 +778,39 @@ async function init() {
       const wEl  = document.getElementById('s-kcal-week-delta')
       wEl.textContent = (wDef ? '' : '+') + weekDelta.toLocaleString('de-DE')
       wEl.style.color = wDef ? '#11f080' : '#ff7351'
-      document.getElementById('s-kcal-week-unit').textContent = wDef ? 'DEF' : 'ÜBER'
+      document.getElementById('s-kcal-week-unit').textContent = wDef ? 'DEFIZIT' : 'ÜBER'
       document.getElementById('s-kcal-week-raw').textContent =
-        weekTotal.toLocaleString('de-DE') + ' / ' + weekTarget.toLocaleString('de-DE') + ' (' + weekRows.length + 'T)'
+        weekTotal.toLocaleString('de-DE') + ' / ' + weekTarget.toLocaleString('de-DE') + ' kcal (' + weekRows.length + ' Tage)'
+
+      // Build per-day bar chart
+      const DAY_SHORT = ['So','Mo','Di','Mi','Do','Fr','Sa']
+      const ziel = profile.kalorien_ziel
+      const BAR_MAX = 52
+      const dayMap = {}
+      allEntries.forEach(e => { if (e.kalorien_ist) dayMap[e.datum] = e.kalorien_ist })
+      let barsHtml = '', labelsHtml = ''
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(); d.setDate(d.getDate() - i)
+        const key = d.toISOString().split('T')[0]
+        const kcal = dayMap[key]
+        const label = DAY_SHORT[d.getDay()]
+        const isToday = i === 0
+        if (kcal) {
+          const pct = kcal / ziel
+          const fillH = Math.round(Math.min(pct, 1) * BAR_MAX)
+          const over = pct > 1
+          const grad = over
+            ? 'linear-gradient(0deg,#c93320,#ff7351)'
+            : 'linear-gradient(0deg,#0acd65,#11f080)'
+          const glow = over ? 'box-shadow:0 0 10px rgba(255,115,81,0.3)' : ''
+          barsHtml += `<div style="flex:1;display:flex;align-items:flex-end;"><div style="width:100%;height:${fillH}px;border-radius:5px 5px 3px 3px;background:${grad};${glow}"></div></div>`
+        } else {
+          barsHtml += `<div style="flex:1;height:100%;border-radius:5px;border:1px dashed rgba(255,255,255,0.07);background:rgba(255,255,255,0.02);"></div>`
+        }
+        labelsHtml += `<div style="flex:1;text-align:center;font-size:9px;font-weight:${isToday?800:600};color:${isToday?'#89ceff':'rgba(255,255,255,0.28)'};letter-spacing:.04em;">${label}</div>`
+      }
+      document.getElementById('s-kcal-week-bars').innerHTML = barsHtml
+      document.getElementById('s-kcal-week-labels').innerHTML = labelsHtml
       document.getElementById('s-kcal-week').style.display = 'block'
     }
   }

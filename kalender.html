@@ -331,8 +331,8 @@ async function init() {
   document.getElementById('stat-partial').textContent = partialCnt
   document.getElementById('stat-streak').textContent = streak
 
-  // Progress bar
-  const pct = Math.round((doneCnt / 90) * 100)
+  // Progress bar — based on days elapsed, not completed check-ins
+  const pct = Math.round((Math.min(_dayNr, 90) / 90) * 100)
   document.getElementById('cal-pct').textContent = pct + '%'
   setTimeout(() => { document.getElementById('cal-pct-bar').style.width = pct + '%' }, 150)
 
