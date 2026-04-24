@@ -366,8 +366,8 @@
   <a href="maße.html" id="weekly-rem" style="display:none" class="flex items-center gap-3 bg-primary/10 border border-primary/20 rounded-[16px] px-4 py-3 text-on-surface">
     <span class="text-lg">📏</span>
     <div class="flex-1">
-      <div class="font-headline font-black text-xs uppercase">Zeit zum Messen!</div>
-      <div class="text-on-surface-variant text-[10px]">Wöchentlicher Check</div>
+      <div class="font-headline font-black text-xs uppercase" id="weekly-rem-title">Messtag</div>
+      <div class="text-on-surface-variant text-[10px]" id="weekly-rem-sub">Körpermaße eintragen</div>
     </div>
     <span class="material-symbols-outlined text-primary text-lg">chevron_right</span>
   </a>
@@ -707,17 +707,31 @@ async function init() {
 
   // Weekly reminder + Wochenrückblick + Foto-Reminder
   const wocheNr = Math.ceil(dayNr / 7)
+  const WOCHENTAGE = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag']
+  const startDate = new Date(profile.startdatum + 'T00:00:00')
+  const startWeekday = startDate.getDay()
+  const weekdayName = WOCHENTAGE[startWeekday]
+  const todayWeekday = new Date().getDay()
+  const isRemindDay = startWeekday === todayWeekday
+
   if (wocheNr > 1) {
     const { data: wc } = await sb.from('weekly_checks')
       .select('id').eq('user_id', user.id).eq('woche_nr', wocheNr).maybeSingle()
-    if (!wc) document.getElementById('weekly-rem').style.display = 'flex'
+    if (!wc) {
+      document.getElementById('weekly-rem-title').textContent = `Woche ${wocheNr} · Messtag`
+      document.getElementById('weekly-rem-sub').textContent = isRemindDay
+        ? `📏 Heute ist ${weekdayName} — jetzt messen!`
+        : `📅 Jeden ${weekdayName} · Körpermaße eintragen`
+      document.getElementById('weekly-rem').style.display = 'flex'
+    }
     maybeShowWochenrueckblick(user, profile, wocheNr)
   }
   // Photo reminder: show from day 8 if current week photos not yet taken
   if (dayNr >= 8 && !localStorage.getItem('90tc_foto_woche_' + wocheNr)) {
-    const tagStart = (wocheNr - 1) * 7 + 1
-    document.getElementById('foto-rem-title').textContent = `Woche ${wocheNr} · Tag ${tagStart} — Foto`
-    document.getElementById('foto-rem-sub').textContent = 'Gleiche Pose, gleiches Licht — jetzt aufnehmen'
+    document.getElementById('foto-rem-title').textContent = `Woche ${wocheNr} · Foto-Tag`
+    document.getElementById('foto-rem-sub').textContent = isRemindDay
+      ? `📸 Heute ist ${weekdayName} — jetzt aufnehmen!`
+      : `📅 Jeden ${weekdayName} · Gleiche Pose, gleiches Licht`
     document.getElementById('foto-rem').style.display = 'flex'
   }
 
